@@ -73,7 +73,7 @@
 <body>
   <div id="loader"><h1>Loading the market…</h1><div id="bar"><div></div></div></div>
   <div id="fallback" role="alert">3D not supported — try a recent Chrome/Edge/Firefox/Safari with hardware acceleration.</div>
-  <div id="hint">WASD / arrows to move · hold right mouse to look around · walk up to a stall</div>
+  <div id="hint">WASD / arrows to move · hold right mouse to look around · click a glowing ❓ orb to open a topic</div>
   <div id="toast"></div>
   <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔇</button>
   <div id="dpad" aria-hidden="true">
@@ -169,6 +169,8 @@
     const PLAYER_R=1.2;  // horizontal collision radius
     let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
     let ZONES=[]; let activeTopic=null;
+    const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
+    const ORB_R=2.6, ORB_LIFT=3.0;       // world radius + how high it floats above the stall
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
 
     function surfaceAt(x,z,fromY){ raycaster.set(new THREE.Vector3(x,fromY+RAY_UP,z),DOWN); raycaster.far=RAY_FAR;
@@ -250,6 +252,25 @@
       spr.scale.set(11,2.75,1); spr.userData={x,z}; scene.add(spr); labels.push(spr);
     }
     function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+    // ---------- ? ORBS: a clickable, slowly-spinning glass orb at the centre of each shop ----------
+    function placeOrbs(orbScene){
+      if(!orbScene) return;
+      // glass sphere must draw over the inner ? ; tag the sphere mesh so we can spin only the glass
+      orbScene.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false;
+        if(o.material&&o.material.transparent){ o.material.depthWrite=false; o.renderOrder=2; } } });
+      const scl=ORB_R/1.55;                                   // model's glass radius is 1.55 units
+      for(const z of ZONES){
+        const g=orbScene.clone(true);
+        g.scale.setScalar(scl);
+        const sy=surfaceTop(z.x,z.z)??groundY;
+        g.position.set(z.x, sy+ORB_LIFT, z.z);
+        let sphere=null; g.traverse(o=>{ if(/sphere/i.test(o.name)) sphere=o; });
+        const rec={group:g, sphere, zone:z, phase:Math.random()*Math.PI*2};
+        g.userData.orb=rec; g.traverse(o=>o.userData.orb=rec);
+        scene.add(g); orbs.push(rec);
+      }
+    }
 
     // ---------- CHARACTER (placeholder now; real GLB plugs in automatically) ----------
     function buildCharacter(gltf){
@@ -373,6 +394,22 @@
       b.addEventListener('mousedown',set(true)); b.addEventListener('mouseup',set(false)); b.addEventListener('mouseleave',set(false)); });
     let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true; hintEl.style.opacity='0';} }
 
+    // ---- click a ? orb to open its topic; click empty space or press Esc to close ----
+    const pickRay=new THREE.Raycaster(); const ptr=new THREE.Vector2();
+    function pickOrb(e){
+      if(!started || !orbs.length) return;
+      const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
+      ptr.x=(cx/innerWidth)*2-1; ptr.y=-(cy/innerHeight)*2+1;
+      pickRay.setFromCamera(ptr,camera);
+      const meshes=[]; for(const o of orbs) o.group.traverse(m=>{ if(m.isMesh) meshes.push(m); });
+      const hit=pickRay.intersectObjects(meshes,false);
+      if(hit.length){ let n=hit[0].object, rec=null; while(n){ if(n.userData&&n.userData.orb){rec=n.userData.orb;break;} n=n.parent; }
+        if(rec){ activeTopic=rec.zone.topic; showPanel(rec.zone); toast(rec.zone.title); hideHint(); } }
+      else { activeTopic=null; hidePanel(); }
+    }
+    cv.addEventListener('click', pickOrb);
+    addEventListener('keydown', e=>{ if(e.code==='Escape'){ activeTopic=null; hidePanel(); } });
+
     // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
     function beginStart(){ if(started||starting) return; starting=true; startEl.classList.remove('show'); hintEl.style.opacity='1'; if(reducedMotion) started=true; }
     addEventListener('click', beginStart);
@@ -467,7 +504,9 @@
       }
       if(mixer) mixer.update(dt);
 
-      if(started) updateProximity();
+      // spin each orb's glass sphere slowly + a gentle float bob
+      for(const o of orbs){ if(o.sphere) o.sphere.rotation.y += dt*0.5;
+        if(!reducedMotion && o.group){ const sy=o._baseY??(o._baseY=o.group.position.y); o.group.position.y=sy+Math.sin(performance.now()*0.0012+o.phase)*0.35; } }
 
       // labels: keep upright, fade with distance, hover above market
       for(const s of labels){ s.position.set(s.userData.x, surfaceTopCached(s.userData.x,s.userData.z)+6, s.userData.z); }
@@ -511,6 +550,7 @@
       if(!market){ document.querySelector('#loader h1').textContent='Could not load the market.'; return; }
       buildWorld(market);
       buildCharacter(character);     // character.glb if present, else capsule placeholder
+      gltfL.load('models/orb.glb', g=>placeOrbs(g.scene), undefined, e=>console.error('orb load failed',e));  // one ? orb per shop
       // pinned start: robot stands at this exact spot, camera at this exact angle (captured from live readout)
       const SPAWN={x:-17.4, z:38.6}; camYaw=12.138; camPitch=0.263;
       const sy=surfaceTop(SPAWN.x,SPAWN.z)??0; groundY=sy; player.position.set(SPAWN.x,sy,SPAWN.z); player.rotation.y=camYaw+Math.PI; // face away from camera
