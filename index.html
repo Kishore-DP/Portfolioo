@@ -170,7 +170,7 @@
     let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
     let ZONES=[]; let activeTopic=null;
     const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
-    const ORB_R=1.8, ORB_LIFT=2.6;       // world radius + how high it floats above the stall
+    const ORB_R=1.35, ORB_LIFT=2.2;      // world radius + how high it floats above the stall
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
 
     function surfaceAt(x,z,fromY){ raycaster.set(new THREE.Vector3(x,fromY+RAY_UP,z),DOWN); raycaster.far=RAY_FAR;
@@ -257,8 +257,9 @@
     function placeOrbs(orbScene){
       if(!orbScene) return;
       // glass sphere must draw over the inner ? ; tag the sphere mesh so we can spin only the glass
-      orbScene.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false;
-        if(o.material&&o.material.transparent){ o.material.color.setRGB(0.28,0.52,1.0); o.material.opacity=0.34; o.material.depthWrite=false; o.renderOrder=2; } } });
+      orbScene.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false; const m=o.material; if(!m) return;
+        if(m.transparent){ m.color.setRGB(0.15,0.6,1.0); m.opacity=0.42; m.depthWrite=false; o.renderOrder=2; }   // bright blue glass
+        else { if(m.color) m.color.setRGB(1.0,0.84,0.1); if(m.emissive){ m.emissive.setRGB(1.0,0.72,0.0); m.emissiveIntensity=0.9; } } } });   // glowing yellow ?
       const scl=ORB_R/1.55;                                   // model's glass radius is 1.55 units
       for(const z of ZONES){
         const g=orbScene.clone(true);
