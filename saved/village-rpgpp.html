@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kishore DP — Explorable 3D Portfolio</title>
+  <meta name="description" content="Kishore DP's portfolio as an explorable 3D village. Walk around to read each topic." />
+  <meta name="author" content="Kishore DP" />
+  <style>
+    :root { --ui-bg: rgba(255,255,255,0.94); --ui-text:#2b2b2b; --accent:#3f8a2e; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { width:100%; height:100%; overflow:hidden; background:#bfe3f2; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:var(--ui-text); }
+    canvas { display:block; }
+    #loader { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center;
+      background:linear-gradient(#bfe3f2,#dff5cf); transition:opacity .6s ease; }
+    #loader.hidden { opacity:0; pointer-events:none; }
+    #loader h1 { font-size:1.6rem; color:#2b5d22; margin-bottom:.5rem; }
+    #loader p { color:#3a6b2e; }
+    #bar { margin-top:14px; width:220px; height:8px; background:rgba(74,143,60,.25); border-radius:99px; overflow:hidden; }
+    #bar > div { height:100%; width:0%; background:var(--accent); transition:width .2s ease; }
+    #intro { position:fixed; inset:0; z-index:40; pointer-events:none; display:flex; flex-direction:column; align-items:center;
+      justify-content:center; text-align:center; transition:opacity 1.2s ease; }
+    #intro.gone { opacity:0; }
+    #intro h1 { color:#fff; font-size:clamp(1.8rem,6vw,3.4rem); letter-spacing:1px; text-shadow:0 3px 18px rgba(0,0,0,.5); }
+    #intro p { color:#fff; margin-top:8px; text-shadow:0 2px 10px rgba(0,0,0,.55); }
+    #fallback { position:fixed; inset:0; z-index:60; display:none; flex-direction:column; align-items:center; justify-content:center;
+      padding:2rem; text-align:center; background:#dff5cf; }
+    #fallback.show { display:flex; }
+    #fallback a { color:var(--accent); }
+    #hint { position:fixed; left:50%; bottom:18px; transform:translateX(-50%); z-index:20; background:var(--ui-bg);
+      padding:8px 16px; border-radius:999px; font-size:.85rem; box-shadow:0 4px 14px rgba(0,0,0,.15); transition:opacity .5s ease; }
+    #sound { position:fixed; top:16px; right:16px; z-index:30; width:44px; height:44px; border:none; border-radius:50%;
+      background:var(--ui-bg); font-size:1.2rem; cursor:pointer; box-shadow:0 3px 10px rgba(0,0,0,.2); }
+    #dpad { position:fixed; right:20px; bottom:24px; z-index:30; display:none; grid-template-columns:repeat(3,56px); grid-template-rows:repeat(3,56px); gap:6px; }
+    #dpad button { width:56px; height:56px; border:none; border-radius:14px; background:var(--ui-bg); font-size:1.4rem; color:var(--ui-text);
+      box-shadow:0 3px 8px rgba(0,0,0,.2); user-select:none; touch-action:none; }
+    #dpad button:active { background:var(--accent); color:#fff; }
+    .dp-up{grid-area:1/2;} .dp-left{grid-area:2/1;} .dp-right{grid-area:2/3;} .dp-down{grid-area:3/2;}
+    @media (hover:none) and (pointer:coarse){ #dpad{display:grid;} }
+    #panel { position:fixed; top:50%; left:32px; transform:translateY(-50%); z-index:25; max-width:360px; background:var(--ui-bg);
+      padding:22px 24px; border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .4s ease; }
+    #panel.show { opacity:1; pointer-events:auto; }
+    #panel h2 { color:var(--accent); margin-bottom:8px; }
+    #panel a { color:var(--accent); }
+    :focus-visible { outline:3px solid #1d6fd6; outline-offset:2px; }
+    @media (prefers-reduced-motion:reduce){ #loader,#intro,#hint,#panel{transition:none!important;} }
+  </style>
+</head>
+<body>
+  <div id="loader"><h1>Kishore's Village</h1><p>Loading the world…</p><div id="bar"><div></div></div></div>
+  <div id="intro" aria-hidden="true"><h1>Kishore DP</h1><p>Walk up to a building to read each topic</p></div>
+  <div id="fallback" role="alert"><h1>3D not supported</h1>
+    <p style="max-width:480px;margin-top:10px">Your browser couldn't start WebGL. Try a recent Chrome, Edge, Firefox, or Safari with hardware acceleration on.</p>
+    <p style="margin-top:14px">Reach Kishore: <a href="mailto:kishoredp27@gmail.com">email</a> · <a href="https://github.com/Kishore-DP">GitHub</a> · <a href="https://www.linkedin.com/in/kishore-dp-929a95327/">LinkedIn</a></p></div>
+  <div id="hint">↑ walk &nbsp;·&nbsp; ↓ back &nbsp;·&nbsp; ← → turn</div>
+  <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔇</button>
+  <div id="dpad" aria-hidden="true">
+    <button class="dp-up" data-dir="up" aria-label="Walk forward">▲</button>
+    <button class="dp-left" data-dir="left" aria-label="Turn left">◀</button>
+    <button class="dp-right" data-dir="right" aria-label="Turn right">▶</button>
+    <button class="dp-down" data-dir="down" aria-label="Walk back">▼</button>
+  </div>
+  <div id="panel" aria-live="polite"></div>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { TGALoader } from 'three/addons/loaders/TGALoader.js';
+
+    const loaderEl=document.getElementById('loader'), barEl=document.querySelector('#bar>div');
+    const fallbackEl=document.getElementById('fallback'), hintEl=document.getElementById('hint'), introEl=document.getElementById('intro');
+    function webglOk(){ try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){return false;} }
+    if(!webglOk()){ loaderEl.classList.add('hidden'); fallbackEl.classList.add('show'); throw new Error('no webgl'); }
+
+    const cfg={ charH:1.9, buildingH:6.5, camDist:7, camHeight:3.6, moveSpeed:7.5, turnSpeed:2.6 };
+    window.__cfg=cfg;
+    const isMobile=matchMedia('(hover:none) and (pointer:coarse)').matches;
+    const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    const renderer=new THREE.WebGLRenderer({antialias:!isMobile});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2));
+    renderer.setSize(innerWidth,innerHeight);
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+    renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.05;
+    document.body.appendChild(renderer.domElement);
+
+    const scene=new THREE.Scene();
+    scene.background=new THREE.Color(0xbfe3f2);
+    scene.fog=new THREE.Fog(0xbfe3f2, 60, 150);
+
+    const camera=new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.05, 600);
+    camera.position.set(0,20,30);
+
+    scene.add(new THREE.HemisphereLight(0xeaf6ff, 0x6f8e57, 1.0));
+    const sun=new THREE.DirectionalLight(0xfff3df, 2.3);
+    sun.position.set(40,70,30); sun.castShadow=true; sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-0.0004;
+    scene.add(sun); scene.add(sun.target);
+
+    const TOPICS={
+      about:{title:'About Me',html:`<p>Hi, I'm <strong>Kishore DP</strong>. <em>[Placeholder — short bio: who you are, what you study/do, interests.]</em></p>`},
+      building:{title:"Projects I'm Working On",html:`<p><em>[Placeholder — per project: name, one-line description, tags, Live link, Code link.]</em></p>`},
+      done:{title:"Projects I've Done",html:`<p><em>[Placeholder — same fields for completed projects.]</em></p>`},
+      contact:{title:'Contact Me',html:`<p>Let's connect:</p><p>📧 <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a><br>💻 <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">GitHub</a><br>🔗 <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">LinkedIn</a></p>`},
+    };
+
+    // ---- Loading ----
+    const manager=new THREE.LoadingManager();
+    manager.onProgress=(u,n,t)=>{ barEl.style.width=Math.round(100*n/Math.max(t,1))+'%'; };
+    const gltf=new GLTFLoader(manager), fbx=new FBXLoader(manager), tga=new TGALoader(manager);
+
+    const KIT={
+      terrain:'Nature/rpgpp_lt_terrain_grass_01', path:'Nature/rpgpp_lt_terrain_path_01a',
+      b1:'Structures/rpgpp_lt_building_01', b2:'Structures/rpgpp_lt_building_02', b3:'Structures/rpgpp_lt_building_03',
+      b4:'Structures/rpgpp_lt_building_04', b5:'Structures/rpgpp_lt_building_05',
+      shed:'Exterior/rpgpp_lt_shed_wood_01', fence:'Exterior/rpgpp_lt_fence_wood_01a', awning:'Exterior/rpgpp_lt_awning_standing_01a',
+      tree:'Nature/rpgpp_lt_tree_01', tree2:'Nature/rpgpp_lt_tree_02', pine:'Nature/rpgpp_lt_tree_pine_01',
+      bush:'Nature/rpgpp_lt_bush_01', rock:'Nature/rpgpp_lt_rock_01', rock2:'Nature/rpgpp_lt_rock_02',
+      flower:'Nature/rpgpp_lt_flower_01', grass:'Nature/rpgpp_lt_grass_small_01a',
+      well:'Props/rpgpp_lt_well_01', barrel:'Props/rpgpp_lt_barrel_01', crate:'Props/rpgpp_lt_crate_01',
+      wagon:'Props/rpgpp_lt_wagon_01', bench:'Props/rpgpp_lt_bench_wood_01', box:'Props/rpgpp_lt_box_wood_01',
+      lantern:'Props/rpgpp_lt_log_wood_01',
+    };
+    const PIECE={};
+    let kitMat=null;
+
+    const loadFBX=(p)=>new Promise(res=>fbx.load(`models/kit/${p}.fbx`,o=>res(o),undefined,e=>{console.warn('fbx fail',p,e);res(null);}));
+    const loadChar=()=>new Promise(res=>gltf.load('models/character.glb',g=>res(g),undefined,e=>{console.warn('char fail',e);res(null);}));
+    const loadTex=()=>new Promise(res=>tga.load('models/kit/tex_a.tga',t=>res(t),undefined,e=>{console.warn('tex fail',e);res(null);}));
+
+    const _v=new THREE.Vector3();
+    function measure(obj){ obj.updateMatrixWorld(true); const box=new THREE.Box3();
+      obj.traverse(c=>{ if((c.isMesh||c.isSkinnedMesh)&&c.geometry){ if(!c.geometry.boundingBox)c.geometry.computeBoundingBox(); const gb=c.geometry.boundingBox;
+        for(const x of[gb.min.x,gb.max.x])for(const y of[gb.min.y,gb.max.y])for(const z of[gb.min.z,gb.max.z]) box.expandByPoint(_v.set(x,y,z).applyMatrix4(c.matrixWorld)); }});
+      return box; }
+
+    // ---- World ----
+    const player=new THREE.Group(); scene.add(player);
+    let charRoot=null; const walkBones={}; let walkPhase=0;
+    let HALF=40, bound=40; const charR=0.7;
+    let pathMat=null;
+    const grassTime={value:0}; const pathSegs=[];
+    const colliders=[];           // {x,z,r} solid obstacles
+    let ZONES=[];
+    let kitScale=1;
+
+    function prep(obj){ // apply shared material + shadows, return clone-able
+      obj.traverse(c=>{ if(c.isMesh){ c.material=kitMat; c.castShadow=true; c.receiveShadow=true; c.frustumCulled=true; } });
+      return obj;
+    }
+    function placed(name, x, z, rotY=0, extra=1, solid=0){
+      const src=PIECE[name]; if(!src) return null;
+      const m=src.clone(true);
+      m.scale.multiplyScalar(extra);
+      const b=measure(m); m.position.set(x - (b.min.x+b.max.x)/2, -b.min.y, z - (b.min.z+b.max.z)/2);
+      m.rotation.y=rotY; scene.add(m);
+      if(solid>0) colliders.push({x,z,r:solid});
+      return m;
+    }
+
+    function buildWorld(){
+      // shared kit material from the atlas (flat palette -> crisp, no mip bleed)
+      kitMat=new THREE.MeshStandardMaterial({ map:kitTex, roughness:.92, metalness:0, side:THREE.DoubleSide });
+
+      // green base ground so any gaps between terrain tiles read as grass, not void
+      const base=new THREE.Mesh(new THREE.PlaneGeometry(600,600), new THREE.MeshStandardMaterial({color:0x6fae4a, roughness:1}));
+      base.rotation.x=-Math.PI/2; base.position.y=-0.05; base.receiveShadow=true; scene.add(base);
+
+      // dirt-path material (sandy) for walkways
+      pathMat=new THREE.MeshStandardMaterial({ color:0xcdb083, roughness:1, metalness:0 });
+
+      // normalise kit scale from a building's height
+      for(const k in PIECE){ if(PIECE[k]) prep(PIECE[k]); }
+      const bb=measure(PIECE.b1); kitScale=cfg.buildingH/((bb.max.y-bb.min.y)||1);
+      for(const k in PIECE){ if(PIECE[k]) PIECE[k].scale.setScalar(kitScale); }
+
+      // ---- Ground: instance the grass tile across a grid (1 draw call) ----
+      const tileMesh=(()=>{ let mm=null; PIECE.terrain.traverse(c=>{ if(c.isMesh&&!mm) mm=c; }); return mm; })();
+      const tg=tileMesh.geometry.clone(); tg.computeBoundingBox();
+      const tb=tg.boundingBox; const tsx=(tb.max.x-tb.min.x)*kitScale, tsz=(tb.max.z-tb.min.z)*kitScale;
+      const GRID=8; const step=Math.max(tsx,tsz)*0.94; HALF=GRID*step/2;
+      const inst=new THREE.InstancedMesh(tg, kitMat, GRID*GRID);
+      inst.receiveShadow=true; const d=new THREE.Object3D(); let i=0;
+      for(let gx=0;gx<GRID;gx++)for(let gz=0;gz<GRID;gz++){
+        d.position.set((gx-(GRID-1)/2)*step, -tb.min.y*kitScale, (gz-(GRID-1)/2)*step);
+        d.scale.setScalar(kitScale); d.updateMatrix(); inst.setMatrixAt(i++, d.matrix);
+      }
+      inst.instanceMatrix.needsUpdate=true; scene.add(inst);
+
+      const Fp=HALF*0.86;          // fence perimeter (square half-extent)
+      bound=Fp-1.4;                // movement clamp (stay inside the fence)
+
+      // ---- Building plots arranged around the village, each reached by a path ----
+      const R=HALF*0.50;
+      const PLOTS=[
+        {topic:'about',    model:'b2', x:-R,        z:-R*0.7},
+        {topic:'building', model:'b3', x: R,        z:-R*0.7},
+        {topic:'done',     model:'b4', x:-R,        z: R*0.7},
+        {topic:'contact',  model:'b5', x: R,        z: R*0.7},
+        {model:'b1', x:0,        z:-R},                 // extra house (north)
+        {model:'shed',     x:0,        z: R*1.05},      // shed (south)
+      ];
+      const labels={about:'About Me',building:'Working On',done:'Done',contact:'Contact Me'};
+
+      // central plaza
+      const plaza=new THREE.Mesh(new THREE.CircleGeometry(6.5,28), pathMat);
+      plaza.rotation.x=-Math.PI/2; plaza.position.y=0.02; plaza.receiveShadow=true; scene.add(plaza);
+
+      // paths from plaza to each plot, then place the building at the end
+      ZONES=[];
+      for(const p of PLOTS){
+        pathStrip(0,0, p.x,p.z, 3.4); pathSegs.push({x:p.x,z:p.z});
+        const rotY=Math.atan2(-p.x,-p.z);              // face the centre
+        placed(p.model, p.x, p.z, rotY, 1, 3.0);
+        if(p.topic){
+          const dir=new THREE.Vector3(-p.x,0,-p.z).normalize();
+          scene.add(makeSignpost(labels[p.topic], p.x+dir.x*5, p.z+dir.z*5, rotY));
+          ZONES.push({topic:p.topic, label:labels[p.topic], x:p.x, z:p.z});
+        }
+      }
+
+      // ---- Plaza props ----
+      placed('well', 0, 0, 0, 1, 1.6);
+      placed('wagon', 5, -4, -0.8, 1, 1.4);
+      placed('barrel', 4, 4, 0, 1, 0.8); placed('crate', 5.2, 3.2, 0.5, 1, 0.9);
+      placed('box', -4.5, 3.6, 0.3, 1, 0.8); placed('bench', -5, -3.5, 1.2, 1, 0.9);
+
+      // ---- Perimeter fence (square ring around the village) ----
+      const fbx=measure(PIECE.fence); const fl=Math.max(0.5, fbx.max.x-fbx.min.x);
+      const nSeg=Math.max(3, Math.round((2*Fp)/fl));
+      for(let i=0;i<nSeg;i++){
+        const t=-Fp + (i+0.5)/nSeg*2*Fp;
+        if(Math.abs(t)>3.0){                       // leave a gap (gate) on the front edge
+          placed('fence', t,  Fp, 0, 1, 0);        // front
+        }
+        placed('fence', t, -Fp, 0, 1, 0);          // back
+        placed('fence', -Fp, t, Math.PI/2, 1, 0);  // left
+        placed('fence',  Fp, t, Math.PI/2, 1, 0);  // right
+      }
+
+      // ---- Nature: trees/rocks ring the village (mostly outside the fence) ----
+      const nat=[['tree',2.2,3.4],['tree2',2.4,3.6],['pine',2.6,4.0],['rock',0.9,1.6],['rock2',1.1,1.8],['bush',0.8,1.2]];
+      let n=0;
+      for(let s=0;s<64;s++){
+        const ang=s*2.39996, rad=Fp*1.02+((s*11)%(HALF-Fp*1.02-2));
+        const x=Math.cos(ang)*rad, z=Math.sin(ang)*rad;
+        if(Math.abs(x)>HALF-2||Math.abs(z)>HALF-2) continue;
+        const [nm,smin,smax]=nat[n++%nat.length];
+        placed(nm, x, z, s*1.7, smin+((s*7)%100)/100*(smax-smin), 0);
+      }
+      // a few flowers/bushes inside near the plaza edges
+      for(let s=0;s<14;s++){ const ang=s*1.3, rad=8+((s*5)%(Fp*0.7));
+        const x=Math.cos(ang)*rad, z=Math.sin(ang)*rad; let bad=Math.hypot(x,z)<7;
+        for(const c of colliders) if(Math.hypot(x-c.x,z-c.z)<c.r+1.5) bad=true; if(bad) continue;
+        placed(s%2?'flower':'grass', x, z, s, 0.6+((s*3)%100)/100*0.4, 0);
+      }
+
+      // ---- Lush grass billboards (Nature Starter Kit) across the grass ----
+      addGrass(isMobile?2500:6500);
+
+      // ---- Character ----
+      charRoot=MODELS_char.scene;
+      const cb=measure(charRoot); charRoot.scale.setScalar(cfg.charH/((cb.max.y-cb.min.y)||1));
+      const cb2=measure(charRoot); charRoot.position.x-=(cb2.min.x+cb2.max.x)/2; charRoot.position.z-=(cb2.min.z+cb2.max.z)/2; charRoot.position.y-=cb2.min.y;
+      charRoot.traverse(c=>{ if(c.isMesh||c.isSkinnedMesh){ c.castShadow=true; c.frustumCulled=false; } });
+      player.add(charRoot);
+      const wb=(re)=>{ let b=null; charRoot.traverse(o=>{ if(o.isBone&&re.test(o.name)&&!b)b=o; }); return b; };
+      walkBones.lUpLeg=wb(/LeftUpLeg/i); walkBones.rUpLeg=wb(/RightUpLeg/i);
+      walkBones.lLeg=wb(/LeftLeg(?!.*Up)/i); walkBones.rLeg=wb(/RightLeg(?!.*Up)/i);
+      walkBones.lArm=wb(/LeftArm(?!.*Fore)/i); walkBones.rArm=wb(/RightArm(?!.*Fore)/i);
+      for(const k in walkBones) if(walkBones[k]) walkBones[k].userData.q0=walkBones[k].quaternion.clone();
+      player.position.set(0,0,HALF*0.30); player.rotation.y=Math.PI;
+
+      // shadow + fog sized to the world
+      const h=HALF*1.2, sc=sun.shadow.camera; sc.left=-h;sc.right=h;sc.top=h;sc.bottom=-h;sc.near=1;sc.far=h*5; sc.updateProjectionMatrix();
+      sun.position.set(h,h*1.4,h*0.6); sun.target.position.set(0,0,0);
+      scene.fog.near=HALF*1.1; scene.fog.far=HALF*3.2;
+    }
+
+    function nearPath(x,z,w){
+      for(const p of pathSegs){ const L2=p.x*p.x+p.z*p.z||1; let t=(x*p.x+z*p.z)/L2; t=Math.max(0,Math.min(1,t));
+        if(Math.hypot(x-p.x*t, z-p.z*t)<w) return true; }
+      return false;
+    }
+
+    let grassTex=null;
+    function addGrass(count){
+      if(!grassTex) return;
+      const W=1.2, H=0.9;
+      const g=new THREE.BufferGeometry();
+      const pos=[ -W/2,0,0, W/2,0,0, W/2,H,0,  -W/2,0,0, W/2,H,0, -W/2,H,0,
+                  0,0,-W/2, 0,0,W/2, 0,H,W/2,  0,0,-W/2, 0,H,W/2, 0,H,-W/2 ];
+      const uv=[ 0,0, 1,0, 1,1, 0,0, 1,1, 0,1,  0,0, 1,0, 1,1, 0,0, 1,1, 0,1 ];
+      g.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+      g.setAttribute('uv', new THREE.Float32BufferAttribute(uv,2)); g.computeVertexNormals();
+      const mat=new THREE.MeshStandardMaterial({ map:grassTex, alphaTest:0.4, side:THREE.DoubleSide, roughness:1, metalness:0 });
+      mat.onBeforeCompile=(sh)=>{ sh.uniforms.uTime=grassTime;
+        sh.vertexShader='uniform float uTime;\n'+sh.vertexShader.replace('#include <begin_vertex>',
+        `#include <begin_vertex>
+         float ph=instanceMatrix[3].x*0.6+instanceMatrix[3].z*0.6;
+         transformed.x+=sin(uTime*1.5+ph)*0.12*position.y;
+         transformed.z+=cos(uTime*1.2+ph)*0.08*position.y;`);
+      };
+      const mesh=new THREE.InstancedMesh(g, mat, count); mesh.receiveShadow=true;
+      const d=new THREE.Object3D(), col=new THREE.Color(); let k=0, it=0;
+      while(k<count && it<count*5){ it++;
+        const x=(Math.random()*2-1)*bound, z=(Math.random()*2-1)*bound;
+        if(Math.hypot(x,z)<7.5) continue;
+        if(nearPath(x,z,2.4)) continue;
+        let bad=false; for(const c of colliders) if(Math.hypot(x-c.x,z-c.z)<c.r+0.8){bad=true;break;}
+        if(bad) continue;
+        d.position.set(x,0,z); d.rotation.y=Math.random()*Math.PI; d.scale.set(0.7+Math.random()*0.7, 0.7+Math.random()*0.8, 1);
+        d.updateMatrix(); mesh.setMatrixAt(k,d.matrix);
+        const t=0.82+Math.random()*0.38; col.setRGB(t*0.82, t, t*0.72); mesh.setColorAt(k,col);
+        k++;
+      }
+      mesh.count=k; mesh.instanceMatrix.needsUpdate=true; scene.add(mesh);
+    }
+
+    function pathStrip(x1,z1,x2,z2,w){
+      const dx=x2-x1, dz=z2-z1, len=Math.hypot(dx,dz)+w; if(len<0.5) return;
+      const geo=new THREE.PlaneGeometry(w, len); geo.rotateX(-Math.PI/2);
+      const m=new THREE.Mesh(geo, pathMat); m.position.set((x1+x2)/2, 0.02, (z1+z2)/2);
+      m.rotation.y=Math.atan2(dx,dz); m.receiveShadow=true; scene.add(m);
+    }
+
+    function makeSignpost(text,x,z,rotY){
+      const g=new THREE.Group(); g.position.set(x,0,z); g.rotation.y=rotY;
+      const post=new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,2.2,8), new THREE.MeshStandardMaterial({color:0x6e4a26,roughness:.9}));
+      post.position.y=1.1; post.castShadow=true; g.add(post);
+      const cv=document.createElement('canvas'); cv.width=256; cv.height=72; const ctx=cv.getContext('2d');
+      ctx.fillStyle='rgba(63,138,46,.96)'; ctx.fillRect(0,0,256,72); ctx.fillStyle='#fff'; ctx.font='bold 34px system-ui';
+      ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(text,128,38);
+      const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;
+      const board=new THREE.Mesh(new THREE.PlaneGeometry(2.2,.62), new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));
+      board.position.y=2.3; g.add(board); return g;
+    }
+
+    // ---- Proximity panel ----
+    const panelEl=document.getElementById('panel'); let activeTopic=null;
+    function updateProximity(){
+      let near=null; for(const z of ZONES){ if(Math.hypot(player.position.x-z.x,player.position.z-z.z)<7){ near=z; break; } }
+      if(near&&near.topic!==activeTopic){ activeTopic=near.topic; const t=TOPICS[near.topic]; panelEl.innerHTML=`<h2>${t.title}</h2>${t.html}`; panelEl.classList.add('show'); }
+      else if(!near&&activeTopic){ activeTopic=null; panelEl.classList.remove('show'); }
+    }
+
+    // ---- Input ----
+    const keys={up:false,down:false,left:false,right:false};
+    const keyMap={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right'};
+    addEventListener('keydown',e=>{ if(keyMap[e.code]){ keys[keyMap[e.code]]=true; e.preventDefault(); hideHint(); } });
+    addEventListener('keyup',e=>{ if(keyMap[e.code]) keys[keyMap[e.code]]=false; });
+    document.querySelectorAll('#dpad button').forEach(btn=>{ const dir=btn.dataset.dir; const set=v=>ev=>{ev.preventDefault();keys[dir]=v;if(v)hideHint();};
+      btn.addEventListener('touchstart',set(true),{passive:false}); btn.addEventListener('touchend',set(false));
+      btn.addEventListener('mousedown',set(true)); btn.addEventListener('mouseup',set(false)); btn.addEventListener('mouseleave',set(false)); });
+    let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true;hintEl.style.opacity='0';} }
+
+    // ---- Ambient audio ----
+    const soundBtn=document.getElementById('sound'); let actx=null,soundOn=false,windGain=null;
+    function startAudio(){ actx=new (window.AudioContext||window.webkitAudioContext)();
+      const buf=actx.createBuffer(1,actx.sampleRate*2,actx.sampleRate); const dt=buf.getChannelData(0); let last=0;
+      for(let i=0;i<dt.length;i++){ last=(last+(Math.random()*2-1)*.02)*.98; dt[i]=last; }
+      const noise=actx.createBufferSource(); noise.buffer=buf; noise.loop=true;
+      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=550; windGain=actx.createGain(); windGain.gain.value=0;
+      noise.connect(lp).connect(windGain).connect(actx.destination); noise.start();
+      const chirp=()=>{ if(!soundOn)return; const o=actx.createOscillator(),g=actx.createGain(); const f=1600+Math.random()*1400;
+        o.frequency.setValueAtTime(f,actx.currentTime); o.frequency.linearRampToValueAtTime(f*1.4,actx.currentTime+.08);
+        g.gain.setValueAtTime(0,actx.currentTime); g.gain.linearRampToValueAtTime(.05,actx.currentTime+.02); g.gain.linearRampToValueAtTime(0,actx.currentTime+.18);
+        o.connect(g).connect(actx.destination); o.start(); o.stop(actx.currentTime+.2); setTimeout(chirp,1500+Math.random()*4000); };
+      setTimeout(chirp,1200);
+    }
+    soundBtn.addEventListener('click',()=>{ if(!actx)startAudio(); if(actx.state==='suspended')actx.resume();
+      soundOn=!soundOn; windGain.gain.linearRampToValueAtTime(soundOn?.5:0,actx.currentTime+.8); soundBtn.textContent=soundOn?'🔊':'🔇'; });
+
+    addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+
+    // ---- Loop ----
+    const clock=new THREE.Clock(); const camTarget=new THREE.Vector3(), camPivot=new THREE.Vector3();
+    const _q=new THREE.Quaternion(), _ax=new THREE.Vector3(1,0,0); let introT=0;
+    function stepFrame(dt){
+      grassTime.value+=dt;
+      const introDone=introT>=1; let moving=false;
+      if(introDone){
+        if(keys.left) player.rotation.y+=cfg.turnSpeed*dt;
+        if(keys.right) player.rotation.y-=cfg.turnSpeed*dt;
+        let dir=0; if(keys.up)dir+=1; if(keys.down)dir-=1;
+        if(dir!==0){
+          const fwd=new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y));
+          let nx=player.position.x+fwd.x*dir*cfg.moveSpeed*dt;
+          let nz=player.position.z+fwd.z*dir*cfg.moveSpeed*dt;
+          nx=Math.max(-bound,Math.min(bound,nx)); nz=Math.max(-bound,Math.min(bound,nz));
+          for(const c of colliders){ const ddx=nx-c.x, ddz=nz-c.z, dd=Math.hypot(ddx,ddz), mn=c.r+charR;
+            if(dd<mn&&dd>1e-4){ nx=c.x+ddx/dd*mn; nz=c.z+ddz/dd*mn; } }
+          if(nx!==player.position.x||nz!==player.position.z){ player.position.x=nx; player.position.z=nz; moving=true; }
+        }
+      }
+      if(moving&&!reducedMotion) walkPhase+=dt*8;
+      const sw=moving?Math.sin(walkPhase)*.5:0, sw2=moving?Math.sin(walkPhase+Math.PI)*.5:0;
+      const ab=(b,a)=>{ if(!b||!b.userData.q0)return; _q.setFromAxisAngle(_ax,a); b.quaternion.copy(b.userData.q0).multiply(_q); };
+      ab(walkBones.lUpLeg,sw); ab(walkBones.rUpLeg,sw2);
+      ab(walkBones.lLeg,moving?Math.max(0,-sw)*.6:0); ab(walkBones.rLeg,moving?Math.max(0,-sw2)*.6:0);
+      ab(walkBones.lArm,sw2*.5); ab(walkBones.rArm,sw*.5);
+
+      if(introDone) updateProximity();
+
+      const behind=new THREE.Vector3(0,cfg.camHeight,cfg.camDist).applyAxisAngle(new THREE.Vector3(0,1,0),player.rotation.y);
+      camTarget.copy(player.position).add(behind); camPivot.copy(player.position); camPivot.y+=cfg.charH*0.7;
+      if(!introDone&&!reducedMotion){ introT=Math.min(1,introT+dt/3.0); const e=1-Math.pow(1-introT,3);
+        camera.position.lerpVectors(new THREE.Vector3(0,20,30),camTarget,e); camera.lookAt(camPivot); if(introT>=1) introEl.classList.add('gone'); }
+      else { if(!introDone) introT=1; camera.position.lerp(camTarget,reducedMotion?1:.12); camera.lookAt(camPivot); }
+    }
+    function frame(){ stepFrame(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
+    let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
+    setInterval(()=>{ if(performance.now()-lastRAF>200) frame(); },60);
+    // ---- Boot ----
+    let kitTex=null, MODELS_char=null;
+    const loadGrassTex=()=>new Promise(res=>tga.load('models/kit/grass_billboard.tga',t=>res(t),undefined,e=>{console.warn('grass tex fail',e);res(null);}));
+    (async()=>{
+      [kitTex, grassTex]=await Promise.all([ loadTex(), loadGrassTex() ]);
+      if(kitTex){ kitTex.colorSpace=THREE.SRGBColorSpace; kitTex.flipY=true; kitTex.generateMipmaps=false;
+        kitTex.minFilter=THREE.LinearFilter; kitTex.magFilter=THREE.LinearFilter; kitTex.anisotropy=4; }
+      if(grassTex){ grassTex.colorSpace=THREE.SRGBColorSpace; grassTex.flipY=true; grassTex.anisotropy=4; }
+      const names=Object.keys(KIT);
+      const loaded=await Promise.all([ loadChar(), ...names.map(k=>loadFBX(KIT[k])) ]);
+      MODELS_char=loaded[0];
+      names.forEach((k,i)=>{ PIECE[k]=loaded[i+1]; });
+      if(!MODELS_char||!PIECE.b1||!PIECE.terrain){ loaderEl.querySelector('p').textContent='Could not load models.'; return; }
+      buildWorld();
+      loaderEl.classList.add('hidden');
+      if(reducedMotion) introEl.classList.add('gone'); else introEl.style.opacity='1';
+      animate();
+    })();
+  </script>
+</body>
+</html>

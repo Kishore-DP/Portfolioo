@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Kishore DP — Medieval Market Portfolio</title>
+  <meta name="description" content="Kishore DP's portfolio — explore a floating medieval market; each stall is a topic." />
+  <style>
+    :root { --ui:#11161b; --card:rgba(20,26,33,.82); --txt:#eaf2ea; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html,body { width:100%; height:100%; overflow:hidden; background:#000; }
+    body { font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; color:var(--txt); }
+    canvas { display:block; }
+
+    #loader { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; transition:opacity .7s ease; }
+    #loader.hidden { opacity:0; pointer-events:none; }
+    #loader h1 { font-size:1.15rem; color:#9fd28c; margin-bottom:.6rem; font-weight:600; letter-spacing:.3px; }
+    #bar { width:240px; height:7px; background:rgba(159,210,140,.18); border-radius:99px; overflow:hidden; }
+    #bar>div { height:100%; width:0%; background:linear-gradient(90deg,#7bc96f,#a7e08c); transition:width .2s ease; }
+
+    #fallback { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:2rem; text-align:center; }
+    #fallback.show { display:flex; }
+    #fallback a { color:#7bc96f; }
+
+    #hint { position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:20; font-size:.82rem; color:#cfe0cf;
+      background:rgba(0,0,0,.45); backdrop-filter:blur(6px); padding:8px 16px; border-radius:99px; transition:opacity .5s ease; border:1px solid rgba(255,255,255,.08); opacity:0; }
+
+    /* sector toast — small prompt when you enter a market */
+    #toast { position:fixed; left:50%; top:24px; transform:translate(-50%,-12px); z-index:24; opacity:0;
+      background:rgba(0,0,0,.5); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,.12); color:#fff;
+      padding:8px 16px; border-radius:99px; font-size:.85rem; transition:opacity .35s ease, transform .35s ease; pointer-events:none; white-space:nowrap; }
+    #toast.show { opacity:1; transform:translate(-50%,0); }
+
+    /* the polished topic panel */
+    #panel { position:fixed; top:50%; left:36px; transform:translate(-18px,-50%) scale(.98); z-index:25; width:min(380px,86vw);
+      background:var(--card); backdrop-filter:blur(16px) saturate(1.1); -webkit-backdrop-filter:blur(16px) saturate(1.1);
+      border:1px solid rgba(255,255,255,.12); border-left:4px solid var(--accent,#7bc96f); border-radius:18px;
+      padding:24px 26px 22px; box-shadow:0 24px 60px rgba(0,0,0,.55); opacity:0; pointer-events:none;
+      transition:opacity .45s cubic-bezier(.2,.8,.2,1), transform .45s cubic-bezier(.2,.8,.2,1); }
+    #panel.show { opacity:1; pointer-events:auto; transform:translate(0,-50%) scale(1); }
+    #panel .eyebrow { display:flex; align-items:center; gap:10px; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--accent,#7bc96f); margin-bottom:6px; }
+    #panel .eyebrow .ico { font-size:1.25rem; }
+    #panel h2 { font-size:1.5rem; line-height:1.15; margin-bottom:12px; }
+    #panel .body { font-size:.95rem; line-height:1.5; color:#dbe6db; }
+    #panel .body p { margin-bottom:10px; }
+    #panel .body em { color:#9fb39f; }
+    #panel a { color:var(--accent,#7bc96f); text-decoration:none; border-bottom:1px solid rgba(123,201,111,.4); }
+    #panel a:hover { border-bottom-color:var(--accent,#7bc96f); }
+    #panel .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+    #panel .tags span { font-size:.72rem; padding:3px 9px; border-radius:99px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); }
+
+    #sound { position:fixed; top:16px; right:16px; z-index:30; width:44px; height:44px; border:none; border-radius:50%;
+      background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.15rem; cursor:pointer; border:1px solid rgba(255,255,255,.1); }
+
+    #dpad { position:fixed; right:18px; bottom:20px; z-index:30; display:none; grid-template-columns:repeat(3,54px); grid-template-rows:repeat(3,54px); gap:6px; }
+    #dpad button { width:54px; height:54px; border:none; border-radius:14px; background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.3rem; border:1px solid rgba(255,255,255,.1); touch-action:none; }
+    #dpad button:active { background:#7bc96f; color:#11161b; }
+    .dp-up{grid-area:1/2;} .dp-left{grid-area:2/1;} .dp-right{grid-area:2/3;} .dp-down{grid-area:3/2;}
+    @media (hover:none) and (pointer:coarse){ #dpad{display:grid;} #panel{left:14px;} }
+
+    /* zoomed-out intro: CLICK TO START overlay (Bruno-Simon style) */
+    #start { position:fixed; inset:0; z-index:40; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; pointer-events:none; }
+    #start.show { display:flex; }
+    #start h2 { font-size:clamp(1.7rem,5.5vw,3rem); font-weight:800; letter-spacing:.14em; color:#ffe7c2; text-shadow:0 2px 24px rgba(0,0,0,.75); transform:rotate(-4deg); animation:startpulse 1.8s ease-in-out infinite; }
+    #start .sub { font-size:.82rem; letter-spacing:.24em; color:#cdbce6; text-transform:uppercase; opacity:.85; }
+    @keyframes startpulse { 0%,100%{opacity:.6; transform:rotate(-4deg) scale(1);} 50%{opacity:1; transform:rotate(-4deg) scale(1.05);} }
+    /* space vignette to deepen the edges like the reference */
+    #vignette { position:fixed; inset:0; z-index:5; pointer-events:none; background:radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 36%, rgba(4,2,10,.5) 76%, rgba(2,1,6,.92) 100%); }
+
+    @media (prefers-reduced-motion:reduce){ #panel,#toast,#hint,#loader,#start h2{transition:none!important; animation:none!important;} }
+  </style>
+</head>
+<body>
+  <div id="loader"><h1>Loading the market…</h1><div id="bar"><div></div></div></div>
+  <div id="fallback" role="alert">3D not supported — try a recent Chrome/Edge/Firefox/Safari with hardware acceleration.</div>
+  <div id="hint">WASD / arrows to move · hold right mouse to look around · walk up to a stall</div>
+  <div id="toast"></div>
+  <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔇</button>
+  <div id="dpad" aria-hidden="true">
+    <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
+    <button class="dp-right" data-dir="right">▶</button><button class="dp-down" data-dir="down">▼</button>
+  </div>
+  <div id="panel" aria-live="polite"></div>
+  <div id="vignette"></div>
+  <div id="start"><h2>CLICK TO START</h2><div class="sub">click anywhere</div></div>
+
+  <script type="importmap">
+  { "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+  } }
+  </script>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { TGALoader } from 'three/addons/loaders/TGALoader.js';
+
+    const loaderEl=document.getElementById('loader'), barEl=document.querySelector('#bar>div');
+    const fbEl=document.getElementById('fallback'), hintEl=document.getElementById('hint');
+    const panelEl=document.getElementById('panel'), toastEl=document.getElementById('toast');
+    const startEl=document.getElementById('start');
+    function webglOk(){ try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){return false;} }
+    if(!webglOk()){ loaderEl.classList.add('hidden'); fbEl.classList.add('show'); throw new Error('no webgl'); }
+
+    // ---------- config ----------
+    const cfg={ world:120, charH:5.4, camDist:18, camPitch:0.5, moveSpeed:16 };
+    let camYaw=Math.PI, camPitch=cfg.camPitch; const camDist=cfg.camDist;   // camera orbit (right-drag); fixed distance — no zoom
+    const isMobile=matchMedia('(hover:none) and (pointer:coarse)').matches;
+    const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+    const renderer=new THREE.WebGLRenderer({antialias:!isMobile});
+    renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2)); renderer.setSize(innerWidth,innerHeight);
+    renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.38;
+    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;   // soft, real shadows
+    document.body.appendChild(renderer.domElement);
+
+    const scene=new THREE.Scene();
+    scene.background=new THREE.Color(0x07060f);          // deep space backdrop (Bruno-Simon style)
+    scene.fog=new THREE.FogExp2(0x07060f, 0.0013);        // haze fades the grid floor into the dark at the edges
+    const camera=new THREE.PerspectiveCamera(55, innerWidth/innerHeight, 0.05, 4000);
+    camera.position.set(0,40,60);
+
+    // ---- cinematic lighting: warm golden key + cool sky fill + cool back-rim, soft shadows ----
+    scene.add(new THREE.AmbientLight(0x4a5570, 0.55));                                  // soft cool ambient so shadows read but never go black
+    scene.add(new THREE.HemisphereLight(0xdce8ff, 0x7a6038, 0.9));                      // cool sky light + warm ground bounce
+    const sun=new THREE.DirectionalLight(0xffdca6, 3.6); sun.castShadow=true;           // warm golden-hour key (the shadow caster)
+    sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.6; sun.shadow.radius=4;
+    scene.add(sun); scene.add(sun.target);
+    const rim=new THREE.DirectionalLight(0x7793c8, 0.7); rim.position.set(-90,70,-80); scene.add(rim); // cool back-light to lift models off the dark void
+
+    // ---------- SECTORS: each market -> a topic ----------
+    // matched to market material names found in the FBX
+    // market1=fish · market2=vegetables · market3=bakery · market4=weapon · market5=meat
+    const SECTORS={
+      fish:      { topic:'about',    title:'About Me',          ico:'🐟', accent:'#6ba8e0',
+                   html:`<p>Hi, I'm <strong>Kishore DP</strong>. <em>[Placeholder — short bio: who you are, what you study/do, interests.]</em></p>` },
+      vegetables:{ topic:'skills',   title:'Skills & Tools',    ico:'🥕', accent:'#e0a45a',
+                   html:`<p><em>[Placeholder — languages, frameworks, tools.]</em></p><div class="tags"><span>add</span><span>your</span><span>skills</span></div>` },
+      bakery:    { topic:'done',     title:"Things I've Built", ico:'🍞', accent:'#7bc96f',
+                   html:`<p><em>[Placeholder — completed projects: name, one-line description, tags, Live link, Code link.]</em></p>` },
+      weapon:    { topic:'building', title:'Currently Building',ico:'⚔️', accent:'#b48be0',
+                   html:`<p><em>[Placeholder — projects in progress, with the same fields.]</em></p>` },
+      meat:      { topic:'contact',  title:"Let's Connect",     ico:'🥩', accent:'#e07a6b',
+                   html:`<p>Let's connect:</p><p>📧 <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a><br>💻 <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">GitHub</a><br>🔗 <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">LinkedIn</a></p>` },
+    };
+
+    // ---------- loaders ----------
+    const manager=new THREE.LoadingManager();
+    manager.onProgress=(u,n,t)=>{ barEl.style.width=Math.round(100*n/Math.max(t,1))+'%'; };
+    const fbxL=new FBXLoader(manager), gltfL=new GLTFLoader(manager), texL=new THREE.TextureLoader(manager), tgaL=new TGALoader(manager);
+    const T={}; const NOFLIP=new Set(['environment','latern']);
+    function png(name){ if(!T[name]){ const t=texL.load(`models/market/${name}.png`); t.colorSpace=THREE.SRGBColorSpace; t.flipY=!NOFLIP.has(name); T[name]=t; } return T[name]; }
+    function grassTex(){ if(!T.g){ const t=tgaL.load('models/kit/grass_billboard.tga'); t.colorSpace=THREE.SRGBColorSpace; t.flipY=false; T.g=t; } return T.g; }
+    function texFor(name=''){ const n=name.toLowerCase();
+      if(/baker/.test(n))return png('bakery'); if(/meat/.test(n))return png('meat'); if(/veget/.test(n))return png('vegetables');
+      if(/weapon/.test(n))return png('weapon'); if(/fish/.test(n))return png('fish'); if(/latern|lantern/.test(n))return png('latern');
+      if(/grass|leaf|foliage/.test(n))return grassTex(); return png('environment'); }
+    function marketKey(name=''){ const n=name.toLowerCase();
+      if(/baker/.test(n))return 'bakery'; if(/meat/.test(n))return 'meat'; if(/veget/.test(n))return 'vegetables';
+      if(/weapon/.test(n))return 'weapon'; if(/fish/.test(n))return 'fish'; return null; }
+
+    // ---------- world state ----------
+    let world=null;                 // the market FBX (scaled)
+    const player=new THREE.Group(); scene.add(player);
+    let charRoot=null, mixer=null, walkAction=null, idleAction=null; const walkBones={}; let walkPhase=0;
+    let groundY=0; const raycaster=new THREE.Raycaster(); const camRay=new THREE.Raycaster(); const wallRay=new THREE.Raycaster(); const DOWN=new THREE.Vector3(0,-1,0);
+    const PLAYER_R=1.2;  // horizontal collision radius
+    let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
+    let ZONES=[]; let activeTopic=null;
+    let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
+
+    function surfaceAt(x,z,fromY){ raycaster.set(new THREE.Vector3(x,fromY+RAY_UP,z),DOWN); raycaster.far=RAY_FAR;
+      const h=raycaster.intersectObject(world,true); return h.length? h[0].point.y : null; }
+    function surfaceTop(x,z){ raycaster.set(new THREE.Vector3(x,topY,z),DOWN); raycaster.far=topY-(-50);
+      const h=raycaster.intersectObject(world,true); return h.length? h[0].point.y : null; }
+    // horizontal collision: is there geometry within `reach` along (dirx,dirz) from the player? cast at several body heights so thin/angled props block too
+    const _wd=new THREE.Vector3();
+    function wallAhead(x,z,dirx,dirz,reach){
+      _wd.set(dirx,0,dirz); if(_wd.lengthSq()===0) return false; _wd.normalize();
+      for(const hy of [0.4, cfg.charH*0.45, cfg.charH*0.9]){
+        wallRay.set(new THREE.Vector3(x,groundY+hy,z), _wd); wallRay.far=reach;
+        if(wallRay.intersectObject(world,true).length) return true;
+      }
+      return false;
+    }
+
+    function buildWorld(fbx){
+      world=fbx;
+      // The market FBX ships with ~16 of its own lights/cameras (Unity scene export) — strip them all.
+      // They caused the flat "random" look AND, as shadow casters, blew past the GPU's 16 texture-unit
+      // limit (black screen). Our cinematic rig is the only lighting now.
+      const fbxJunk=[]; fbx.traverse(o=>{ if(o.isLight||o.isCamera) fbxJunk.push(o); }); fbxJunk.forEach(o=>o.parent&&o.parent.remove(o));
+      // texture every mesh by its Unity material name
+      fbx.traverse(c=>{ if(c.isMesh){
+        const mats=Array.isArray(c.material)?c.material:[c.material];
+        const out=mats.map(m=>{ const nm=(m&&m.name)||''; const t=texFor(nm);
+          const std=new THREE.MeshStandardMaterial({ map:t, roughness:.92, metalness:0, name:nm });
+          if(/grass|leaf|foliage/.test(nm.toLowerCase())){ std.alphaTest=.4; std.side=THREE.DoubleSide; }
+          return std; });
+        c.material=Array.isArray(c.material)?out:out[0]; c.castShadow=true; c.receiveShadow=true;
+      }});
+      scene.add(fbx);
+
+      // normalise scale + center horizontally, base on y=0
+      let b=new THREE.Box3().setFromObject(fbx); let s=new THREE.Vector3(); b.getSize(s);
+      const S=cfg.world/Math.max(s.x,s.z,1); fbx.scale.setScalar(S);
+      b=new THREE.Box3().setFromObject(fbx); const c=new THREE.Vector3(); b.getCenter(c);
+      fbx.position.x-=c.x; fbx.position.z-=c.z; fbx.position.y-=b.min.y; fbx.updateMatrixWorld(true);
+      b=new THREE.Box3().setFromObject(fbx); topY=b.max.y+5; bound=Math.max(b.max.x,b.max.z)*0.98;
+
+      // compute each market's centre (average of its meshes) -> a sector zone
+      const acc={};
+      fbx.updateMatrixWorld(true);
+      fbx.traverse(mesh=>{ if(!mesh.isMesh) return;
+        const mats=Array.isArray(mesh.material)?mesh.material:[mesh.material];
+        for(const m of mats){ const k=marketKey(m&&m.name); if(!k) continue;
+          const mb=new THREE.Box3().setFromObject(mesh); const mc=new THREE.Vector3(); mb.getCenter(mc);
+          (acc[k]||(acc[k]={x:0,z:0,n:0})); acc[k].x+=mc.x; acc[k].z+=mc.z; acc[k].n++; break; } });
+      ZONES=[];
+      for(const k in acc){ if(!SECTORS[k]||!acc[k].n) continue; const x=acc[k].x/acc[k].n, z=acc[k].z/acc[k].n;
+        ZONES.push({ key:k, ...SECTORS[k], x, z }); addLabel(SECTORS[k], x, z); }
+
+      // shadow sized to world
+      const h=cfg.world*0.8, sc=sun.shadow.camera; sc.left=-h;sc.right=h;sc.top=h;sc.bottom=-h;sc.near=1;sc.far=cfg.world*5; sc.updateProjectionMatrix();
+      sun.position.set(cfg.world*0.75, cfg.world*0.98, cfg.world*0.5); sun.target.position.set(0,0,0); // high 3/4 angle: lights the scene yet still throws shadows
+
+      // ---- space grid floor: a vast dark plane with faint purple grid + X marks, fading into the void (reference look) ----
+      const gcv=document.createElement('canvas'); gcv.width=gcv.height=128; const gx=gcv.getContext('2d');
+      gx.fillStyle='#08060f'; gx.fillRect(0,0,128,128);
+      gx.strokeStyle='rgba(150,90,200,0.20)'; gx.lineWidth=2; gx.strokeRect(0,0,128,128);
+      gx.strokeStyle='rgba(210,110,180,0.32)'; gx.lineWidth=3; const dd=9;
+      gx.beginPath(); gx.moveTo(64-dd,64-dd); gx.lineTo(64+dd,64+dd); gx.moveTo(64+dd,64-dd); gx.lineTo(64-dd,64+dd); gx.stroke();
+      const gtex=new THREE.CanvasTexture(gcv); gtex.wrapS=gtex.wrapT=THREE.RepeatWrapping; gtex.repeat.set(90,90);
+      const grid=new THREE.Mesh(new THREE.PlaneGeometry(cfg.world*12, cfg.world*12), new THREE.MeshBasicMaterial({map:gtex}));
+      grid.rotation.x=-Math.PI/2; grid.position.y=-0.6; grid.frustumCulled=false; scene.add(grid);
+    }
+
+    // floating label above each market (always visible)
+    const labels=[];
+    function addLabel(sec, x, z){
+      const cv=document.createElement('canvas'); cv.width=256; cv.height=64; const ctx=cv.getContext('2d');
+      ctx.font='bold 30px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle='rgba(0,0,0,.55)'; const w=ctx.measureText(sec.title).width+34;
+      roundRect(ctx,(256-w)/2,14,w,36,18); ctx.fill();
+      ctx.fillStyle=sec.accent; ctx.fillText(sec.ico+' '+sec.title,128,33);
+      const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;
+      const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false, fog:false}));
+      spr.scale.set(11,2.75,1); spr.userData={x,z}; scene.add(spr); labels.push(spr);
+    }
+    function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+    // ---------- CHARACTER (placeholder now; real GLB plugs in automatically) ----------
+    function buildCharacter(gltf){
+      if(gltf && gltf.scene){
+        charRoot=gltf.scene;
+
+        // The FBX is a Unity scene export: keep the robot (Armature + skinned meshes), drop the
+        // UI canvas / event-system / post-process volume / floating text / prop pillar, plus any lights & cameras.
+        const JUNK=/(^Canvas$|^EventSystem$|Global_Volume|TMP|BasePilar)/i;
+        const cut=[]; charRoot.traverse(o=>{ if(o!==charRoot && (o.isLight||o.isCamera||JUNK.test(o.name))) cut.push(o); });
+        cut.forEach(o=>o.parent&&o.parent.remove(o));
+
+        // Apply the robot colour atlas to every mesh.
+        const charTex=texL.load('models/robot_atlas.png'); charTex.colorSpace=THREE.SRGBColorSpace;
+        charRoot.traverse(c=>{ if(c.isMesh||c.isSkinnedMesh){
+          const mk=m=>{ const std=new THREE.MeshStandardMaterial({map:charTex, roughness:.6, metalness:.15});
+            if(m&&/emiss/i.test(m.name||'')){ std.emissive=new THREE.Color(0xffffff); std.emissiveMap=charTex; std.emissiveIntensity=0.6; } // keep glowing parts lit
+            return std; };
+          c.material=Array.isArray(c.material)?c.material.map(mk):mk(c.material); }});
+
+        charRoot.rotation.y += Math.PI + Math.PI/4;   // robot model's native forward is offset; flip + 45° correction so it faces its travel direction
+        fitChar(charRoot, cfg.charH);
+        charRoot.traverse(c=>{ if(c.isMesh||c.isSkinnedMesh){ c.castShadow=true; c.frustumCulled=false; } });
+        player.add(charRoot);
+        // animations: use baked clips if present, else procedural leg/arm swing on a humanoid rig
+        const clips=gltf.animations||[];
+        if(clips.length){ mixer=new THREE.AnimationMixer(charRoot);
+          const find=re=>clips.find(c=>re.test(c.name));
+          // only walk + idle (ignore jump / attack / death / etc.)
+          const w=find(/\bwalk\b/i)||find(/\brun\b/i)||clips[0], i=find(/static.?idle/i)||find(/idle/i)||w;
+          walkAction=mixer.clipAction(w); idleAction=mixer.clipAction(i); idleAction.play(); walkAction.play(); walkAction.weight=0;
+        } else { grabBones(charRoot); }
+        charRoot.userData.baseY=charRoot.position.y;   // remember fitted ground offset (bob adds to this)
+      } else {
+        // simple capsule placeholder
+        const g=new THREE.Group();
+        const body=new THREE.Mesh(new THREE.CapsuleGeometry(cfg.charH*0.22, cfg.charH*0.5, 6, 12), new THREE.MeshStandardMaterial({color:0x6cc24a, roughness:.7}));
+        body.position.y=cfg.charH*0.55; body.castShadow=true;
+        const head=new THREE.Mesh(new THREE.SphereGeometry(cfg.charH*0.17,16,16), new THREE.MeshStandardMaterial({color:0xf0c9a0}));
+        head.position.y=cfg.charH*0.92; head.castShadow=true;
+        const nose=new THREE.Mesh(new THREE.BoxGeometry(cfg.charH*0.1,cfg.charH*0.06,cfg.charH*0.12), new THREE.MeshStandardMaterial({color:0xe0b890}));
+        nose.position.set(0,cfg.charH*0.9,cfg.charH*0.18); // marks facing direction
+        g.add(body,head,nose); charRoot=g; player.add(g);
+      }
+    }
+    function fitChar(root,targetH){ const b=new THREE.Box3(); const v=new THREE.Vector3();
+      root.updateMatrixWorld(true);
+      root.traverse(c=>{ if((c.isMesh||c.isSkinnedMesh)&&c.geometry){ if(!c.geometry.boundingBox)c.geometry.computeBoundingBox(); const gb=c.geometry.boundingBox;
+        for(const x of[gb.min.x,gb.max.x])for(const y of[gb.min.y,gb.max.y])for(const z of[gb.min.z,gb.max.z]) b.expandByPoint(v.set(x,y,z).applyMatrix4(c.matrixWorld)); }});
+      const s=new THREE.Vector3(); b.getSize(s); root.scale.setScalar(targetH/(s.y||1));
+      const b2=new THREE.Box3(); root.updateMatrixWorld(true);
+      root.traverse(c=>{ if((c.isMesh||c.isSkinnedMesh)&&c.geometry){ const gb=c.geometry.boundingBox;
+        for(const x of[gb.min.x,gb.max.x])for(const y of[gb.min.y,gb.max.y])for(const z of[gb.min.z,gb.max.z]) b2.expandByPoint(v.set(x,y,z).applyMatrix4(c.matrixWorld)); }});
+      root.position.x-=(b2.min.x+b2.max.x)/2; root.position.z-=(b2.min.z+b2.max.z)/2; root.position.y-=b2.min.y;
+    }
+    function grabBones(root){ const wb=re=>{let b=null;root.traverse(o=>{if(o.isBone&&re.test(o.name)&&!b)b=o;});return b;};
+      walkBones.lUp=wb(/LeftUpLeg|L.?Thigh|Thigh_l|upleg.*l/i); walkBones.rUp=wb(/RightUpLeg|R.?Thigh|Thigh_r|upleg.*r/i);
+      walkBones.lShin=wb(/LeftLeg|L.?Calf|Shin_l|lowerleg.*l/i); walkBones.rShin=wb(/RightLeg|R.?Calf|Shin_r|lowerleg.*r/i);
+      walkBones.lArm=wb(/LeftArm(?!.*Fore)|L.?UpperArm|\bArm_L/i); walkBones.rArm=wb(/RightArm(?!.*Fore)|R.?UpperArm|\bArm_R/i);
+      // Build a natural rest pose (arms dropped to the sides) and store each bone's swing axis
+      // (the character's lateral axis) in PARENT-local space, so swings stay correct as the player turns.
+      player.updateMatrixWorld(true);
+      const e_z=new THREE.Vector3(0,0,1), e_x=new THREE.Vector3(1,0,0), pq=new THREE.Quaternion(), R=new THREE.Quaternion();
+      const toLocal=(b,wa)=>{ b.parent.getWorldQuaternion(pq); return wa.clone().applyQuaternion(pq.invert()).normalize(); };
+      const dropArm=(b,sign)=>{ if(!b)return; const ax=toLocal(b,e_z); const bind=b.quaternion.clone(); R.setFromAxisAngle(ax,sign*1.3); b.quaternion.copy(R).multiply(bind); b.userData.rest=b.quaternion.clone(); b.userData.swing=toLocal(b,e_x); };
+      const rest=b=>{ if(!b)return; b.userData.rest=b.quaternion.clone(); b.userData.swing=toLocal(b,e_x); };
+      dropArm(walkBones.lArm,-1); dropArm(walkBones.rArm,1);
+      rest(walkBones.lUp); rest(walkBones.rUp); rest(walkBones.lShin); rest(walkBones.rShin);
+    }
+
+    function findSpawn(){
+      // scan island footprint, pick a low (open ground) point near centre
+      let best=null;
+      for(let r=0;r<=bound*0.7;r+=bound*0.08){ for(let a=0;a<Math.PI*2;a+=Math.PI/6){
+        const x=Math.cos(a)*r, z=Math.sin(a)*r; const y=surfaceTop(x,z);
+        if(y===null) continue; const score=y + Math.hypot(x,z)*0.05; // prefer low + central
+        if(!best||score<best.score) best={x,z,y,score}; } if(r===0) { const y=surfaceTop(0,0); if(y!==null) best={x:0,z:0,y,score:y}; } }
+      return best||{x:0,z:0,y:0};
+    }
+
+    // ---------- proximity UI ----------
+    function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
+      panelEl.innerHTML=`<div class="eyebrow"><span class="ico">${sec.ico}</span> Market Stall</div><h2>${sec.title}</h2><div class="body">${sec.html}</div>`;
+      panelEl.classList.add('show'); }
+    function hidePanel(){ panelEl.classList.remove('show'); }
+    function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),1800); }
+    function updateProximity(){
+      let near=null,bd=1e9; for(const z of ZONES){ const d=Math.hypot(player.position.x-z.x,player.position.z-z.z); if(d<14&&d<bd){bd=d;near=z;} }
+      if(near&&near.topic!==activeTopic){ activeTopic=near.topic; showPanel(near); toast(`Entering ${near.title}`); }
+      else if(!near&&activeTopic){ activeTopic=null; hidePanel(); }
+    }
+
+    // ---------- input ----------
+    const keys={up:false,down:false,left:false,right:false};
+    const km={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
+    addEventListener('keydown',e=>{ if(km[e.code]){ keys[km[e.code]]=true; e.preventDefault(); hideHint(); }});
+    addEventListener('keyup',e=>{ if(km[e.code]) keys[km[e.code]]=false; });
+
+    // ---- Roblox-style camera: HOLD RIGHT MOUSE + move to orbit (pointer-locked = smooth & unlimited); scroll to zoom ----
+    const cv=renderer.domElement; let looking=false, lx=0, ly=0;
+    cv.addEventListener('contextmenu',e=>e.preventDefault());
+    cv.addEventListener('mousedown',e=>{ if(e.button===2){ looking=true; lx=e.clientX; ly=e.clientY; if(cv.requestPointerLock) cv.requestPointerLock(); hideHint(); } });
+    addEventListener('mouseup',e=>{ if(e.button===2){ looking=false; if(document.pointerLockElement===cv) document.exitPointerLock(); } });
+    // works whether or not pointer lock engaged: locked -> use movementX/Y, otherwise track clientX/Y deltas. Angle persists after release.
+    const PITCH_MIN=cfg.camPitch-0.4, PITCH_MAX=cfg.camPitch+0.4;   // up/down tilt range around the default angle
+    document.addEventListener('mousemove',e=>{ if(!looking||!started) return;
+      let dx,dy;
+      if(document.pointerLockElement===cv){ dx=e.movementX; dy=e.movementY; }
+      else { dx=e.clientX-lx; dy=e.clientY-ly; lx=e.clientX; ly=e.clientY; }
+      camYaw-=dx*0.0042;   // yaw: turn all the way around horizontally
+      camPitch=Math.max(PITCH_MIN,Math.min(PITCH_MAX,camPitch-dy*0.0024));  // tiny pitch: look up/down just a little (clamped, reversed)
+    });
+    cv.addEventListener('wheel',e=>{ e.preventDefault(); }, {passive:false}); // zoom disabled — fixed 3rd-person distance
+    // touch (mobile): drag on the scene to look
+    let tdrag=false,tx=0,ty=0;
+    cv.addEventListener('touchstart',e=>{ tdrag=true; tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
+    cv.addEventListener('touchmove',e=>{ if(!tdrag||!started)return; const t=e.touches[0]; camYaw-=(t.clientX-tx)*0.006; tx=t.clientX; ty=t.clientY; },{passive:true}); // yaw only, no up/down
+    addEventListener('touchend',()=>{ tdrag=false; });
+    document.querySelectorAll('#dpad button').forEach(b=>{ const d=b.dataset.dir; const set=v=>e=>{e.preventDefault();keys[d]=v;if(v)hideHint();};
+      b.addEventListener('touchstart',set(true),{passive:false}); b.addEventListener('touchend',set(false));
+      b.addEventListener('mousedown',set(true)); b.addEventListener('mouseup',set(false)); b.addEventListener('mouseleave',set(false)); });
+    let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true; hintEl.style.opacity='0';} }
+
+    // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
+    function beginStart(){ if(started||starting) return; starting=true; startEl.classList.remove('show'); hintEl.style.opacity='1'; if(reducedMotion) started=true; }
+    addEventListener('click', beginStart);
+    addEventListener('touchstart', beginStart, {passive:true});
+
+    // ---------- ambient audio ----------
+    const soundBtn=document.getElementById('sound'); let actx=null,soundOn=false,musicGain=null;
+
+    // ---- soothing ambient music: all synthesized in-browser (original, no files, no copyright) ----
+    function startMusic(){
+      // lush plate-style reverb from a generated decaying-noise impulse — gives the pad its calm, spacious tail
+      const ir=actx.createBuffer(2, actx.sampleRate*3, actx.sampleRate);
+      for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.5); } }
+      const rev=actx.createConvolver(); rev.buffer=ir;
+      musicGain=actx.createGain(); musicGain.gain.value=0; musicGain.connect(actx.destination);
+      const wet=actx.createGain(); wet.gain.value=0.85; rev.connect(wet).connect(musicGain);
+      const dry=actx.createGain(); dry.gain.value=0.55; dry.connect(musicGain);
+      const bus=actx.createGain(); bus.connect(dry); bus.connect(rev);   // every voice feeds dry + reverb
+
+      // a calm, drifting major progression (Hz) — Cmaj7 · Am · Fmaj · Gadd9
+      const CHORDS=[ [261.63,329.63,392.00,493.88], [220.00,329.63,392.00,440.00], [174.61,261.63,349.23,440.00], [196.00,293.66,392.00,493.88] ];
+      const PENT=[523.25,587.33,659.25,783.99,880.00,1046.50];   // C-major pentatonic for airy bell notes
+      const CHORD_LEN=8; let ci=0;
+      function pad(freqs,t,dur){ freqs.forEach((f,k)=>{
+        const o=actx.createOscillator(); o.type='triangle'; o.frequency.value=f; o.detune.value=(k-1.5)*4;   // slight detune = warmth
+        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.13,t+2.6); g.gain.linearRampToValueAtTime(0.0001,t+dur);
+        const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=850;   // soft, no harsh highs
+        o.connect(g).connect(lp).connect(bus); o.start(t); o.stop(t+dur+0.1); }); }
+      function bell(t){ const f=PENT[(Math.random()*PENT.length)|0];
+        const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
+        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.10,t+0.04); g.gain.exponentialRampToValueAtTime(0.0001,t+3);
+        o.connect(g).connect(bus); o.start(t); o.stop(t+3.1); }
+      (function loop(){ const t=actx.currentTime+0.05; pad(CHORDS[ci++%CHORDS.length],t,CHORD_LEN);
+        for(let k=0;k<3;k++){ if(Math.random()<0.8) bell(t+1+Math.random()*(CHORD_LEN-2)); }
+        setTimeout(loop,CHORD_LEN*1000); })();
+    }
+
+    soundBtn.addEventListener('click',()=>{ if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); startMusic(); }
+      if(actx.state==='suspended') actx.resume(); soundOn=!soundOn;
+      musicGain.gain.linearRampToValueAtTime(soundOn?.55:0,actx.currentTime+1.2);        // gentle music swell in/out
+      soundBtn.textContent=soundOn?'🔊':'🔇'; });
+
+    addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+
+    // ---------- loop ----------
+    const clock=new THREE.Clock(); const camTarget=new THREE.Vector3(), camPivot=new THREE.Vector3();
+    const _q=new THREE.Quaternion(), _ax=new THREE.Vector3(1,0,0); const _proj=new THREE.Vector3();
+    const _estPos=new THREE.Vector3(), _estLook=new THREE.Vector3(), _lookTmp=new THREE.Vector3();
+    function step(dt){
+      let moving=false;
+      if(started){
+        // camera-relative movement: forward = into the screen (away from camera)
+        const f=new THREE.Vector3(-Math.sin(camYaw),0,-Math.cos(camYaw)); // forward
+        const r=new THREE.Vector3(Math.cos(camYaw),0,-Math.sin(camYaw));  // right
+        const mv=new THREE.Vector3();
+        if(keys.up) mv.add(f); if(keys.down) mv.sub(f);
+        if(keys.right) mv.add(r); if(keys.left) mv.sub(r);
+        if(mv.lengthSq()>0){ mv.normalize();
+          const step=cfg.moveSpeed*dt;
+          // try a move along (dx,dz): blocked if a wall is within reach or the floor step is too steep
+          const tryMove=(dx,dz)=>{
+            if(dx===0&&dz===0) return false;
+            const len=Math.hypot(dx,dz);
+            if(wallAhead(player.position.x,player.position.z,dx,dz,PLAYER_R+len)) return false;
+            const nx=player.position.x+dx, nz=player.position.z+dz, y=surfaceAt(nx,nz,groundY);
+            if(y!==null && (y-groundY)<=STEP_UP && (groundY-y)<=STEP_DOWN){ player.position.x=nx; player.position.z=nz; groundY=y; return true; }
+            return false;
+          };
+          const dx=mv.x*step, dz=mv.z*step;
+          // full move first; if blocked, slide along one axis (wall-hug) instead of stopping dead
+          moving = tryMove(dx,dz) || tryMove(dx,0) || tryMove(0,dz);
+          // turn the character to face where it's heading (smooth)
+          const tgt=Math.atan2(mv.x,mv.z); let d=tgt-player.rotation.y;
+          d=Math.atan2(Math.sin(d),Math.cos(d)); player.rotation.y+=d*Math.min(1,dt*16);
+        }
+      }
+      player.position.y += (groundY-player.position.y)*Math.min(1,dt*12);
+
+      // walk anim
+      if(walkAction&&idleAction){ const t=moving?1:0; walkAction.weight+=(t-walkAction.weight)*Math.min(1,dt*10); idleAction.weight=1-walkAction.weight; }
+      else if(walkBones.lArm||walkBones.lUp){
+        // procedural rig: hold the dropped-arm rest pose, swing limbs while walking, gentle sway while idle
+        if(!reducedMotion) walkPhase += dt*(moving?9:1.6);
+        const s=Math.sin(walkPhase);
+        const legAmp=moving?0.7:0, armAmp=moving?0.55:0, idle=reducedMotion?0:Math.sin(performance.now()*0.0016)*0.05;
+        const sw=(b,ang)=>{ if(!b||!b.userData.rest)return; _q.setFromAxisAngle(b.userData.swing,ang); b.quaternion.copy(_q).multiply(b.userData.rest); };
+        sw(walkBones.lUp,  s*legAmp);            sw(walkBones.rUp, -s*legAmp);
+        sw(walkBones.lShin, Math.max(0,-s)*legAmp*0.9); sw(walkBones.rShin, Math.max(0, s)*legAmp*0.9); // knee bends on back-swing
+        sw(walkBones.lArm, -s*armAmp + idle);    sw(walkBones.rArm,  s*armAmp - idle);                 // arms counter legs
+        if(charRoot&&charRoot.userData.baseY!==undefined)
+          charRoot.position.y = charRoot.userData.baseY + (moving? Math.abs(s)*0.14 : Math.sin(performance.now()*0.0016)*0.03);
+      }
+      if(mixer) mixer.update(dt);
+
+      if(started) updateProximity();
+
+      // labels: keep upright, fade with distance, hover above market
+      for(const s of labels){ s.position.set(s.userData.x, surfaceTopCached(s.userData.x,s.userData.z)+6, s.userData.z); }
+
+      // orbit camera: positioned by mouse-controlled yaw/pitch, always looking at the character
+      const dir=new THREE.Vector3(Math.sin(camYaw)*Math.cos(camPitch), Math.sin(camPitch), Math.cos(camYaw)*Math.cos(camPitch));
+      camPivot.copy(player.position); camPivot.y+=cfg.charH*0.6;
+      // camera collision: pull in if something is between the character and the camera
+      let dist=camDist; camRay.set(camPivot, dir); camRay.far=camDist;
+      const ch=camRay.intersectObject(world,true); if(ch.length) dist=Math.max(3, ch[0].distance-0.6);
+      camTarget.copy(camPivot).add(dir.clone().multiplyScalar(dist));
+
+      // zoomed-out establishing shot of the whole island, framed at an angle (like the reference)
+      _estPos.set(Math.sin(establishAngle)*bound*2.7, bound*2.1, Math.cos(establishAngle)*bound*2.7);
+      _estLook.set(0, topY*0.25, 0);
+      if(started){
+        camera.position.lerp(camTarget, reducedMotion?1:.35); camera.lookAt(camPivot);
+      } else if(starting){
+        startT=Math.min(1, startT + dt/2.4); const e=1-Math.pow(1-startT,3);   // ease-out zoom into 3rd person
+        camera.position.lerpVectors(_estPos, camTarget, e);
+        _lookTmp.lerpVectors(_estLook, camPivot, e); camera.lookAt(_lookTmp);
+        if(startT>=1) started=true;
+      } else {
+        if(!reducedMotion) establishAngle += dt*0.06;   // slow drift gives the zoomed-out island life
+        camera.position.copy(_estPos); camera.lookAt(_estLook);
+      }
+    }
+    // cache market label ground height (computed once)
+    const _labelY={}; function surfaceTopCached(x,z){ const k=x.toFixed(1)+','+z.toFixed(1); if(_labelY[k]===undefined) _labelY[k]=surfaceTop(x,z)??0; return _labelY[k]; }
+
+    function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
+    let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
+    setInterval(()=>{ if(performance.now()-lastRAF>200) frame(); },60);
+
+    // ---------- boot ----------
+    const loadFBX=f=>new Promise(res=>fbxL.load(f,res,undefined,e=>{console.error('fbx',e);res(null);}));
+    const tryGLB=f=>new Promise(res=>gltfL.load(f,res,()=>{},()=>res(null))); // missing file -> null (placeholder)
+    const tryFBXChar=f=>new Promise(res=>fbxL.load(f,g=>res({scene:g,animations:g.animations||[]}),()=>{},()=>res(null))); // wrap FBX as {scene,animations}
+    (async()=>{
+      const [market, character]=await Promise.all([ loadFBX('models/market/scene.fbx'), tryFBXChar('models/robot.fbx') ]);
+      if(!market){ document.querySelector('#loader h1').textContent='Could not load the market.'; return; }
+      buildWorld(market);
+      buildCharacter(character);     // character.glb if present, else capsule placeholder
+      // pinned start: robot stands at this exact spot, camera at this exact angle (captured from live readout)
+      const SPAWN={x:-17.4, z:38.6}; camYaw=12.138; camPitch=0.263;
+      const sy=surfaceTop(SPAWN.x,SPAWN.z)??0; groundY=sy; player.position.set(SPAWN.x,sy,SPAWN.z); player.rotation.y=camYaw+Math.PI; // face away from camera
+      loaderEl.classList.add('hidden'); startEl.classList.add('show'); animate();
+      if(reducedMotion) beginStart();   // skip the click step when the user prefers reduced motion
+    })();
+  </script>
+</body>
+</html>
