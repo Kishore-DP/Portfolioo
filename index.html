@@ -258,7 +258,7 @@
       if(!orbScene) return;
       // glass sphere must draw over the inner ? ; tag the sphere mesh so we can spin only the glass
       orbScene.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false; const m=o.material; if(!m) return;
-        if(m.transparent){ m.color.setRGB(0.15,0.6,1.0); m.opacity=0.42; m.depthWrite=false; o.renderOrder=2; }   // bright blue glass
+        if(m.transparent){ m.color.setRGB(0.13,0.58,1.0); m.opacity=0.5; m.depthWrite=false; m.side=THREE.FrontSide; o.renderOrder=2; }   // bright blue glass — front faces only = one clean shell, no inner seam
         else { if(m.color) m.color.setRGB(1.0,0.84,0.1); if(m.emissive){ m.emissive.setRGB(1.0,0.72,0.0); m.emissiveIntensity=0.9; } } } });   // glowing yellow ?
       const scl=ORB_R/1.55;                                   // model's glass radius is 1.55 units
       for(const z of ZONES){
