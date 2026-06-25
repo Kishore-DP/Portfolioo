@@ -170,7 +170,7 @@
     let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
     let ZONES=[]; let activeTopic=null;
     const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
-    const ORB_R=2.6, ORB_LIFT=3.0;       // world radius + how high it floats above the stall
+    const ORB_R=1.8, ORB_LIFT=2.6;       // world radius + how high it floats above the stall
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
 
     function surfaceAt(x,z,fromY){ raycaster.set(new THREE.Vector3(x,fromY+RAY_UP,z),DOWN); raycaster.far=RAY_FAR;
@@ -258,7 +258,7 @@
       if(!orbScene) return;
       // glass sphere must draw over the inner ? ; tag the sphere mesh so we can spin only the glass
       orbScene.traverse(o=>{ if(o.isMesh){ o.frustumCulled=false;
-        if(o.material&&o.material.transparent){ o.material.depthWrite=false; o.renderOrder=2; } } });
+        if(o.material&&o.material.transparent){ o.material.color.setRGB(0.28,0.52,1.0); o.material.opacity=0.34; o.material.depthWrite=false; o.renderOrder=2; } } });
       const scl=ORB_R/1.55;                                   // model's glass radius is 1.55 units
       for(const z of ZONES){
         const g=orbScene.clone(true);
