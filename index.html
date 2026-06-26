@@ -170,7 +170,6 @@
     let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
     let ZONES=[]; let activeTopic=null;
     const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
-    let oceanMat=null;                   // animated ocean material (GPU wave shader); time driven each frame
     const ORB_R=1.35, ORB_GAP=1.0;       // world radius + gap below the shop signboard's underside
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
 
@@ -229,27 +228,15 @@
       const h=cfg.world*0.8, sc=sun.shadow.camera; sc.left=-h;sc.right=h;sc.top=h;sc.bottom=-h;sc.near=1;sc.far=cfg.world*5; sc.updateProjectionMatrix();
       sun.position.set(cfg.world*0.75, cfg.world*0.98, cfg.world*0.5); sun.target.position.set(0,0,0); // high 3/4 angle: lights the scene yet still throws shadows
 
-      // ---- animated ocean floor (replaces the grid): a vast water plane with GPU sine-wave swells ----
-      // matches the sent model's dark reflective water, but driven procedurally so it animates with no file weight
-      const oceanGeo=new THREE.PlaneGeometry(cfg.world*16, cfg.world*16, 240, 240);
-      oceanMat=new THREE.MeshStandardMaterial({ color:0x103a48, metalness:0.35, roughness:0.32 });
-      oceanMat.onBeforeCompile=(sh)=>{ sh.uniforms.uTime={value:0};
-        const head=`uniform float uTime;
-          float oceanH(vec2 p){ float h=0.0;
-            h+=sin(p.x*0.055+uTime*1.1)*0.9;
-            h+=sin(p.y*0.070-uTime*0.9)*0.7;
-            h+=sin((p.x+p.y)*0.045+uTime*0.6)*0.5;
-            h+=sin((p.x-p.y)*0.085+uTime*1.5)*0.3; return h; }
-          vec2 oceanGrad(vec2 p){
-            float dx=0.055*0.9*cos(p.x*0.055+uTime*1.1)+0.045*0.5*cos((p.x+p.y)*0.045+uTime*0.6)+0.085*0.3*cos((p.x-p.y)*0.085+uTime*1.5);
-            float dy=0.070*0.7*cos(p.y*0.070-uTime*0.9)+0.045*0.5*cos((p.x+p.y)*0.045+uTime*0.6)-0.085*0.3*cos((p.x-p.y)*0.085+uTime*1.5);
-            return vec2(dx,dy); }`;
-        sh.vertexShader = head + '\n' + sh.vertexShader
-          .replace('#include <beginnormal_vertex>','#include <beginnormal_vertex>\n  { vec2 g=oceanGrad(position.xy); objectNormal=normalize(vec3(-g.x,-g.y,1.0)); }')
-          .replace('#include <begin_vertex>','#include <begin_vertex>\n  transformed.z += oceanH(position.xy);');
-        oceanMat.userData.shader=sh; };
-      const ocean=new THREE.Mesh(oceanGeo, oceanMat);
-      ocean.rotation.x=-Math.PI/2; ocean.position.y=-3.5; ocean.frustumCulled=false; ocean.receiveShadow=true; scene.add(ocean);
+      // ---- space grid floor: a vast dark plane with faint purple grid + X marks, fading into the void (reference look) ----
+      const gcv=document.createElement('canvas'); gcv.width=gcv.height=128; const gx=gcv.getContext('2d');
+      gx.fillStyle='#08060f'; gx.fillRect(0,0,128,128);
+      gx.strokeStyle='rgba(150,90,200,0.20)'; gx.lineWidth=2; gx.strokeRect(0,0,128,128);
+      gx.strokeStyle='rgba(210,110,180,0.32)'; gx.lineWidth=3; const dd=9;
+      gx.beginPath(); gx.moveTo(64-dd,64-dd); gx.lineTo(64+dd,64+dd); gx.moveTo(64+dd,64-dd); gx.lineTo(64-dd,64+dd); gx.stroke();
+      const gtex=new THREE.CanvasTexture(gcv); gtex.wrapS=gtex.wrapT=THREE.RepeatWrapping; gtex.repeat.set(90,90);
+      const grid=new THREE.Mesh(new THREE.PlaneGeometry(cfg.world*12, cfg.world*12), new THREE.MeshBasicMaterial({map:gtex}));
+      grid.rotation.x=-Math.PI/2; grid.position.y=-0.6; grid.frustumCulled=false; scene.add(grid);
     }
 
     // floating label above each market (always visible)
@@ -522,9 +509,6 @@
           charRoot.position.y = charRoot.userData.baseY + (moving? Math.abs(s)*0.14 : Math.sin(performance.now()*0.0016)*0.03);
       }
       if(mixer) mixer.update(dt);
-
-      // animate the ocean waves
-      if(oceanMat&&oceanMat.userData.shader) oceanMat.userData.shader.uniforms.uTime.value += dt;
 
       // spin each orb's glass sphere slowly + a gentle float bob
       for(const o of orbs){ if(o.sphere) o.sphere.rotation.y += dt*0.5;
