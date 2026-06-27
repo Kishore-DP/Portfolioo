@@ -14,17 +14,20 @@
 
     #loader { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; transition:opacity .7s ease; }
     #loader.hidden { opacity:0; pointer-events:none; }
-    #loader h1 { font-size:1.05rem; color:#9fd28c; margin-top:1.15rem; font-weight:600; letter-spacing:.3px; opacity:.92; }
-    /* circular progress ring — the loading bar runs around the circumference like the market's circular ground */
-    #loadRing { position:relative; width:172px; height:172px; }
-    #loadRing svg { width:100%; height:100%; transform:rotate(-90deg); overflow:visible; }   /* start the arc at 12 o'clock */
-    #loadRing .track { fill:none; stroke:rgba(159,210,140,.14); stroke-width:6; }
-    #loadRing .prog { fill:none; stroke:url(#loadGrad); stroke-width:6; stroke-linecap:round;
-      stroke-dasharray:339.292; stroke-dashoffset:339.292;            /* 2·π·54 — fully empty until progress arrives */
-      transition:stroke-dashoffset .25s ease; filter:drop-shadow(0 0 6px rgba(123,201,111,.55)); }
-    #loadPct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-      font-size:1.8rem; font-weight:700; color:#d3f0c6; font-variant-numeric:tabular-nums; }
-    #loadPct span { font-size:.85rem; margin-left:1px; margin-top:.5rem; opacity:.7; align-self:flex-start; }
+    #loader h1 { font-size:1.05rem; color:#9fd28c; margin-top:1.6rem; font-weight:600; letter-spacing:.3px; opacity:.92; }
+    /* the island's top-down view IS the circle; the loading bar runs around its circumference */
+    #loadRing { position:relative; width:min(64vmin,440px); height:min(64vmin,440px); }
+    #loadImg { position:absolute; inset:5.5%; border-radius:50%;
+      background:#0a0a12 url("models/island-top.jpg") center/cover no-repeat;
+      box-shadow:0 0 0 1px rgba(255,255,255,.06) inset, 0 16px 55px rgba(0,0,0,.6); }
+    #loadRing svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); overflow:visible; }  /* arc starts at 12 o'clock */
+    #loadRing .track { fill:none; stroke:rgba(159,210,140,.16); stroke-width:4; }
+    #loadRing .prog { fill:none; stroke:url(#loadGrad); stroke-width:4; stroke-linecap:round;
+      stroke-dasharray:351.858; stroke-dashoffset:351.858;            /* 2·π·56 — fully empty until progress arrives */
+      transition:stroke-dashoffset .25s ease; filter:drop-shadow(0 0 7px rgba(123,201,111,.7)); }
+    #loadPct { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:flex-start;
+      font-size:1.6rem; font-weight:800; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.9); font-variant-numeric:tabular-nums; }
+    #loadPct span { font-size:.8rem; margin-left:2px; margin-top:.18rem; opacity:.85; }
 
     #fallback { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:2rem; text-align:center; }
     #fallback.show { display:flex; }
@@ -186,12 +189,13 @@
 <body>
   <div id="loader">
     <div id="loadRing">
+      <div id="loadImg"></div>
       <svg viewBox="0 0 120 120" aria-hidden="true">
         <defs><linearGradient id="loadGrad" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stop-color="#7bc96f"/><stop offset="1" stop-color="#a7e08c"/>
         </linearGradient></defs>
-        <circle class="track" cx="60" cy="60" r="54"/>
-        <circle class="prog"  cx="60" cy="60" r="54"/>
+        <circle class="track" cx="60" cy="60" r="56"/>
+        <circle class="prog"  cx="60" cy="60" r="56"/>
       </svg>
       <div id="loadPct">0<span>%</span></div>
     </div>
@@ -278,7 +282,7 @@
 
     const loaderEl=document.getElementById('loader');
     const ringEl=document.querySelector('#loadRing .prog'), pctEl=document.getElementById('loadPct');
-    const RING_C=2*Math.PI*54;   // circumference of the progress ring
+    const RING_C=2*Math.PI*56;   // circumference of the progress ring
     const fbEl=document.getElementById('fallback'), hintEl=document.getElementById('hint');
     const panelEl=document.getElementById('panel'), toastEl=document.getElementById('toast');
     const startEl=document.getElementById('start');
@@ -950,7 +954,7 @@
         // cinematic descent: a straight-down top view of the island swoops down into the angled CLICK-TO-START shot
         introT=Math.min(1, introT + dt/3.4);
         const e=introT<0.5 ? 4*introT*introT*introT : 1-Math.pow(-2*introT+2,3)/2;   // ease-in-out cubic
-        _topPos.set(0, bound*4.4, 0.001);                       // high above centre, looking straight at the ground
+        _topPos.set(0, bound*3.2, 0.001);                       // straight-down framing that matches the loading-screen island image
         camera.position.lerpVectors(_topPos, _estPos, e);
         _lookTmp.lerpVectors(_ctr, _estLook, e); camera.lookAt(_lookTmp);
         if(introT>=1){ intro=false; startEl.classList.add('show'); }   // settled into the establishing shot -> invite the click
