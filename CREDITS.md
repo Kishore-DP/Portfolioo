@@ -12,5 +12,9 @@
 > license permits use on a public website (GitHub Pages) before publishing, and keep this credits file
 > in the repo. Replace this note with the exact license/author once confirmed.
 
+## Audio
+- **Ambient (soft)** by *AtlasAudio* — looped background music (`audio/ambient.mp3`), from
+  Pixabay (track 511880). Confirm the Pixabay Content License terms before publishing.
+
 ## Code
 - **three.js r160** (MIT) via CDN — WebGL renderer, GLTFLoader, FBXLoader, TGALoader.

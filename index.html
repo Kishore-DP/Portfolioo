@@ -781,7 +781,7 @@
     // Routing: every voice -> musicGain (or sfxGain) -> masterGain -> speakers.
     // The menu in Task 8 adjusts the `audio` levels and calls applyAudio(); music on/off is `soundOn`.
     const soundBtn=document.getElementById('sound');
-    let actx=null, soundOn=false, masterGain=null, musicGain=null, sfxGain=null;
+    let actx=null, soundOn=false, masterGain=null, musicGain=null, sfxGain=null, musicSrc=null;
     const audio={ master:0.85, music:0.55, sfx:0.7, muted:false };   // 0..1 user levels
 
     function audioInit(){ if(actx) return;
@@ -800,39 +800,15 @@
       set(sfxGain.gain, audio.sfx);
     }
 
-    // ---- calm, soothing ambient: all synthesized in-browser (original, no files, no copyright) ----
-    function startMusic(){
-      // gentle, warm "lo-fi lounge" — soft pad bed under a mellow FM electric-piano (Rhodes) melody
-      const ir=actx.createBuffer(2, actx.sampleRate*2.8, actx.sampleRate);
-      for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3); } }
-      const rev=actx.createConvolver(); rev.buffer=ir;
-      const wet=actx.createGain(); wet.gain.value=0.4;  rev.connect(wet).connect(musicGain);
-      const dry=actx.createGain(); dry.gain.value=0.78; dry.connect(musicGain);
-      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1100; lp.Q.value=0.3;
-      lp.connect(dry); lp.connect(rev);
-      const bus=lp;   // all voices -> lp -> dry/wet -> musicGain
-
-      // warm, jazzy F-major loop (Hz): Fmaj7 · Am7 · Dm7 · B♭maj7
-      const CHORDS=[ [174.61,261.63,329.63,440.00], [220.00,261.63,329.63,440.00], [146.83,220.00,261.63,349.23], [233.08,293.66,349.23,466.16] ];
-      const NOTES=[349.23,392.00,440.00,523.25,587.33,659.25];   // soft F-major pentatonic melody for the Rhodes
-      const LEN=13; let ci=0;
-      function pad(freqs,t){ freqs.forEach((f,k)=>{
-        const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f; o.detune.value=(k-1.5)*2;
-        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.05,t+4); g.gain.linearRampToValueAtTime(0.0001,t+LEN);
-        o.connect(g).connect(bus); o.start(t); o.stop(t+LEN+0.2);
-      }); }
-      // FM electric-piano voice: 2:1 carrier:modulator, modulation index decays = bell attack settling to a mellow tone
-      function note(t){ const f=NOTES[(Math.random()*NOTES.length)|0];
-        const car=actx.createOscillator(); car.type='sine'; car.frequency.value=f;
-        const mod=actx.createOscillator(); mod.type='sine'; mod.frequency.value=f*2;
-        const mg=actx.createGain(); mg.gain.setValueAtTime(f*1.3,t); mg.gain.exponentialRampToValueAtTime(0.01,t+0.85);
-        mod.connect(mg).connect(car.frequency);
-        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.06,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+3.6);
-        car.connect(g).connect(bus); car.start(t); mod.start(t); car.stop(t+3.7); mod.stop(t+3.7);
-      }
-      (function loop(){ const t=actx.currentTime+0.1; pad(CHORDS[ci++%CHORDS.length],t);
-        const n=1+((Math.random()*2)|0); for(let i=0;i<n;i++){ if(Math.random()<0.7) note(t+1+Math.random()*(LEN-2)); }  // a few soft melody notes per chord
-        setTimeout(loop, LEN*1000); })();   // overlapping fades keep the loop seamless
+    // ---- background music: looped ambient track, routed through musicGain so the sliders/mute still apply ----
+    let _musicBuf=null;
+    function startMusic(){ if(musicSrc) return;   // already playing
+      const begin=buf=>{ if(musicSrc) return; musicSrc=actx.createBufferSource(); musicSrc.buffer=buf; musicSrc.loop=true;
+        musicSrc.connect(musicGain); musicSrc.start(); };
+      if(_musicBuf){ begin(_musicBuf); return; }
+      fetch('audio/ambient.mp3').then(r=>r.arrayBuffer()).then(b=>actx.decodeAudioData(b))
+        .then(buf=>{ _musicBuf=buf; begin(buf); })
+        .catch(e=>console.error('music load failed', e));
     }
 
     function syncSoundIcon(){ soundBtn.textContent=(soundOn && !audio.muted)?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn && !audio.muted)); }
