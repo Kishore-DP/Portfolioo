@@ -31,23 +31,55 @@
       padding:8px 16px; border-radius:99px; font-size:.85rem; transition:opacity .35s ease, transform .35s ease; pointer-events:none; white-space:nowrap; }
     #toast.show { opacity:1; transform:translate(-50%,0); }
 
-    /* the polished topic panel */
-    #panel { position:fixed; top:50%; left:36px; transform:translate(-18px,-50%) scale(.98); z-index:25; width:min(380px,86vw);
-      background:var(--card); backdrop-filter:blur(16px) saturate(1.1); -webkit-backdrop-filter:blur(16px) saturate(1.1);
-      border:1px solid rgba(255,255,255,.12); border-left:4px solid var(--accent,#7bc96f); border-radius:18px;
-      padding:24px 26px 22px; box-shadow:0 24px 60px rgba(0,0,0,.55); opacity:0; pointer-events:none;
-      transition:opacity .45s cubic-bezier(.2,.8,.2,1), transform .45s cubic-bezier(.2,.8,.2,1); }
-    #panel.show { opacity:1; pointer-events:auto; transform:translate(0,-50%) scale(1); }
-    #panel .eyebrow { display:flex; align-items:center; gap:10px; font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:var(--accent,#7bc96f); margin-bottom:6px; }
-    #panel .eyebrow .ico { font-size:1.25rem; }
-    #panel h2 { font-size:1.5rem; line-height:1.15; margin-bottom:12px; }
-    #panel .body { font-size:.95rem; line-height:1.5; color:#dbe6db; }
-    #panel .body p { margin-bottom:10px; }
-    #panel .body em { color:#9fb39f; }
-    #panel a { color:var(--accent,#7bc96f); text-decoration:none; border-bottom:1px solid rgba(123,201,111,.4); }
-    #panel a:hover { border-bottom-color:var(--accent,#7bc96f); }
-    #panel .tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
-    #panel .tags span { font-size:.72rem; padding:3px 9px; border-radius:99px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); }
+    /* dim scrim behind the modal so the popup reads clearly without hiding the world */
+    #scrim { position:fixed; inset:0; z-index:24; background:rgba(4,3,10,.5); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
+      opacity:0; pointer-events:none; transition:opacity .4s ease; }
+    #scrim.show { opacity:1; pointer-events:auto; }
+
+    /* the 80%-of-screen information popup (equal margins on all sides) */
+    #panel { position:fixed; inset:10vh 10vw; z-index:25; display:flex; flex-direction:column; overflow:hidden;
+      background:linear-gradient(160deg, rgba(26,32,40,.95), rgba(15,20,26,.97));
+      backdrop-filter:blur(18px) saturate(1.12); -webkit-backdrop-filter:blur(18px) saturate(1.12);
+      border:1px solid rgba(255,255,255,.12); border-top:4px solid var(--accent,#7bc96f); border-radius:20px;
+      box-shadow:0 30px 90px rgba(0,0,0,.62); color:var(--txt);
+      opacity:0; pointer-events:none; transform:translateY(16px) scale(.985);
+      transition:opacity .42s cubic-bezier(.2,.8,.2,1), transform .42s cubic-bezier(.2,.8,.2,1); }
+    #panel.show { opacity:1; pointer-events:auto; transform:none; }
+
+    /* red close (X) button, top-right */
+    #panelClose { position:absolute; top:16px; right:16px; z-index:3; width:44px; height:44px; border-radius:50%;
+      border:1px solid rgba(255,255,255,.2); background:#e03328; color:#fff; font-size:1.5rem; line-height:1; cursor:pointer;
+      display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(224,51,40,.5);
+      transition:background .2s ease, transform .2s ease; }
+    #panelClose:hover { background:#ff4536; transform:scale(1.08); }
+    #panelClose:active { transform:scale(.93); }
+
+    /* fixed header */
+    #panel .panel-head { flex:0 0 auto; padding:30px 70px 18px 40px; border-bottom:1px solid rgba(255,255,255,.08);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), transparent); }
+    #panel .eyebrow { display:flex; align-items:center; gap:10px; font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--accent,#7bc96f); margin-bottom:8px; }
+    #panel .eyebrow .ico { font-size:1.6rem; }
+    #panel h2 { font-size:clamp(1.5rem,3.2vw,2.4rem); line-height:1.12; }
+
+    /* scrollable body */
+    #panel .panel-scroll { flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain; scroll-behavior:smooth;
+      padding:24px 40px 40px; font-size:1rem; line-height:1.62; color:#dbe6db; }
+    #panel .panel-scroll::-webkit-scrollbar { width:10px; }
+    #panel .panel-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.16); border-radius:99px; border:2px solid transparent; background-clip:content-box; }
+    #panel .panel-scroll::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,.28); background-clip:content-box; }
+    #panel .panel-scroll { scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.2) transparent; }
+    #panel .panel-scroll p { margin-bottom:14px; max-width:70ch; }
+    #panel .panel-scroll h3 { font-size:1.12rem; margin:22px 0 10px; color:#fff; }
+    #panel .panel-scroll em { color:#9fb39f; }
+    #panel .panel-scroll a { color:var(--accent,#7bc96f); text-decoration:none; border-bottom:1px solid rgba(123,201,111,.4); }
+    #panel .panel-scroll a:hover { border-bottom-color:var(--accent,#7bc96f); }
+    #panel .panel-scroll ul { margin:0 0 14px; padding-left:20px; }
+    #panel .panel-scroll li { margin-bottom:8px; }
+    #panel .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+    #panel .tags span { font-size:.78rem; padding:5px 12px; border-radius:99px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); }
+    .proj { padding:16px 18px; margin:0 0 14px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-left:3px solid var(--accent,#7bc96f); }
+    .proj h3 { margin-top:0; }
+    @media (max-width:680px){ #panel{ inset:6vh 5vw; } #panel .panel-head{ padding:24px 64px 14px 22px; } #panel .panel-scroll{ padding:18px 22px 30px; } }
 
     #sound { position:fixed; top:16px; right:16px; z-index:30; width:44px; height:44px; border:none; border-radius:50%;
       background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.15rem; cursor:pointer; border:1px solid rgba(255,255,255,.1); }
@@ -56,7 +88,7 @@
     #dpad button { width:54px; height:54px; border:none; border-radius:14px; background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.3rem; border:1px solid rgba(255,255,255,.1); touch-action:none; }
     #dpad button:active { background:#7bc96f; color:#11161b; }
     .dp-up{grid-area:1/2;} .dp-left{grid-area:2/1;} .dp-right{grid-area:2/3;} .dp-down{grid-area:3/2;}
-    @media (hover:none) and (pointer:coarse){ #dpad{display:grid;} #panel{left:14px;} }
+    @media (hover:none) and (pointer:coarse){ #dpad{display:grid;} }
 
     /* zoomed-out intro: CLICK TO START overlay (Bruno-Simon style) */
     #start { position:fixed; inset:0; z-index:40; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; pointer-events:none; }
@@ -67,7 +99,65 @@
     /* space vignette to deepen the edges like the reference */
     #vignette { position:fixed; inset:0; z-index:5; pointer-events:none; background:radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 36%, rgba(4,2,10,.5) 76%, rgba(2,1,6,.92) 100%); }
 
-    @media (prefers-reduced-motion:reduce){ #panel,#toast,#hint,#loader,#start h2{transition:none!important; animation:none!important;} }
+    /* ---------- top-right hamburger menu ---------- */
+    #sound { right:72px; }   /* sit just left of the hamburger */
+    #menuBtn { position:fixed; top:16px; right:16px; z-index:36; width:44px; height:44px; border-radius:50%;
+      background:rgba(0,0,0,.5); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px); border:1px solid rgba(255,255,255,.1);
+      cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:0; }
+    #menuBtn span { display:block; width:18px; height:2px; background:#fff; border-radius:2px; transition:transform .3s ease, opacity .3s ease; }
+    #menuBtn.open span:nth-child(1){ transform:translateY(6px) rotate(45deg); }
+    #menuBtn.open span:nth-child(2){ opacity:0; }
+    #menuBtn.open span:nth-child(3){ transform:translateY(-6px) rotate(-45deg); }
+
+    #menuScrim { position:fixed; inset:0; z-index:34; background:rgba(4,3,10,.5); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+      opacity:0; pointer-events:none; transition:opacity .35s ease; }
+    #menuScrim.show { opacity:1; pointer-events:auto; }
+
+    #menu { position:fixed; top:0; right:0; z-index:35; width:min(370px,88vw); height:100%; overflow-y:auto; overscroll-behavior:contain;
+      background:linear-gradient(165deg, rgba(24,30,38,.98), rgba(13,18,24,.99)); backdrop-filter:blur(18px) saturate(1.1); -webkit-backdrop-filter:blur(18px) saturate(1.1);
+      border-left:1px solid rgba(255,255,255,.12); box-shadow:-22px 0 70px rgba(0,0,0,.55); color:var(--txt);
+      transform:translateX(102%); transition:transform .42s cubic-bezier(.2,.8,.2,1); scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.2) transparent; }
+    #menu.show { transform:none; }
+    #menu::-webkit-scrollbar { width:9px; }
+    #menu::-webkit-scrollbar-thumb { background:rgba(255,255,255,.16); border-radius:99px; border:2px solid transparent; background-clip:content-box; }
+    #menu .menu-head { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between;
+      padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(15,20,26,.92); backdrop-filter:blur(8px); }
+    #menu .menu-head h2 { font-size:1.12rem; letter-spacing:.04em; font-weight:700; }
+    #menuClose { width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:#e03328; color:#fff;
+      font-size:1.25rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s, transform .2s; }
+    #menuClose:hover { background:#ff4536; transform:scale(1.08); }
+    .menu-sec { padding:20px 22px; border-bottom:1px solid rgba(255,255,255,.06); }
+    .menu-sec > h3 { font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:#9fd28c; margin-bottom:16px; display:flex; align-items:center; gap:9px; }
+    .ctl { margin-bottom:16px; }
+    .ctl label { display:flex; justify-content:space-between; font-size:.86rem; margin-bottom:7px; color:#cfe0cf; }
+    .ctl label span { color:#9fd28c; font-variant-numeric:tabular-nums; }
+    .ctl input[type=range] { width:100%; height:5px; -webkit-appearance:none; appearance:none; border-radius:99px; background:rgba(255,255,255,.14); outline:none; cursor:pointer; }
+    .ctl input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:17px; height:17px; border-radius:50%; background:#7bc96f; border:2px solid #11161b; box-shadow:0 1px 4px rgba(0,0,0,.4); cursor:pointer; }
+    .ctl input[type=range]::-moz-range-thumb { width:15px; height:15px; border-radius:50%; background:#7bc96f; border:2px solid #11161b; cursor:pointer; }
+    .ctl input[type=range]:disabled { opacity:.4; }
+    .menu-mute { display:flex; align-items:center; gap:11px; font-size:.92rem; cursor:pointer; color:#dbe6db; user-select:none; }
+    .menu-mute input { width:18px; height:18px; accent-color:#7bc96f; cursor:pointer; }
+    .help-list { list-style:none; padding:0; margin:0; }
+    .help-list li { display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; font-size:.88rem; line-height:1.45; color:#dbe6db; }
+    .help-list .keys { flex:0 0 92px; display:flex; flex-wrap:wrap; gap:4px; }
+    .keycap { display:inline-block; padding:3px 7px; border-radius:6px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18); font-size:.74rem; white-space:nowrap; }
+    .help-tip { margin-top:6px; font-size:.84rem; color:#9fb39f; line-height:1.5; }
+    .stars { display:flex; gap:7px; font-size:1.9rem; margin-bottom:14px; }
+    .stars span { cursor:pointer; color:rgba(255,255,255,.22); transition:color .15s ease, transform .15s ease; line-height:1; }
+    .stars span:hover { transform:scale(1.15); }
+    .stars span.on { color:#ffce4a; }
+    #rateText { width:100%; min-height:74px; border-radius:11px; border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.05);
+      color:#fff; padding:11px 12px; font-family:inherit; font-size:.88rem; line-height:1.45; resize:vertical; }
+    #rateText:focus { outline:none; border-color:#7bc96f; }
+    #rateSubmit { margin-top:12px; width:100%; padding:12px; border:none; border-radius:11px; background:linear-gradient(90deg,#7bc96f,#a7e08c);
+      color:#11161b; font-weight:700; font-size:.92rem; cursor:pointer; transition:filter .2s, transform .2s; }
+    #rateSubmit:hover { filter:brightness(1.07); }
+    #rateSubmit:active { transform:scale(.98); }
+    #rateThanks { display:none; margin-top:14px; padding:12px; border-radius:11px; text-align:center; color:#bff0ac;
+      background:rgba(123,201,111,.12); border:1px solid rgba(123,201,111,.3); font-size:.9rem; }
+    #rateThanks.show { display:block; }
+
+    @media (prefers-reduced-motion:reduce){ #panel,#toast,#hint,#loader,#start h2,#menu,#menuScrim,#menuBtn span{transition:none!important; animation:none!important;} }
   </style>
 </head>
 <body>
@@ -80,7 +170,46 @@
     <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
     <button class="dp-right" data-dir="right">▶</button><button class="dp-down" data-dir="down">▼</button>
   </div>
-  <div id="panel" aria-live="polite"></div>
+  <div id="scrim"></div>
+  <div id="panel" role="dialog" aria-modal="true" aria-live="polite"></div>
+
+  <!-- top-right hamburger menu -->
+  <button id="menuBtn" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
+  <div id="menuScrim"></div>
+  <aside id="menu" aria-hidden="true">
+    <div class="menu-head"><h2>Menu</h2><button id="menuClose" aria-label="Close menu">&times;</button></div>
+
+    <section class="menu-sec">
+      <h3>🔊 Sound Settings</h3>
+      <div class="ctl"><label>Master volume <span id="vMaster">85%</span></label><input id="sMaster" type="range" min="0" max="100" value="85"></div>
+      <div class="ctl"><label>Music <span id="vMusic">55%</span></label><input id="sMusic" type="range" min="0" max="100" value="55"></div>
+      <div class="ctl"><label>Sound effects <span id="vSfx">70%</span></label><input id="sSfx" type="range" min="0" max="100" value="70"></div>
+      <label class="menu-mute"><input id="cMute" type="checkbox"> Mute all sound</label>
+    </section>
+
+    <section class="menu-sec">
+      <h3>❓ How This Website Works</h3>
+      <ul class="help-list">
+        <li><span class="keys"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span> <span>Walk around the floating market. On touch, use the on-screen arrow pad.</span></li>
+        <li><span class="keys"><span class="keycap">Right mouse</span></span> <span>Hold and move the mouse to look around. On touch, drag on the scene.</span></li>
+        <li><span class="keys"><span class="keycap">Stand still</span></span> <span>When you're not moving, looking around turns your character's head.</span></li>
+        <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
+        <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close a panel with the red ✕, press Esc, or simply start moving.</span></li>
+      </ul>
+      <p class="help-tip">💡 Tip: every market stall is a different topic — About Me, Skills, Projects, Currently Building and Contact. Visit them all to explore the full portfolio.</p>
+    </section>
+
+    <section class="menu-sec">
+      <h3>⭐ Rate &amp; Feedback</h3>
+      <div class="stars" id="stars" role="radiogroup" aria-label="Rating">
+        <span data-v="1" role="radio" aria-label="1 star">★</span><span data-v="2" role="radio" aria-label="2 stars">★</span><span data-v="3" role="radio" aria-label="3 stars">★</span><span data-v="4" role="radio" aria-label="4 stars">★</span><span data-v="5" role="radio" aria-label="5 stars">★</span>
+      </div>
+      <textarea id="rateText" placeholder="Tell me what you think… (optional)"></textarea>
+      <button id="rateSubmit">Submit feedback</button>
+      <div id="rateThanks">Thank you for your feedback! 💚</div>
+    </section>
+  </aside>
+
   <div id="vignette"></div>
   <div id="start"><h2>CLICK TO START</h2><div class="sub">click anywhere</div></div>
 
@@ -135,15 +264,75 @@
     // market1=fish · market2=vegetables · market3=bakery · market4=weapon · market5=meat
     const SECTORS={
       fish:      { topic:'about',    title:'About Me',          ico:'🐟', accent:'#6ba8e0',
-                   html:`<p>Hi, I'm <strong>Kishore DP</strong>. <em>[Placeholder — short bio: who you are, what you study/do, interests.]</em></p>` },
+                   html:`
+                     <p>Hi, I'm <strong>Kishore DP</strong> — <em>a developer who likes turning ideas into things people can click, play and actually use.</em></p>
+                     <h3>Who I am</h3>
+                     <p><em>[Add 2–3 sentences here: what you study or do, where you're based, and what first pulled you into building software.]</em></p>
+                     <h3>What I care about</h3>
+                     <ul>
+                       <li>Clean, thoughtful interfaces that feel good to use</li>
+                       <li>Learning by building real projects end-to-end</li>
+                       <li>Performance, detail and the last 10% of polish</li>
+                       <li>Sharing what I learn and helping others build</li>
+                     </ul>
+                     <h3>How I work</h3>
+                     <p>I like to start from the user's experience and work backwards — prototype quickly, get something on screen, then refine until it feels right. <em>[Tweak this to match how you actually like to work.]</em></p>
+                     <h3>Beyond the keyboard</h3>
+                     <p><em>[A line or two about hobbies and interests — games, music, sport, art, travel… whatever makes you, you.]</em></p>
+                     <div class="tags"><span>Builder</span><span>Problem solver</span><span>Lifelong learner</span><span>Team player</span></div>` },
       vegetables:{ topic:'skills',   title:'Skills & Tools',    ico:'🥕', accent:'#e0a45a',
-                   html:`<p><em>[Placeholder — languages, frameworks, tools.]</em></p><div class="tags"><span>add</span><span>your</span><span>skills</span></div>` },
+                   html:`
+                     <p>The toolkit I reach for when bringing a project to life. <em>[Trim, reorder or extend these so they match your real stack.]</em></p>
+                     <h3>Languages</h3>
+                     <div class="tags"><span>JavaScript</span><span>TypeScript</span><span>Python</span><span>Java</span><span>C / C++</span></div>
+                     <h3>Frontend</h3>
+                     <div class="tags"><span>React</span><span>HTML5</span><span>CSS3</span><span>Tailwind</span><span>Three.js</span></div>
+                     <h3>Backend &amp; Data</h3>
+                     <div class="tags"><span>Node.js</span><span>Express</span><span>MongoDB</span><span>SQL</span><span>REST APIs</span></div>
+                     <h3>Tools &amp; Workflow</h3>
+                     <div class="tags"><span>Git &amp; GitHub</span><span>VS Code</span><span>Figma</span><span>Linux</span><span>Vite</span></div>
+                     <h3>Currently levelling up</h3>
+                     <p><em>[What you're actively learning right now — a framework, a concept, a certification, a language.]</em></p>` },
       bakery:    { topic:'done',     title:"Things I've Built", ico:'🍞', accent:'#7bc96f',
-                   html:`<p><em>[Placeholder — completed projects: name, one-line description, tags, Live link, Code link.]</em></p>` },
+                   html:`
+                     <p>A selection of projects I've designed, built and shipped. <em>[Replace these three with your real work — keep the card layout.]</em></p>
+                     <div class="proj"><h3>Project One</h3>
+                       <p><em>[One or two lines on what it does, the problem it solves and what you're proud of.]</em></p>
+                       <div class="tags"><span>React</span><span>Node</span><span>MongoDB</span></div>
+                       <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>
+                     <div class="proj"><h3>Project Two</h3>
+                       <p><em>[What it is and one interesting technical detail or challenge you solved.]</em></p>
+                       <div class="tags"><span>Python</span><span>API</span></div>
+                       <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>
+                     <div class="proj"><h3>Project Three</h3>
+                       <p><em>[A third project — even a small or fun one shows range and curiosity.]</em></p>
+                       <div class="tags"><span>Three.js</span><span>WebGL</span></div>
+                       <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>` },
       weapon:    { topic:'building', title:'Currently Building',ico:'⚔️', accent:'#b48be0',
-                   html:`<p><em>[Placeholder — projects in progress, with the same fields.]</em></p>` },
+                   html:`
+                     <p>What's on my workbench right now — ideas in motion and things I'm actively shaping. <em>[Swap in your in-progress work.]</em></p>
+                     <div class="proj"><h3>In progress · <em>Project Name</em></h3>
+                       <p><em>[What you're building, what already works, and what's next.]</em></p>
+                       <div class="tags"><span>Status: building</span><span>React</span></div></div>
+                     <div class="proj"><h3>Experiment · <em>Project Name</em></h3>
+                       <p><em>[A smaller experiment or learning project you're tinkering with.]</em></p>
+                       <div class="tags"><span>Status: prototyping</span></div></div>
+                     <h3>On the horizon</h3>
+                     <ul>
+                       <li><em>[An idea you want to start next]</em></li>
+                       <li><em>[Something you'd love to learn by building]</em></li>
+                       <li><em>[A problem you keep coming back to]</em></li>
+                     </ul>` },
       meat:      { topic:'contact',  title:"Let's Connect",     ico:'🥩', accent:'#e07a6b',
-                   html:`<p>Let's connect:</p><p>📧 <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a><br>💻 <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">GitHub</a><br>🔗 <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">LinkedIn</a></p>` },
+                   html:`
+                     <p>I'm always happy to talk about projects, opportunities, or a good idea. <em>[Mention if you're open to internships, roles or freelance.]</em></p>
+                     <h3>Reach me</h3>
+                     <p>📧 <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a><br>
+                        💻 <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">github.com/Kishore-DP</a><br>
+                        🔗 <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">linkedin.com/in/kishore-dp</a></p>
+                     <h3>Let's build something</h3>
+                     <p>Whether it's a collaboration, a question, or just to say hi — drop me a message and I'll get back to you. The fastest way to reach me is email.</p>
+                     <div class="tags"><span>Open to opportunities</span><span>Collaborations welcome</span></div>` },
     };
 
     // ---------- loaders ----------
@@ -165,6 +354,8 @@
     let world=null;                 // the market FBX (scaled)
     const player=new THREE.Group(); scene.add(player);
     let charRoot=null, mixer=null, walkAction=null, idleAction=null; const walkBones={}; let walkPhase=0;
+    const headBones=[]; let headYaw=0, headPitch=0;           // head-look: turn the head toward the camera aim while standing still
+    const HEAD_YAW=1.15, HEAD_PITCH=0.30;                     // realistic clamps (~66° left/right, ~17° up/down)
     let groundY=0; const raycaster=new THREE.Raycaster(); const camRay=new THREE.Raycaster(); const wallRay=new THREE.Raycaster(); const DOWN=new THREE.Vector3(0,-1,0);
     const PLAYER_R=1.2;  // horizontal collision radius
     let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
@@ -196,6 +387,7 @@
       const fbxJunk=[]; fbx.traverse(o=>{ if(o.isLight||o.isCamera) fbxJunk.push(o); }); fbxJunk.forEach(o=>o.parent&&o.parent.remove(o));
       // texture every mesh by its Unity material name
       fbx.traverse(c=>{ if(c.isMesh){
+        if(/^Place\d/i.test(c.name||'')){ c.material=boardWoodMaterial(); c.castShadow=true; c.receiveShadow=true; return; }  // signboards get a pro wood material; the plaque face is added separately
         const mats=Array.isArray(c.material)?c.material:[c.material];
         const out=mats.map(m=>{ const nm=(m&&m.name)||''; const t=texFor(nm);
           const std=new THREE.MeshStandardMaterial({ map:t, roughness:.92, metalness:0, name:nm });
@@ -222,7 +414,8 @@
           (acc[k]||(acc[k]={x:0,z:0,n:0})); acc[k].x+=mc.x; acc[k].z+=mc.z; acc[k].n++; break; } });
       ZONES=[];
       for(const k in acc){ if(!SECTORS[k]||!acc[k].n) continue; const x=acc[k].x/acc[k].n, z=acc[k].z/acc[k].n;
-        ZONES.push({ key:k, ...SECTORS[k], x, z }); addLabel(SECTORS[k], x, z); }
+        ZONES.push({ key:k, ...SECTORS[k], x, z }); }
+      placeBoardTitles();   // paint each market's title directly onto its signboard (no floating UI)
 
       // shadow sized to world
       const h=cfg.world*0.8, sc=sun.shadow.camera; sc.left=-h;sc.right=h;sc.top=h;sc.bottom=-h;sc.near=1;sc.far=cfg.world*5; sc.updateProjectionMatrix();
@@ -239,19 +432,82 @@
       grid.rotation.x=-Math.PI/2; grid.position.y=-0.6; grid.frustumCulled=false; scene.add(grid);
     }
 
-    // floating label above each market (always visible)
-    const labels=[];
-    function addLabel(sec, x, z){
-      const cv=document.createElement('canvas'); cv.width=256; cv.height=64; const ctx=cv.getContext('2d');
-      ctx.font='bold 30px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillStyle='rgba(0,0,0,.55)'; const w=ctx.measureText(sec.title).width+34;
-      roundRect(ctx,(256-w)/2,14,w,36,18); ctx.fill();
-      ctx.fillStyle=sec.accent; ctx.fillText(sec.ico+' '+sec.title,128,33);
-      const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace;
-      const spr=new THREE.Sprite(new THREE.SpriteMaterial({map:tex, transparent:true, depthTest:false, fog:false}));
-      spr.scale.set(11,2.75,1); spr.userData={x,z}; scene.add(spr); labels.push(spr);
-    }
     function roundRect(ctx,x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+
+    // ---------- PROFESSIONAL SIGNBOARDS: pro wood panel + a designed plaque face per market ----------
+    // (replaces the old floating sprite labels — titles live in-world as real signage)
+    let _boardMat=null;
+    function boardWoodMaterial(){
+      if(_boardMat) return _boardMat;
+      const W=512,H=512,cv=document.createElement('canvas'); cv.width=W; cv.height=H; const c=cv.getContext('2d');
+      const g=c.createLinearGradient(0,0,0,H); g.addColorStop(0,'#2a2018'); g.addColorStop(1,'#17110b'); c.fillStyle=g; c.fillRect(0,0,W,H);
+      for(let i=0;i<150;i++){ const x=Math.random()*W; const a=0.04+Math.random()*0.09;
+        c.strokeStyle=`rgba(${10+Math.random()*28|0},${8+Math.random()*16|0},4,${a})`; c.lineWidth=0.5+Math.random()*2.2;
+        c.beginPath(); let xx=x; c.moveTo(x,0); for(let y=0;y<=H;y+=14){ xx+=(Math.random()-0.5)*7; c.lineTo(xx,y); } c.stroke(); }
+      const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.wrapS=tex.wrapT=THREE.RepeatWrapping; tex.anisotropy=8;
+      _boardMat=new THREE.MeshStandardMaterial({ map:tex, roughness:.72, metalness:.04 });
+      return _boardMat;
+    }
+    function drawSpaced(ctx,text,sp,y){ const ws=[...text].map(ch=>ctx.measureText(ch).width);
+      const total=ws.reduce((a,b)=>a+b,0)+sp*(text.length-1); let x=ctx.canvas.width/2-total/2; const al=ctx.textAlign; ctx.textAlign='left';
+      for(let i=0;i<text.length;i++){ ctx.fillText(text[i],x,y); x+=ws[i]+sp; } ctx.textAlign=al; }
+    const titlePlanes=[];
+    function makeBoardPlaque(sec){
+      const W=1024, H=356; const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
+      // warm dark slate background with faint grain
+      const bg=ctx.createLinearGradient(0,0,0,H); bg.addColorStop(0,'#23190f'); bg.addColorStop(1,'#140e08'); ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+      for(let i=0;i<70;i++){ ctx.strokeStyle=`rgba(0,0,0,${0.03+Math.random()*0.05})`; ctx.lineWidth=1; const y=Math.random()*H; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+      // inset panel with a faux bevel + accent frame (depth/realism)
+      const pad=24, r=24;
+      roundRect(ctx,pad,pad,W-2*pad,H-2*pad,r);
+      const ip=ctx.createLinearGradient(0,pad,0,H-pad); ip.addColorStop(0,'rgba(255,238,214,.06)'); ip.addColorStop(1,'rgba(0,0,0,.22)'); ctx.fillStyle=ip; ctx.fill();
+      ctx.save(); ctx.clip();
+      ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.strokeRect(pad,pad-2,W-2*pad,2); ctx.restore();   // top highlight bevel
+      roundRect(ctx,pad,pad,W-2*pad,H-2*pad,r); ctx.lineWidth=5; ctx.strokeStyle=sec.accent; ctx.globalAlpha=.9; ctx.stroke(); ctx.globalAlpha=1;
+      // eyebrow
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='600 30px "Segoe UI", system-ui, sans-serif'; ctx.fillStyle=sec.accent; drawSpaced(ctx,'MARKET STALL',7,74);
+      // title (off-white for readability) with accent underline
+      const title=sec.title.toUpperCase(); let size=118; const sf=()=>ctx.font=`800 ${size}px "Segoe UI", system-ui, sans-serif`; sf();
+      while(ctx.measureText(title).width > W*0.80 && size>52){ size-=4; sf(); }
+      const cy=H/2+16;
+      ctx.shadowColor='rgba(0,0,0,.55)'; ctx.shadowBlur=12; ctx.shadowOffsetY=5;
+      ctx.fillStyle='#f5edda'; ctx.fillText(title, W/2, cy); ctx.shadowColor='transparent';
+      const tw=ctx.measureText(title).width, uw=Math.min(tw*0.5, W*0.4);
+      ctx.fillStyle=sec.accent; roundRect(ctx, W/2-uw/2, cy+size*0.52, uw, 6, 3); ctx.fill();
+      // gentle call-to-action
+      ctx.font='500 25px "Segoe UI", system-ui, sans-serif'; ctx.fillStyle='rgba(245,237,218,.52)';
+      ctx.fillText(sec.ico+'   click the orb to explore', W/2, H-50);
+      const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=8; return tex;
+    }
+    function placeBoardTitles(){
+      // gather the signboard panels ("PlaceN") with their world centre, face normal and face dimensions
+      const boards=[]; world.traverse(m=>{ if(m.isMesh&&/^Place\d/i.test(m.name||'')){
+        m.updateWorldMatrix(true,false);
+        const wp=new THREE.Vector3(), wq=new THREE.Quaternion(), wsc=new THREE.Vector3(); m.matrixWorld.decompose(wp,wq,wsc);
+        if(!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+        const bb=m.geometry.boundingBox, ls=bb.getSize(new THREE.Vector3());
+        const wc=bb.getCenter(new THREE.Vector3()).applyMatrix4(m.matrixWorld);
+        const normal=new THREE.Vector3(1,0,0).applyQuaternion(wq).normalize();   // panels are thin on local +x
+        boards.push({ wc, normal, width:ls.z*Math.abs(wsc.z), height:ls.y*Math.abs(wsc.y), thick:ls.x*Math.abs(wsc.x) });
+      }});
+      for(const z of ZONES){
+        let board=null,bd=1e9; for(const b of boards){ const d=Math.hypot(b.wc.x-z.x,b.wc.z-z.z); if(d<bd){bd=d;board=b;} }
+        if(!board) continue;
+        const tex=makeBoardPlaque(z);
+        const geo=new THREE.PlaneGeometry(board.width*0.97, board.height*0.95);
+        // lit material so the sign responds to the scene light; mild self-emission keeps text readable in shade
+        const mat=new THREE.MeshStandardMaterial({ map:tex, transparent:true, roughness:.5, metalness:0,
+          emissive:0xffffff, emissiveMap:tex, emissiveIntensity:0.22, depthWrite:false });
+        const off=board.thick/2+0.03;
+        for(const sgn of [1,-1]){                              // a plaque on each face — readable from either side
+          const p=new THREE.Mesh(geo, mat);
+          p.position.copy(board.wc).addScaledVector(board.normal, off*sgn);
+          p.lookAt(p.position.clone().addScaledVector(board.normal, sgn));
+          p.renderOrder=3; scene.add(p); titlePlanes.push(p);
+        }
+      }
+    }
 
     // ---------- ? ORBS: a clickable, slowly-spinning glass orb at the centre of each shop ----------
     function placeOrbs(orbScene){
@@ -301,6 +557,7 @@
         fitChar(charRoot, cfg.charH);
         charRoot.traverse(c=>{ if(c.isMesh||c.isSkinnedMesh){ c.castShadow=true; c.frustumCulled=false; } });
         player.add(charRoot);
+        charRoot.traverse(o=>{ if(o.isBone && /head/i.test(o.name||'')) headBones.push(o); });   // grab the head bone(s) for head-look
         // animations: use baked clips if present, else procedural leg/arm swing on a humanoid rig
         const clips=gltf.animations||[];
         if(clips.length){ mixer=new THREE.AnimationMixer(charRoot);
@@ -357,11 +614,20 @@
       return best||{x:0,z:0,y:0};
     }
 
-    // ---------- proximity UI ----------
+    // ---------- information popup ----------
+    const scrimEl=document.getElementById('scrim');
     function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
-      panelEl.innerHTML=`<div class="eyebrow"><span class="ico">${sec.ico}</span> Market Stall</div><h2>${sec.title}</h2><div class="body">${sec.html}</div>`;
-      panelEl.classList.add('show'); }
-    function hidePanel(){ panelEl.classList.remove('show'); }
+      panelEl.innerHTML=`<button id="panelClose" aria-label="Close">&times;</button>`
+        +`<div class="panel-head"><div class="eyebrow"><span class="ico">${sec.ico}</span> Market Stall</div><h2>${sec.title}</h2></div>`
+        +`<div class="panel-scroll">${sec.html}</div>`;
+      panelEl.querySelector('#panelClose').addEventListener('click', e=>{ e.stopPropagation(); closePanel(); });
+      scrimEl.classList.add('show'); panelEl.classList.add('show');
+      const sc=panelEl.querySelector('.panel-scroll'); if(sc) sc.scrollTop=0;
+    }
+    function hidePanel(){ panelEl.classList.remove('show'); scrimEl.classList.remove('show'); }
+    function closePanel(){ activeTopic=null; hidePanel(); }                 // single close path (X, Esc, scrim, movement)
+    scrimEl.addEventListener('click', closePanel);
+    const panelOpen=()=>panelEl.classList.contains('show');
     function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),1800); }
     function updateProximity(){
       let near=null,bd=1e9; for(const z of ZONES){ const d=Math.hypot(player.position.x-z.x,player.position.z-z.z); if(d<14&&d<bd){bd=d;near=z;} }
@@ -372,7 +638,9 @@
     // ---------- input ----------
     const keys={up:false,down:false,left:false,right:false};
     const km={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
-    addEventListener('keydown',e=>{ if(km[e.code]){ keys[km[e.code]]=true; e.preventDefault(); hideHint(); }});
+    addEventListener('keydown',e=>{
+      if(menuIsOpen() || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')) return;   // don't move while the menu/feedback box is in use
+      if(km[e.code]){ if(panelOpen()) closePanel(); keys[km[e.code]]=true; e.preventDefault(); hideHint(); }});  // moving auto-closes the popup
     addEventListener('keyup',e=>{ if(km[e.code]) keys[km[e.code]]=false; });
 
     // ---- Roblox-style camera: HOLD RIGHT MOUSE + move to orbit (pointer-locked = smooth & unlimited); scroll to zoom ----
@@ -395,7 +663,7 @@
     cv.addEventListener('touchstart',e=>{ tdrag=true; tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
     cv.addEventListener('touchmove',e=>{ if(!tdrag||!started)return; const t=e.touches[0]; camYaw-=(t.clientX-tx)*0.006; tx=t.clientX; ty=t.clientY; },{passive:true}); // yaw only, no up/down
     addEventListener('touchend',()=>{ tdrag=false; });
-    document.querySelectorAll('#dpad button').forEach(b=>{ const d=b.dataset.dir; const set=v=>e=>{e.preventDefault();keys[d]=v;if(v)hideHint();};
+    document.querySelectorAll('#dpad button').forEach(b=>{ const d=b.dataset.dir; const set=v=>e=>{e.preventDefault();keys[d]=v;if(v){if(panelOpen())closePanel();hideHint();}};
       b.addEventListener('touchstart',set(true),{passive:false}); b.addEventListener('touchend',set(false));
       b.addEventListener('mousedown',set(true)); b.addEventListener('mouseup',set(false)); b.addEventListener('mouseleave',set(false)); });
     let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true; hintEl.style.opacity='0';} }
@@ -416,47 +684,125 @@
     cv.addEventListener('click', pickOrb);
     addEventListener('keydown', e=>{ if(e.code==='Escape'){ activeTopic=null; hidePanel(); } });
 
+    // hover feedback: a hand cursor only while pointing at a ? orb — makes clear the orbs are the
+    // only interactive objects in the world (clicking anything else never opens a panel).
+    let _hoverRAF=0;
+    cv.addEventListener('mousemove', e=>{
+      if(!started || looking || !orbs.length) return;     // skip while right-drag look (pointer locked)
+      if(_hoverRAF) return; _hoverRAF=requestAnimationFrame(()=>{ _hoverRAF=0;
+        ptr.x=(e.clientX/innerWidth)*2-1; ptr.y=-(e.clientY/innerHeight)*2+1;
+        pickRay.setFromCamera(ptr,camera);
+        const meshes=[]; for(const o of orbs) o.group.traverse(m=>{ if(m.isMesh) meshes.push(m); });
+        cv.style.cursor = pickRay.intersectObjects(meshes,false).length ? 'pointer' : '';
+      });
+    });
+
     // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
     function beginStart(){ if(started||starting) return; starting=true; startEl.classList.remove('show'); hintEl.style.opacity='1'; if(reducedMotion) started=true; }
     addEventListener('click', beginStart);
     addEventListener('touchstart', beginStart, {passive:true});
 
     // ---------- ambient audio ----------
-    const soundBtn=document.getElementById('sound'); let actx=null,soundOn=false,musicGain=null;
+    // Routing: every voice -> musicGain (or sfxGain) -> masterGain -> speakers.
+    // The menu in Task 8 adjusts the `audio` levels and calls applyAudio(); music on/off is `soundOn`.
+    const soundBtn=document.getElementById('sound');
+    let actx=null, soundOn=false, masterGain=null, musicGain=null, sfxGain=null;
+    const audio={ master:0.85, music:0.55, sfx:0.7, muted:false };   // 0..1 user levels
 
-    // ---- soothing ambient music: all synthesized in-browser (original, no files, no copyright) ----
-    function startMusic(){
-      // lush plate-style reverb from a generated decaying-noise impulse — gives the pad its calm, spacious tail
-      const ir=actx.createBuffer(2, actx.sampleRate*3, actx.sampleRate);
-      for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2.5); } }
-      const rev=actx.createConvolver(); rev.buffer=ir;
-      musicGain=actx.createGain(); musicGain.gain.value=0; musicGain.connect(actx.destination);
-      const wet=actx.createGain(); wet.gain.value=0.85; rev.connect(wet).connect(musicGain);
-      const dry=actx.createGain(); dry.gain.value=0.55; dry.connect(musicGain);
-      const bus=actx.createGain(); bus.connect(dry); bus.connect(rev);   // every voice feeds dry + reverb
-
-      // a calm, drifting major progression (Hz) — Cmaj7 · Am · Fmaj · Gadd9
-      const CHORDS=[ [261.63,329.63,392.00,493.88], [220.00,329.63,392.00,440.00], [174.61,261.63,349.23,440.00], [196.00,293.66,392.00,493.88] ];
-      const PENT=[523.25,587.33,659.25,783.99,880.00,1046.50];   // C-major pentatonic for airy bell notes
-      const CHORD_LEN=8; let ci=0;
-      function pad(freqs,t,dur){ freqs.forEach((f,k)=>{
-        const o=actx.createOscillator(); o.type='triangle'; o.frequency.value=f; o.detune.value=(k-1.5)*4;   // slight detune = warmth
-        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.13,t+2.6); g.gain.linearRampToValueAtTime(0.0001,t+dur);
-        const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=850;   // soft, no harsh highs
-        o.connect(g).connect(lp).connect(bus); o.start(t); o.stop(t+dur+0.1); }); }
-      function bell(t){ const f=PENT[(Math.random()*PENT.length)|0];
-        const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
-        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.10,t+0.04); g.gain.exponentialRampToValueAtTime(0.0001,t+3);
-        o.connect(g).connect(bus); o.start(t); o.stop(t+3.1); }
-      (function loop(){ const t=actx.currentTime+0.05; pad(CHORDS[ci++%CHORDS.length],t,CHORD_LEN);
-        for(let k=0;k<3;k++){ if(Math.random()<0.8) bell(t+1+Math.random()*(CHORD_LEN-2)); }
-        setTimeout(loop,CHORD_LEN*1000); })();
+    function audioInit(){ if(actx) return;
+      actx=new (window.AudioContext||window.webkitAudioContext)();
+      masterGain=actx.createGain(); masterGain.gain.value=audio.muted?0:audio.master; masterGain.connect(actx.destination);
+      musicGain=actx.createGain();  musicGain.gain.value=0;            // music swells in only once turned on
+      sfxGain=actx.createGain();    sfxGain.gain.value=audio.sfx;
+      musicGain.connect(masterGain); sfxGain.connect(masterGain);
+      startMusic();
+    }
+    // gently apply the current levels everywhere (long ramps = never a sudden spike)
+    function applyAudio(ramp=0.5){ if(!actx) return; const t=actx.currentTime;
+      const set=(p,v)=>{ p.cancelScheduledValues(t); p.setValueAtTime(p.value,t); p.linearRampToValueAtTime(Math.max(0.0001,v),t+ramp); };
+      set(masterGain.gain, audio.muted?0:audio.master);
+      set(musicGain.gain, soundOn?audio.music:0);
+      set(sfxGain.gain, audio.sfx);
     }
 
-    soundBtn.addEventListener('click',()=>{ if(!actx){ actx=new (window.AudioContext||window.webkitAudioContext)(); startMusic(); }
-      if(actx.state==='suspended') actx.resume(); soundOn=!soundOn;
-      musicGain.gain.linearRampToValueAtTime(soundOn?.55:0,actx.currentTime+1.2);        // gentle music swell in/out
-      soundBtn.textContent=soundOn?'🔊':'🔇'; });
+    // ---- calm, soothing ambient: all synthesized in-browser (original, no files, no copyright) ----
+    function startMusic(){
+      // soft, short reverb tail — spacious but never washy
+      const ir=actx.createBuffer(2, actx.sampleRate*2.6, actx.sampleRate);
+      for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3.2); } }
+      const rev=actx.createConvolver(); rev.buffer=ir;
+      const wet=actx.createGain(); wet.gain.value=0.45; rev.connect(wet).connect(musicGain);
+      const dry=actx.createGain(); dry.gain.value=0.7;  dry.connect(musicGain);
+      // warm master low-pass with a very slow drift so the pad gently breathes
+      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=680; lp.Q.value=0.4;
+      lp.connect(dry); lp.connect(rev);
+      const lfo=actx.createOscillator(); lfo.frequency.value=0.04; const lfoG=actx.createGain(); lfoG.gain.value=160;
+      lfo.connect(lfoG).connect(lp.frequency); lfo.start();
+      const bus=lp;   // all voices -> lp -> dry/wet -> musicGain
+
+      // slow, warm low-register progression (Hz): Dadd9 · F#m7 · Bm · A — gentle and resolving
+      const CHORDS=[ [146.83,220.00,277.18,329.63], [185.00,277.18,329.63,440.00], [123.47,185.00,246.94,293.66], [110.00,164.81,220.00,277.18] ];
+      const PENT=[293.66,329.63,440.00,493.88,587.33];   // soft pentatonic chimes, mid register
+      const LEN=15; let ci=0;
+      function pad(freqs,t){ freqs.forEach((f,k)=>{
+        const o=actx.createOscillator();  o.type='sine';     o.frequency.value=f; o.detune.value=(k-1.5)*2.5; // gentle detune warmth
+        const o2=actx.createOscillator(); o2.type='triangle'; o2.frequency.value=f; o2.detune.value=5;
+        const g=actx.createGain();  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.06,t+4.5); g.gain.linearRampToValueAtTime(0.0001,t+LEN); // long, soft swell
+        const g2=actx.createGain(); g2.gain.value=0.35; o2.connect(g2).connect(g);   // triangle layered quietly under the sine
+        o.connect(g).connect(bus); o.start(t); o2.start(t); o.stop(t+LEN+0.2); o2.stop(t+LEN+0.2);
+      }); }
+      function chime(t){ const f=PENT[(Math.random()*PENT.length)|0];
+        const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
+        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.045,t+0.7); g.gain.exponentialRampToValueAtTime(0.0001,t+5.5); // slow, soft, long decay
+        o.connect(g).connect(bus); o.start(t); o.stop(t+5.6); }
+      (function loop(){ const t=actx.currentTime+0.1; pad(CHORDS[ci++%CHORDS.length],t);
+        if(Math.random()<0.55) chime(t+3+Math.random()*9);   // sparse, occasional chime — never busy
+        setTimeout(loop, LEN*1000); })();   // overlapping fades make the loop seamless
+    }
+
+    function syncSoundIcon(){ soundBtn.textContent=(soundOn && !audio.muted)?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn && !audio.muted)); }
+    soundBtn.addEventListener('click',()=>{ audioInit(); if(actx.state==='suspended') actx.resume();
+      soundOn=!soundOn;
+      if(soundOn && audio.music<=0){ audio.music=0.55; const sM=document.getElementById('sMusic'); if(sM){ sM.value=55; document.getElementById('vMusic').textContent='55%'; } }
+      applyAudio(1.4); syncSoundIcon(); });                  // gentle 1.4s swell in/out
+
+    // ---------- top-right menu (sound settings · help · rating) ----------
+    const menuBtn=document.getElementById('menuBtn'), menuEl=document.getElementById('menu'), menuScrim=document.getElementById('menuScrim');
+    function menuIsOpen(){ return menuEl.classList.contains('show'); }
+    function openMenu(){ menuEl.classList.add('show'); menuScrim.classList.add('show'); menuBtn.classList.add('open');
+      menuBtn.setAttribute('aria-expanded','true'); menuEl.setAttribute('aria-hidden','false'); }
+    function closeMenu(){ menuEl.classList.remove('show'); menuScrim.classList.remove('show'); menuBtn.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded','false'); menuEl.setAttribute('aria-hidden','true'); }
+    menuBtn.addEventListener('click', e=>{ e.stopPropagation(); menuIsOpen()?closeMenu():openMenu(); });
+    document.getElementById('menuClose').addEventListener('click', closeMenu);
+    menuScrim.addEventListener('click', closeMenu);
+    addEventListener('keydown', e=>{ if(e.code==='Escape' && menuIsOpen()) closeMenu(); });
+
+    // --- sound settings: sliders + mute, wired to the master/music/sfx gain graph ---
+    const sMaster=document.getElementById('sMaster'), sMusic=document.getElementById('sMusic'),
+          sSfx=document.getElementById('sSfx'), cMute=document.getElementById('cMute');
+    const setPct=(id,v)=>{ document.getElementById(id).textContent=Math.round(v*100)+'%'; };
+    sMaster.addEventListener('input',()=>{ audioInit(); audio.master=sMaster.value/100; setPct('vMaster',audio.master); applyAudio(0.12); });
+    sMusic.addEventListener('input',()=>{ audioInit(); if(actx&&actx.state==='suspended') actx.resume();
+      audio.music=sMusic.value/100; soundOn=audio.music>0; setPct('vMusic',audio.music); applyAudio(0.12); syncSoundIcon(); });
+    sSfx.addEventListener('input',()=>{ audioInit(); audio.sfx=sSfx.value/100; setPct('vSfx',audio.sfx); applyAudio(0.12); });
+    cMute.addEventListener('change',()=>{ audioInit(); audio.muted=cMute.checked; applyAudio(0.3); syncSoundIcon();
+      [sMaster,sMusic,sSfx].forEach(s=>s.disabled=audio.muted); });
+
+    // --- rating + feedback (kept locally; no backend involved) ---
+    let rating=0; const starEls=[...document.querySelectorAll('#stars span')];
+    function paintStars(n){ starEls.forEach(s=>s.classList.toggle('on', +s.dataset.v<=n)); }
+    starEls.forEach(s=>{ s.addEventListener('click',()=>{ rating=+s.dataset.v; paintStars(rating); });
+      s.addEventListener('mouseenter',()=>paintStars(+s.dataset.v)); });
+    document.getElementById('stars').addEventListener('mouseleave',()=>paintStars(rating));
+    document.getElementById('rateSubmit').addEventListener('click',()=>{
+      const text=document.getElementById('rateText').value.trim();
+      try{ const all=JSON.parse(localStorage.getItem('kdp_feedback')||'[]');
+        all.push({ rating, text, at:new Date().toISOString() }); localStorage.setItem('kdp_feedback', JSON.stringify(all)); }catch(e){}
+      const th=document.getElementById('rateThanks'), btn=document.getElementById('rateSubmit');
+      th.classList.add('show'); btn.textContent='Submitted ✓';
+      setTimeout(()=>{ th.classList.remove('show'); btn.textContent='Submit feedback'; rating=0; paintStars(0); document.getElementById('rateText').value=''; }, 2600);
+    });
 
     addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
 
@@ -464,6 +810,8 @@
     const clock=new THREE.Clock(); const camTarget=new THREE.Vector3(), camPivot=new THREE.Vector3();
     const _q=new THREE.Quaternion(), _ax=new THREE.Vector3(1,0,0); const _proj=new THREE.Vector3();
     const _estPos=new THREE.Vector3(), _estLook=new THREE.Vector3(), _lookTmp=new THREE.Vector3();
+    const _pq=new THREE.Quaternion(), _qa=new THREE.Quaternion(), _qb=new THREE.Quaternion(), _delta=new THREE.Quaternion();
+    const _axU=new THREE.Vector3(), _axR=new THREE.Vector3(), _hUp=new THREE.Vector3(0,1,0), _hRight=new THREE.Vector3();
     function step(dt){
       let moving=false;
       if(started){
@@ -510,12 +858,31 @@
       }
       if(mixer) mixer.update(dt);
 
+      // ---- HEAD LOOK: while standing still, only the head turns toward where the camera is aimed ----
+      // (applied after the animation mixer so it layers on top of idle/walk; body keeps facing forward)
+      if(headBones.length){
+        let ty=0, tp=0;
+        if(!moving){
+          let rel=(camYaw+Math.PI)-player.rotation.y; rel=Math.atan2(Math.sin(rel),Math.cos(rel));   // camera aim relative to body facing
+          ty=Math.max(-HEAD_YAW, Math.min(HEAD_YAW, rel));
+          tp=Math.max(-HEAD_PITCH, Math.min(HEAD_PITCH, (camPitch-cfg.camPitch)*0.9));
+        }
+        const k=Math.min(1,dt*9); headYaw+=(ty-headYaw)*k; headPitch+=(tp-headPitch)*k;   // smooth, and ease back to neutral when moving
+        if(Math.abs(headYaw)>1e-4 || Math.abs(headPitch)>1e-4){
+          _hRight.set(Math.cos(camYaw),0,-Math.sin(camYaw));   // camera-right axis (for up/down tilt)
+          for(const hb of headBones){ if(!hb.parent) continue;
+            hb.parent.getWorldQuaternion(_pq).invert();         // convert world axes into the bone's parent space
+            _axU.copy(_hUp).applyQuaternion(_pq).normalize();
+            _axR.copy(_hRight).applyQuaternion(_pq).normalize();
+            _qa.setFromAxisAngle(_axU, headYaw); _qb.setFromAxisAngle(_axR, headPitch);
+            hb.quaternion.premultiply(_delta.copy(_qa).multiply(_qb));   // layer the look-rotation over the animated pose
+          }
+        }
+      }
+
       // spin each orb's glass sphere slowly + a gentle float bob
       for(const o of orbs){ if(o.sphere) o.sphere.rotation.y += dt*0.5;
         if(!reducedMotion && o.group){ const sy=o._baseY??(o._baseY=o.group.position.y); o.group.position.y=sy+Math.sin(performance.now()*0.0012+o.phase)*0.35; } }
-
-      // labels: keep upright, fade with distance, hover above market
-      for(const s of labels){ s.position.set(s.userData.x, surfaceTopCached(s.userData.x,s.userData.z)+6, s.userData.z); }
 
       // orbit camera: positioned by mouse-controlled yaw/pitch, always looking at the character
       const dir=new THREE.Vector3(Math.sin(camYaw)*Math.cos(camPitch), Math.sin(camPitch), Math.cos(camYaw)*Math.cos(camPitch));
@@ -540,9 +907,6 @@
         camera.position.copy(_estPos); camera.lookAt(_estLook);
       }
     }
-    // cache market label ground height (computed once)
-    const _labelY={}; function surfaceTopCached(x,z){ const k=x.toFixed(1)+','+z.toFixed(1); if(_labelY[k]===undefined) _labelY[k]=surfaceTop(x,z)??0; return _labelY[k]; }
-
     function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
     let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
     setInterval(()=>{ if(performance.now()-lastRAF>200) frame(); },60);
