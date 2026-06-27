@@ -123,9 +123,6 @@
     #menu .menu-head { position:sticky; top:0; z-index:2; display:flex; align-items:center; justify-content:space-between;
       padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(15,20,26,.92); backdrop-filter:blur(8px); }
     #menu .menu-head h2 { font-size:1.12rem; letter-spacing:.04em; font-weight:700; }
-    #menuClose { width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:#e03328; color:#fff;
-      font-size:1.25rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s, transform .2s; }
-    #menuClose:hover { background:#ff4536; transform:scale(1.08); }
     .menu-sec { padding:20px 22px; border-bottom:1px solid rgba(255,255,255,.06); }
     .menu-sec > h3 { font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:#9fd28c; margin-bottom:16px; display:flex; align-items:center; gap:9px; }
     .ctl { margin-bottom:16px; }
@@ -157,7 +154,25 @@
       background:rgba(123,201,111,.12); border:1px solid rgba(123,201,111,.3); font-size:.9rem; }
     #rateThanks.show { display:block; }
 
-    @media (prefers-reduced-motion:reduce){ #panel,#toast,#hint,#loader,#start h2,#menu,#menuScrim,#menuBtn span{transition:none!important; animation:none!important;} }
+    /* ---------- welcome / "how this works" popup (auto-shown once the intro camera settles) ---------- */
+    #welcomeScrim { position:fixed; inset:0; z-index:32; background:rgba(4,3,10,.45); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px);
+      opacity:0; pointer-events:none; transition:opacity .4s ease; }
+    #welcomeScrim.show { opacity:1; pointer-events:auto; }
+    #welcome { position:fixed; z-index:33; left:50%; top:50%; transform:translate(-50%,-46%) scale(.96);
+      width:min(540px,92vw); max-height:86vh; overflow-y:auto; overscroll-behavior:contain;
+      background:linear-gradient(160deg, rgba(26,32,40,.97), rgba(15,20,26,.98)); backdrop-filter:blur(18px) saturate(1.1); -webkit-backdrop-filter:blur(18px) saturate(1.1);
+      border:1px solid rgba(255,255,255,.12); border-top:4px solid #7bc96f; border-radius:18px; box-shadow:0 30px 80px rgba(0,0,0,.62);
+      color:var(--txt); padding:28px 30px 26px; opacity:0; pointer-events:none;
+      transition:opacity .45s cubic-bezier(.2,.8,.2,1), transform .45s cubic-bezier(.2,.8,.2,1); scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.2) transparent; }
+    #welcome.show { opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1); }
+    #welcomeClose { position:absolute; top:14px; right:14px; width:38px; height:38px; border-radius:50%; border:1px solid rgba(255,255,255,.2);
+      background:rgba(0,0,0,.5); color:#fff; font-size:1.25rem; line-height:1; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s, transform .2s; }
+    #welcomeClose:hover { background:rgba(255,255,255,.16); transform:scale(1.08); }
+    #welcome h2 { font-size:1.5rem; line-height:1.15; margin-bottom:6px; padding-right:44px; }
+    #welcome .wsub { color:#9fb39f; font-size:.92rem; margin-bottom:20px; }
+    #welcome .wfoot { margin-top:18px; padding-top:16px; border-top:1px solid rgba(255,255,255,.08); font-size:.86rem; color:#9fb39f; }
+
+    @media (prefers-reduced-motion:reduce){ #panel,#toast,#hint,#loader,#start h2,#menu,#menuScrim,#menuBtn span,#welcome,#welcomeScrim{transition:none!important; animation:none!important;} }
   </style>
 </head>
 <body>
@@ -177,7 +192,7 @@
   <button id="menuBtn" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   <div id="menuScrim"></div>
   <aside id="menu" aria-hidden="true">
-    <div class="menu-head"><h2>Menu</h2><button id="menuClose" aria-label="Close menu">&times;</button></div>
+    <div class="menu-head"><h2>Menu</h2></div>
 
     <section class="menu-sec">
       <h3>🔊 Sound Settings</h3>
@@ -192,7 +207,6 @@
       <ul class="help-list">
         <li><span class="keys"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span> <span>Walk around the floating market. On touch, use the on-screen arrow pad.</span></li>
         <li><span class="keys"><span class="keycap">Right mouse</span></span> <span>Hold and move the mouse to look around. On touch, drag on the scene.</span></li>
-        <li><span class="keys"><span class="keycap">Stand still</span></span> <span>When you're not moving, looking around turns your character's head.</span></li>
         <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
         <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close a panel with the red ✕, press Esc, or simply start moving.</span></li>
       </ul>
@@ -209,6 +223,22 @@
       <div id="rateThanks">Thank you for your feedback! 💚</div>
     </section>
   </aside>
+
+  <!-- welcome / how-it-works popup, shown automatically once the intro camera settles into 3rd person -->
+  <div id="welcomeScrim"></div>
+  <section id="welcome" role="dialog" aria-modal="true" aria-hidden="true">
+    <button id="welcomeClose" aria-label="Close">&times;</button>
+    <h2>Welcome to the market 👋</h2>
+    <div class="wsub">A quick guide to exploring this portfolio.</div>
+    <ul class="help-list">
+      <li><span class="keys"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span> <span>Walk around the floating market. On touch, use the on-screen arrow pad.</span></li>
+      <li><span class="keys"><span class="keycap">Right mouse</span></span> <span>Hold and move the mouse to look around. On touch, drag on the scene.</span></li>
+      <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
+      <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close any panel with the ✕, press Esc, or simply start moving.</span></li>
+    </ul>
+    <p class="help-tip">💡 Each stall is a topic — About Me, Skills, Projects, Currently Building and Contact. Explore them all! You can reopen this guide anytime from the ☰ menu.</p>
+    <div class="wfoot">Press ✕ or start moving to begin exploring.</div>
+  </section>
 
   <div id="vignette"></div>
   <div id="start"><h2>CLICK TO START</h2><div class="sub">click anywhere</div></div>
@@ -361,6 +391,7 @@
     const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
     const ORB_R=1.35, ORB_GAP=1.0;       // world radius + gap below the shop signboard's underside
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
+    let welcomeShown=false;   // the how-it-works popup auto-shows once, when the intro camera first settles
 
     function surfaceAt(x,z,fromY){ raycaster.set(new THREE.Vector3(x,fromY+RAY_UP,z),DOWN); raycaster.far=RAY_FAR;
       const h=raycaster.intersectObject(world,true); return h.length? h[0].point.y : null; }
@@ -643,7 +674,7 @@
     const km={ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right'};
     addEventListener('keydown',e=>{
       if(menuIsOpen() || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')) return;   // don't move while the menu/feedback box is in use
-      if(km[e.code]){ if(panelOpen()) closePanel(); keys[km[e.code]]=true; e.preventDefault(); hideHint(); }});  // moving auto-closes the popup
+      if(km[e.code]){ if(welcomeOpen()) closeWelcome(); if(panelOpen()) closePanel(); keys[km[e.code]]=true; e.preventDefault(); hideHint(); }});  // moving auto-closes the popups
     addEventListener('keyup',e=>{ if(km[e.code]) keys[km[e.code]]=false; });
 
     // ---- Roblox-style camera: HOLD RIGHT MOUSE + move to orbit (pointer-locked = smooth & unlimited); scroll to zoom ----
@@ -666,7 +697,7 @@
     cv.addEventListener('touchstart',e=>{ tdrag=true; tx=e.touches[0].clientX; ty=e.touches[0].clientY; },{passive:true});
     cv.addEventListener('touchmove',e=>{ if(!tdrag||!started)return; const t=e.touches[0]; camYaw-=(t.clientX-tx)*0.006; tx=t.clientX; ty=t.clientY; },{passive:true}); // yaw only, no up/down
     addEventListener('touchend',()=>{ tdrag=false; });
-    document.querySelectorAll('#dpad button').forEach(b=>{ const d=b.dataset.dir; const set=v=>e=>{e.preventDefault();keys[d]=v;if(v){if(panelOpen())closePanel();hideHint();}};
+    document.querySelectorAll('#dpad button').forEach(b=>{ const d=b.dataset.dir; const set=v=>e=>{e.preventDefault();keys[d]=v;if(v){if(welcomeOpen())closeWelcome();if(panelOpen())closePanel();hideHint();}};
       b.addEventListener('touchstart',set(true),{passive:false}); b.addEventListener('touchend',set(false));
       b.addEventListener('mousedown',set(true)); b.addEventListener('mouseup',set(false)); b.addEventListener('mouseleave',set(false)); });
     let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true; hintEl.style.opacity='0';} }
@@ -777,9 +808,17 @@
     function closeMenu(){ menuEl.classList.remove('show'); menuScrim.classList.remove('show'); menuBtn.classList.remove('open');
       menuBtn.setAttribute('aria-expanded','false'); menuEl.setAttribute('aria-hidden','true'); }
     menuBtn.addEventListener('click', e=>{ e.stopPropagation(); menuIsOpen()?closeMenu():openMenu(); });
-    document.getElementById('menuClose').addEventListener('click', closeMenu);
     menuScrim.addEventListener('click', closeMenu);
     addEventListener('keydown', e=>{ if(e.code==='Escape' && menuIsOpen()) closeMenu(); });
+
+    // --- welcome / how-it-works popup (auto-shown once the intro settles; closes on ✕ or first movement) ---
+    const welcomeEl=document.getElementById('welcome'), welcomeScrim=document.getElementById('welcomeScrim');
+    function welcomeOpen(){ return welcomeEl.classList.contains('show'); }
+    function showWelcome(){ welcomeEl.classList.add('show'); welcomeScrim.classList.add('show'); welcomeEl.setAttribute('aria-hidden','false'); }
+    function closeWelcome(){ welcomeEl.classList.remove('show'); welcomeScrim.classList.remove('show'); welcomeEl.setAttribute('aria-hidden','true'); }
+    document.getElementById('welcomeClose').addEventListener('click', closeWelcome);
+    welcomeScrim.addEventListener('click', closeWelcome);
+    addEventListener('keydown', e=>{ if(e.code==='Escape' && welcomeOpen()) closeWelcome(); });
 
     // --- sound settings: sliders + mute, wired to the master/music/sfx gain graph ---
     const sMaster=document.getElementById('sMaster'), sMusic=document.getElementById('sMusic'),
@@ -885,6 +924,7 @@
         if(!reducedMotion) establishAngle += dt*0.06;   // slow drift gives the zoomed-out island life
         camera.position.copy(_estPos); camera.lookAt(_estLook);
       }
+      if(started && !welcomeShown){ welcomeShown=true; showWelcome(); }   // intro settled -> auto-show the how-it-works guide once
     }
     function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
     let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
