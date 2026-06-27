@@ -15,16 +15,14 @@
     #loader { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; transition:opacity .7s ease; }
     #loader.hidden { opacity:0; pointer-events:none; }
     #loader h1 { font-size:1.05rem; color:#9fd28c; margin-top:1.6rem; font-weight:600; letter-spacing:.3px; opacity:.92; }
-    /* the island's top-down view IS the circle; the loading bar runs around its circumference */
-    #loadRing { position:relative; width:min(64vmin,440px); height:min(64vmin,440px); }
-    #loadImg { position:absolute; inset:5.5%; border-radius:50%;
-      background:#0a0a12 url("models/island-top.jpg") center/cover no-repeat;
-      box-shadow:0 0 0 1px rgba(255,255,255,.06) inset, 0 16px 55px rgba(0,0,0,.6); }
-    #loadRing svg { position:absolute; inset:0; width:100%; height:100%; transform:rotate(-90deg); overflow:visible; }  /* arc starts at 12 o'clock */
-    #loadRing .track { fill:none; stroke:rgba(159,210,140,.16); stroke-width:4; }
-    #loadRing .prog { fill:none; stroke:url(#loadGrad); stroke-width:4; stroke-linecap:round;
-      stroke-dasharray:351.858; stroke-dashoffset:351.858;            /* 2·π·56 — fully empty until progress arrives */
-      transition:stroke-dashoffset .25s ease; filter:drop-shadow(0 0 7px rgba(123,201,111,.7)); }
+    /* the island's actual top-down silhouette IS the shape; the loading bar runs around its real outline */
+    #loadRing { position:relative; width:min(70vmin,460px); height:min(70vmin,460px); }
+    #loadRing svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+    #loadRing image { filter:drop-shadow(0 16px 45px rgba(0,0,0,.6)); }
+    #loadRing .track { fill:none; stroke:rgba(159,210,140,.18); stroke-width:6; stroke-linejoin:round; }
+    #loadRing .prog { fill:none; stroke:url(#loadGrad); stroke-width:6; stroke-linecap:round; stroke-linejoin:round;
+      stroke-dasharray:1000; stroke-dashoffset:1000;                  /* pathLength=1000 -> empty until progress arrives */
+      transition:stroke-dashoffset .25s ease; filter:drop-shadow(0 0 8px rgba(123,201,111,.8)); }
     #loadPct { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); display:flex; align-items:flex-start;
       font-size:1.6rem; font-weight:800; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.9); font-variant-numeric:tabular-nums; }
     #loadPct span { font-size:.8rem; margin-left:2px; margin-top:.18rem; opacity:.85; }
@@ -189,13 +187,17 @@
 <body>
   <div id="loader">
     <div id="loadRing">
-      <div id="loadImg"></div>
-      <svg viewBox="0 0 120 120" aria-hidden="true">
-        <defs><linearGradient id="loadGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#7bc96f"/><stop offset="1" stop-color="#a7e08c"/>
-        </linearGradient></defs>
-        <circle class="track" cx="60" cy="60" r="56"/>
-        <circle class="prog"  cx="60" cy="60" r="56"/>
+      <svg viewBox="0 0 512 512" aria-hidden="true">
+        <defs>
+          <linearGradient id="loadGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#7bc96f"/><stop offset="1" stop-color="#a7e08c"/>
+          </linearGradient>
+          <path id="islandPath" pathLength="1000" d="M456.9 256.0 L458.6 261.8 L460.5 267.7 L461.2 273.6 L461.0 279.5 L459.0 285.2 L456.9 290.8 L453.2 296.0 L448.7 300.8 L443.9 305.4 L439.2 309.8 L435.3 314.3 L432.7 319.1 L429.7 323.6 L427.2 328.3 L424.8 333.1 L422.8 338.0 L420.6 342.9 L418.1 347.5 L415.4 352.1 L412.3 356.5 L409.1 360.7 L406.1 365.0 L402.7 369.1 L400.1 373.8 L398.5 379.5 L397.1 385.5 L396.0 392.0 L394.3 398.3 L391.2 403.3 L387.6 407.8 L382.6 410.8 L376.3 412.0 L369.8 412.7 L363.3 412.9 L357.0 413.1 L351.6 414.6 L346.5 416.2 L341.9 418.8 L337.3 421.4 L332.6 423.7 L327.9 426.1 L323.1 428.3 L318.1 430.2 L313.1 431.9 L308.0 433.1 L302.9 434.3 L297.8 435.8 L292.7 436.9 L287.5 438.2 L282.4 439.3 L277.2 440.6 L272.0 441.7 L266.7 443.0 L261.4 444.2 L256.0 445.1 L250.6 445.7 L245.1 446.0 L239.7 445.9 L234.2 445.7 L228.8 445.3 L223.4 444.1 L218.1 443.1 L212.8 442.0 L207.5 440.7 L202.1 439.5 L197.0 437.6 L191.7 436.1 L186.5 434.5 L181.4 432.4 L176.4 430.2 L171.5 427.9 L166.8 425.1 L162.0 422.5 L157.4 419.5 L152.8 416.6 L148.2 413.6 L143.9 410.2 L139.8 406.7 L135.3 403.6 L131.0 400.3 L126.7 396.9 L122.7 393.1 L118.9 389.3 L114.7 385.7 L110.6 382.0 L106.8 378.0 L102.9 374.1 L99.1 370.0 L95.1 366.0 L91.3 361.8 L87.8 357.4 L84.8 352.7 L81.8 347.9 L78.4 343.3 L75.2 338.6 L71.8 333.8 L69.6 328.6 L67.9 323.1 L66.1 317.7 L64.1 312.3 L63.5 306.6 L63.3 300.8 L63.8 294.9 L62.8 289.4 L61.9 283.9 L61.2 278.3 L61.0 272.8 L60.6 267.2 L60.3 261.6 L59.6 256.0 L59.7 250.4 L59.7 244.8 L59.5 239.1 L59.4 233.4 L59.2 227.7 L59.2 222.0 L59.7 216.2 L57.4 209.8 L54.7 203.1 L52.3 196.2 L50.1 189.1 L48.6 182.0 L49.4 175.6 L51.0 169.4 L55.5 164.4 L60.1 159.7 L64.2 154.8 L69.0 150.4 L73.9 146.2 L77.6 141.4 L80.7 136.2 L83.2 130.5 L86.7 125.4 L90.9 121.0 L94.2 115.8 L97.3 110.4 L101.6 105.9 L106.3 102.0 L111.8 98.9 L117.2 95.8 L122.4 92.6 L128.2 90.2 L134.0 88.1 L138.9 84.7 L143.6 81.2 L148.5 77.8 L153.5 74.5 L158.9 71.9 L164.4 69.8 L170.0 67.8 L175.7 66.0 L181.5 64.6 L187.3 63.4 L193.3 62.9 L199.3 63.0 L205.2 62.9 L211.3 63.6 L217.1 64.1 L222.8 64.3 L228.4 63.7 L233.9 63.3 L239.5 63.4 L245.0 63.0 L250.4 61.2 L256.0 59.0 L261.7 57.6 L267.3 57.8 L272.9 59.2 L278.5 60.0 L284.2 60.1 L289.7 61.0 L295.0 63.5 L300.1 66.5 L305.2 69.0 L310.6 69.9 L316.3 70.4 L321.7 71.9 L327.0 73.6 L332.6 74.8 L339.0 74.4 L345.4 74.1 L351.6 74.9 L357.3 76.6 L362.2 79.8 L367.5 82.4 L373.1 84.7 L378.0 88.1 L382.2 92.4 L386.8 96.1 L391.7 99.4 L397.3 102.0 L401.5 106.3 L405.2 111.0 L408.2 116.3 L411.7 121.1 L414.8 126.2 L417.2 131.7 L419.3 137.4 L421.3 143.0 L423.2 148.5 L425.2 154.0 L427.0 159.4 L428.9 164.8 L431.4 169.8 L433.5 174.9 L435.5 180.1 L437.0 185.5 L440.9 190.0 L445.0 194.6 L448.5 199.5 L449.4 205.2 L449.9 210.9 L451.1 216.5 L453.1 221.9 L452.2 227.8 L451.4 233.6 L451.0 239.2 L452.3 244.8 L454.4 250.3 Z"/>
+          <clipPath id="islandClip"><use href="#islandPath"/></clipPath>
+        </defs>
+        <image href="models/island-top.jpg" x="0" y="0" width="512" height="512" clip-path="url(#islandClip)"/>
+        <use href="#islandPath" class="track"/>
+        <use href="#islandPath" class="prog"/>
       </svg>
       <div id="loadPct">0<span>%</span></div>
     </div>
@@ -282,7 +284,7 @@
 
     const loaderEl=document.getElementById('loader');
     const ringEl=document.querySelector('#loadRing .prog'), pctEl=document.getElementById('loadPct');
-    const RING_C=2*Math.PI*56;   // circumference of the progress ring
+    const RING_C=1000;   // normalised pathLength of the island-outline progress bar
     const fbEl=document.getElementById('fallback'), hintEl=document.getElementById('hint');
     const panelEl=document.getElementById('panel'), toastEl=document.getElementById('toast');
     const startEl=document.getElementById('start');
@@ -954,7 +956,7 @@
         // cinematic descent: a straight-down top view of the island swoops down into the angled CLICK-TO-START shot
         introT=Math.min(1, introT + dt/3.4);
         const e=introT<0.5 ? 4*introT*introT*introT : 1-Math.pow(-2*introT+2,3)/2;   // ease-in-out cubic
-        _topPos.set(0, bound*3.2, 0.001);                       // straight-down framing that matches the loading-screen island image
+        _topPos.set(0, bound*4.2, 0.001);                       // straight-down framing that matches the loading-screen island image
         camera.position.lerpVectors(_topPos, _estPos, e);
         _lookTmp.lerpVectors(_ctr, _estLook, e); camera.lookAt(_lookTmp);
         if(introT>=1){ intro=false; startEl.classList.add('show'); }   // settled into the establishing shot -> invite the click
