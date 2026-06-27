@@ -98,6 +98,7 @@
     #dpad button:active { background:#7bc96f; color:#11161b; }
     .dp-up{grid-area:1/2;} .dp-left{grid-area:2/1;} .dp-right{grid-area:2/3;} .dp-down{grid-area:3/2;}
     @media (hover:none) and (pointer:coarse){ #dpad{display:grid;} }
+    body.touch #dpad{ display:grid; }   /* same touch detection as the help text (JS-set); hidden on laptop */
 
     /* zoomed-out intro: CLICK TO START overlay (Bruno-Simon style) */
     #start { position:fixed; inset:0; z-index:40; display:none; flex-direction:column; align-items:center; justify-content:center; gap:10px; pointer-events:none; }
@@ -147,6 +148,10 @@
     .help-list li { display:flex; gap:12px; align-items:flex-start; margin-bottom:13px; font-size:.88rem; line-height:1.45; color:#dbe6db; }
     .help-list .keys { flex:0 0 92px; display:flex; flex-wrap:wrap; gap:4px; }
     .keycap { display:inline-block; padding:3px 7px; border-radius:6px; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18); font-size:.74rem; white-space:nowrap; }
+    /* device-aware help text: keyboard wording on desktop, touch wording on phone/tablet */
+    .touch-only { display:none; }
+    body.touch .kbd-only { display:none; }
+    body.touch .touch-only { display:inline; }
     .help-tip { margin-top:6px; font-size:.84rem; color:#9fb39f; line-height:1.5; }
     .stars { display:flex; gap:7px; font-size:1.9rem; margin-bottom:14px; }
     .stars span { cursor:pointer; color:rgba(255,255,255,.22); transition:color .15s ease, transform .15s ease; line-height:1; }
@@ -228,10 +233,10 @@
     <section class="menu-sec">
       <h3>❓ How This Website Works</h3>
       <ul class="help-list">
-        <li><span class="keys"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span> <span>Walk around the floating market. On touch, use the on-screen arrow pad.</span></li>
-        <li><span class="keys"><span class="keycap">Right mouse</span></span> <span>Hold and move the mouse to look around. On touch, drag on the scene.</span></li>
-        <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
-        <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close a panel with the red ✕, press Esc, or simply start moving.</span></li>
+        <li><span class="keys"><span class="kbd-only"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span><span class="touch-only"><span class="keycap">◀ ▲ ▼ ▶</span></span></span> <span>Walk around the floating market<span class="kbd-only"> with the keys</span><span class="touch-only"> using the on-screen arrow buttons</span>.</span></li>
+        <li><span class="keys"><span class="kbd-only"><span class="keycap">Right mouse</span></span><span class="touch-only"><span class="keycap">Drag</span></span></span> <span><span class="kbd-only">Hold the right mouse button and move to look around.</span><span class="touch-only">Drag on the scene to look around.</span></span></li>
+        <li><span class="keys"><span class="keycap">❓ orb</span></span> <span><span class="kbd-only">Click</span><span class="touch-only">Tap</span> the glowing question-mark orb at a stall to open that topic's panel.</span></li>
+        <li><span class="keys"><span class="kbd-only"><span class="keycap">Esc</span><span class="keycap">✕</span></span><span class="touch-only"><span class="keycap">✕</span></span></span> <span>Close a panel with the <span class="kbd-only">red ✕, press Esc, or simply start moving</span><span class="touch-only">✕, or simply start moving</span>.</span></li>
       </ul>
       <p class="help-tip">💡 Tip: every market stall is a different topic — About Me, Skills, My Creations, Ongoing Projects and Contact. Visit them all to explore the full portfolio.</p>
     </section>
@@ -254,10 +259,10 @@
     <h2>Welcome to the market 👋</h2>
     <div class="wsub">A quick guide to exploring this portfolio.</div>
     <ul class="help-list">
-      <li><span class="keys"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span> <span>Walk around the floating market. On touch, use the on-screen arrow pad.</span></li>
-      <li><span class="keys"><span class="keycap">Right mouse</span></span> <span>Hold and move the mouse to look around. On touch, drag on the scene.</span></li>
-      <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
-      <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close any panel with the ✕, press Esc, or simply start moving.</span></li>
+      <li><span class="keys"><span class="kbd-only"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span><span class="touch-only"><span class="keycap">◀ ▲ ▼ ▶</span></span></span> <span>Walk around the floating market<span class="kbd-only"> with the keys</span><span class="touch-only"> using the on-screen arrow buttons</span>.</span></li>
+      <li><span class="keys"><span class="kbd-only"><span class="keycap">Right mouse</span></span><span class="touch-only"><span class="keycap">Drag</span></span></span> <span><span class="kbd-only">Hold the right mouse button and move to look around.</span><span class="touch-only">Drag on the scene to look around.</span></span></li>
+      <li><span class="keys"><span class="keycap">❓ orb</span></span> <span><span class="kbd-only">Click</span><span class="touch-only">Tap</span> the glowing question-mark orb at a stall to open that topic's panel.</span></li>
+      <li><span class="keys"><span class="kbd-only"><span class="keycap">Esc</span><span class="keycap">✕</span></span><span class="touch-only"><span class="keycap">✕</span></span></span> <span>Close any panel with the <span class="kbd-only">✕, press Esc, or simply start moving</span><span class="touch-only">✕, or simply start moving</span>.</span></li>
     </ul>
     <p class="help-tip">💡 Each stall is a topic — About Me, Skills, My Creations, Ongoing Projects and Contact. Explore them all! You can reopen this guide anytime from the ☰ menu.</p>
     <div class="wfoot">Press ✕ or start moving to begin exploring.</div>
@@ -292,6 +297,7 @@
     const cfg={ world:120, charH:5.4, camDist:18, camPitch:0.5, moveSpeed:16 };
     let camYaw=Math.PI, camPitch=cfg.camPitch; const camDist=cfg.camDist;   // camera orbit (right-drag); fixed distance — no zoom
     const isMobile=matchMedia('(hover:none) and (pointer:coarse)').matches;
+    if(isMobile) document.body.classList.add('touch');   // shows the on-screen arrow pad + touch wording (hidden on laptop)
     const reducedMotion=matchMedia('(prefers-reduced-motion:reduce)').matches;
 
     const renderer=new THREE.WebGLRenderer({antialias:!isMobile});
