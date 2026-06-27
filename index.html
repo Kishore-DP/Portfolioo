@@ -14,9 +14,17 @@
 
     #loader { position:fixed; inset:0; z-index:50; display:flex; flex-direction:column; align-items:center; justify-content:center; background:#000; transition:opacity .7s ease; }
     #loader.hidden { opacity:0; pointer-events:none; }
-    #loader h1 { font-size:1.15rem; color:#9fd28c; margin-bottom:.6rem; font-weight:600; letter-spacing:.3px; }
-    #bar { width:240px; height:7px; background:rgba(159,210,140,.18); border-radius:99px; overflow:hidden; }
-    #bar>div { height:100%; width:0%; background:linear-gradient(90deg,#7bc96f,#a7e08c); transition:width .2s ease; }
+    #loader h1 { font-size:1.05rem; color:#9fd28c; margin-top:1.15rem; font-weight:600; letter-spacing:.3px; opacity:.92; }
+    /* circular progress ring — the loading bar runs around the circumference like the market's circular ground */
+    #loadRing { position:relative; width:172px; height:172px; }
+    #loadRing svg { width:100%; height:100%; transform:rotate(-90deg); overflow:visible; }   /* start the arc at 12 o'clock */
+    #loadRing .track { fill:none; stroke:rgba(159,210,140,.14); stroke-width:6; }
+    #loadRing .prog { fill:none; stroke:url(#loadGrad); stroke-width:6; stroke-linecap:round;
+      stroke-dasharray:339.292; stroke-dashoffset:339.292;            /* 2·π·54 — fully empty until progress arrives */
+      transition:stroke-dashoffset .25s ease; filter:drop-shadow(0 0 6px rgba(123,201,111,.55)); }
+    #loadPct { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+      font-size:1.8rem; font-weight:700; color:#d3f0c6; font-variant-numeric:tabular-nums; }
+    #loadPct span { font-size:.85rem; margin-left:1px; margin-top:.5rem; opacity:.7; align-self:flex-start; }
 
     #fallback { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:2rem; text-align:center; }
     #fallback.show { display:flex; }
@@ -176,7 +184,19 @@
   </style>
 </head>
 <body>
-  <div id="loader"><h1>Loading the market…</h1><div id="bar"><div></div></div></div>
+  <div id="loader">
+    <div id="loadRing">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <defs><linearGradient id="loadGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#7bc96f"/><stop offset="1" stop-color="#a7e08c"/>
+        </linearGradient></defs>
+        <circle class="track" cx="60" cy="60" r="54"/>
+        <circle class="prog"  cx="60" cy="60" r="54"/>
+      </svg>
+      <div id="loadPct">0<span>%</span></div>
+    </div>
+    <h1>Loading the market…</h1>
+  </div>
   <div id="fallback" role="alert">3D not supported — try a recent Chrome/Edge/Firefox/Safari with hardware acceleration.</div>
   <div id="hint">WASD / arrows to move · hold right mouse to look around · click a glowing ❓ orb to open a topic</div>
   <div id="toast"></div>
@@ -256,7 +276,9 @@
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { TGALoader } from 'three/addons/loaders/TGALoader.js';
 
-    const loaderEl=document.getElementById('loader'), barEl=document.querySelector('#bar>div');
+    const loaderEl=document.getElementById('loader');
+    const ringEl=document.querySelector('#loadRing .prog'), pctEl=document.getElementById('loadPct');
+    const RING_C=2*Math.PI*54;   // circumference of the progress ring
     const fbEl=document.getElementById('fallback'), hintEl=document.getElementById('hint');
     const panelEl=document.getElementById('panel'), toastEl=document.getElementById('toast');
     const startEl=document.getElementById('start');
@@ -367,7 +389,9 @@
 
     // ---------- loaders ----------
     const manager=new THREE.LoadingManager();
-    manager.onProgress=(u,n,t)=>{ barEl.style.width=Math.round(100*n/Math.max(t,1))+'%'; };
+    manager.onProgress=(u,n,t)=>{ const frac=n/Math.max(t,1);
+      if(ringEl) ringEl.style.strokeDashoffset=RING_C*(1-frac);     // sweep the arc around the circle
+      if(pctEl) pctEl.firstChild.nodeValue=Math.round(frac*100); };
     const fbxL=new FBXLoader(manager), gltfL=new GLTFLoader(manager), texL=new THREE.TextureLoader(manager), tgaL=new TGALoader(manager);
     const T={}; const NOFLIP=new Set(['environment','latern']);
     function png(name){ if(!T[name]){ const t=texL.load(`models/market/${name}.png`); t.colorSpace=THREE.SRGBColorSpace; t.flipY=!NOFLIP.has(name); T[name]=t; } return T[name]; }
@@ -391,6 +415,7 @@
     const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
     const ORB_R=1.35, ORB_GAP=1.0;       // world radius + gap below the shop signboard's underside
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
+    let intro=false, introT=0;   // post-load cinematic: top-down view of the island eases down into the CLICK-TO-START establishing shot
     let welcomeShown=false;   // the how-it-works popup auto-shows once, when the intro camera first settles
 
     function surfaceAt(x,z,fromY){ raycaster.set(new THREE.Vector3(x,fromY+RAY_UP,z),DOWN); raycaster.far=RAY_FAR;
@@ -732,7 +757,7 @@
     });
 
     // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
-    function beginStart(){ if(started||starting) return; starting=true; startEl.classList.remove('show'); hintEl.style.opacity='1'; if(reducedMotion) started=true; }
+    function beginStart(){ if(started||starting||intro) return; starting=true; startEl.classList.remove('show'); hintEl.style.opacity='1'; if(reducedMotion) started=true; }   // ignore clicks until the descent settles
     addEventListener('click', beginStart);
     addEventListener('touchstart', beginStart, {passive:true});
 
@@ -852,6 +877,7 @@
     const clock=new THREE.Clock(); const camTarget=new THREE.Vector3(), camPivot=new THREE.Vector3();
     const _q=new THREE.Quaternion(), _ax=new THREE.Vector3(1,0,0); const _proj=new THREE.Vector3();
     const _estPos=new THREE.Vector3(), _estLook=new THREE.Vector3(), _lookTmp=new THREE.Vector3();
+    const _topPos=new THREE.Vector3(), _ctr=new THREE.Vector3(0,0,0);   // straight-down intro view of the island
     function step(dt){
       let moving=false;
       if(started){
@@ -920,6 +946,14 @@
         camera.position.lerpVectors(_estPos, camTarget, e);
         _lookTmp.lerpVectors(_estLook, camPivot, e); camera.lookAt(_lookTmp);
         if(startT>=1) started=true;
+      } else if(intro){
+        // cinematic descent: a straight-down top view of the island swoops down into the angled CLICK-TO-START shot
+        introT=Math.min(1, introT + dt/3.4);
+        const e=introT<0.5 ? 4*introT*introT*introT : 1-Math.pow(-2*introT+2,3)/2;   // ease-in-out cubic
+        _topPos.set(0, bound*4.4, 0.001);                       // high above centre, looking straight at the ground
+        camera.position.lerpVectors(_topPos, _estPos, e);
+        _lookTmp.lerpVectors(_ctr, _estLook, e); camera.lookAt(_lookTmp);
+        if(introT>=1){ intro=false; startEl.classList.add('show'); }   // settled into the establishing shot -> invite the click
       } else {
         if(!reducedMotion) establishAngle += dt*0.06;   // slow drift gives the zoomed-out island life
         camera.position.copy(_estPos); camera.lookAt(_estLook);
@@ -943,8 +977,9 @@
       // pinned start: robot stands at this exact spot, camera at this exact angle (captured from live readout)
       const SPAWN={x:-17.4, z:38.6}; camYaw=12.138; camPitch=0.263;
       const sy=surfaceTop(SPAWN.x,SPAWN.z)??0; groundY=sy; player.position.set(SPAWN.x,sy,SPAWN.z); player.rotation.y=camYaw+Math.PI; // face away from camera
-      loaderEl.classList.add('hidden'); startEl.classList.add('show'); animate();
-      if(reducedMotion) beginStart();   // skip the click step when the user prefers reduced motion
+      loaderEl.classList.add('hidden'); animate();
+      if(reducedMotion){ startEl.classList.add('show'); beginStart(); }   // reduced motion: skip the descent + click, go straight to 3rd person
+      else { intro=true; }   // play the top-down -> establishing descent, which then reveals CLICK TO START
     })();
   </script>
 </body>
