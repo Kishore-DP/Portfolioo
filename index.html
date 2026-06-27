@@ -64,11 +64,15 @@
     #panelClose:active { transform:scale(.93); }
 
     /* fixed header */
-    #panel .panel-head { flex:0 0 auto; padding:30px 70px 18px 40px; border-bottom:1px solid rgba(255,255,255,.08);
-      background:linear-gradient(180deg, rgba(255,255,255,.03), transparent); }
-    #panel .eyebrow { display:flex; align-items:center; gap:10px; font-size:.74rem; letter-spacing:.2em; text-transform:uppercase; color:var(--accent,#7bc96f); margin-bottom:8px; }
-    #panel .eyebrow .ico { font-size:1.6rem; }
-    #panel h2 { font-size:clamp(1.5rem,3.2vw,2.4rem); line-height:1.12; }
+    #panel .panel-head { flex:0 0 auto; padding:32px 72px 22px 40px; border-bottom:1px solid rgba(255,255,255,.08); position:relative;
+      background:linear-gradient(180deg, rgba(255,255,255,.03), transparent);
+      background:radial-gradient(130% 150% at 0% -30%, color-mix(in srgb,var(--accent) 16%, transparent), transparent 58%), linear-gradient(180deg, rgba(255,255,255,.03), transparent); }
+    #panel .eyebrow { display:flex; align-items:center; gap:12px; font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--accent,#7bc96f); margin-bottom:13px; font-weight:700; }
+    #panel .eyebrow .ico { font-size:1.2rem; width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; border-radius:12px;
+      background:rgba(255,255,255,.05); background:color-mix(in srgb,var(--accent) 20%, rgba(255,255,255,.04));
+      border:1px solid rgba(255,255,255,.12); border-color:color-mix(in srgb,var(--accent) 38%, transparent); box-shadow:0 6px 18px rgba(0,0,0,.3); }
+    #panel h2 { font-size:clamp(1.7rem,3.6vw,2.6rem); line-height:1.08; letter-spacing:-.015em; }
+    #panel .psub { margin-top:9px; color:#9fb39f; font-size:1rem; line-height:1.5; max-width:58ch; }
 
     /* scrollable body */
     #panel .panel-scroll { flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain; scroll-behavior:smooth;
@@ -77,18 +81,65 @@
     #panel .panel-scroll::-webkit-scrollbar-thumb { background:rgba(255,255,255,.16); border-radius:99px; border:2px solid transparent; background-clip:content-box; }
     #panel .panel-scroll::-webkit-scrollbar-thumb:hover { background:rgba(255,255,255,.28); background-clip:content-box; }
     #panel .panel-scroll { scrollbar-width:thin; scrollbar-color:rgba(255,255,255,.2) transparent; }
-    #panel .panel-scroll p { margin-bottom:14px; max-width:70ch; }
-    #panel .panel-scroll h3 { font-size:1.12rem; margin:22px 0 10px; color:#fff; }
-    #panel .panel-scroll em { color:#9fb39f; }
-    #panel .panel-scroll a { color:var(--accent,#7bc96f); text-decoration:none; border-bottom:1px solid rgba(123,201,111,.4); }
+    #panel .panel-scroll p { margin-bottom:14px; max-width:68ch; }
+    /* opening line — larger, lighter, sets the tone */
+    #panel .panel-scroll .lead { font-size:1.2rem; line-height:1.55; color:#eef5ee; margin-bottom:22px; max-width:62ch; font-weight:400; }
+    #panel .panel-scroll .lead strong { color:var(--accent,#7bc96f); font-weight:700; }
+    /* section labels — uppercase accent kicker with a glowing tick */
+    #panel .panel-scroll h3 { font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--accent,#7bc96f);
+      margin:28px 0 13px; display:flex; align-items:center; gap:11px; font-weight:700; }
+    #panel .panel-scroll h3::before { content:''; width:16px; height:2px; border-radius:2px; flex:0 0 auto;
+      background:var(--accent,#7bc96f); box-shadow:0 0 9px var(--accent,#7bc96f); }
+    #panel .panel-scroll em { color:#9fb39f; font-style:italic; }
+    #panel .panel-scroll strong { color:#fff; font-weight:700; }
+    #panel .panel-scroll a { color:var(--accent,#7bc96f); text-decoration:none; border-bottom:1px solid color-mix(in srgb,var(--accent,#7bc96f) 45%, transparent); transition:border-color .2s; }
     #panel .panel-scroll a:hover { border-bottom-color:var(--accent,#7bc96f); }
-    #panel .panel-scroll ul { margin:0 0 14px; padding-left:20px; }
-    #panel .panel-scroll li { margin-bottom:8px; }
-    #panel .tags { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
-    #panel .tags span { font-size:.78rem; padding:5px 12px; border-radius:99px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.12); }
-    .proj { padding:16px 18px; margin:0 0 14px; border-radius:14px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-left:3px solid var(--accent,#7bc96f); }
+    /* lists — custom accent diamond bullets */
+    #panel .panel-scroll ul { list-style:none; margin:0 0 16px; padding:0; }
+    #panel .panel-scroll li { position:relative; margin-bottom:11px; padding-left:26px; line-height:1.55; }
+    #panel .panel-scroll li::before { content:''; position:absolute; left:5px; top:.5em; width:8px; height:8px; transform:rotate(45deg);
+      background:var(--accent,#7bc96f); border-radius:2px; box-shadow:0 0 8px color-mix(in srgb,var(--accent,#7bc96f) 70%, transparent); }
+    /* accent chips */
+    #panel .tags { display:flex; flex-wrap:wrap; gap:9px; margin:16px 0 6px; }
+    #panel .tags span { font-size:.78rem; padding:6px 14px; border-radius:99px; color:#eef5ee;
+      background:rgba(255,255,255,.06); background:color-mix(in srgb,var(--accent,#7bc96f) 13%, rgba(255,255,255,.03));
+      border:1px solid rgba(255,255,255,.14); border-color:color-mix(in srgb,var(--accent,#7bc96f) 38%, transparent);
+      transition:transform .16s ease, background .2s ease; }
+    #panel .tags span:hover { transform:translateY(-2px); background:color-mix(in srgb,var(--accent,#7bc96f) 24%, rgba(255,255,255,.04)); }
+    /* highlight callout (e.g. an achievement) */
+    #panel .panel-scroll .callout { display:flex; gap:15px; align-items:flex-start; margin:8px 0 18px; padding:17px 19px; border-radius:15px;
+      background:rgba(255,255,255,.03); background:color-mix(in srgb,var(--accent,#7bc96f) 11%, rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.1); border-color:color-mix(in srgb,var(--accent,#7bc96f) 30%, transparent); border-left:3px solid var(--accent,#7bc96f); }
+    #panel .panel-scroll .callout .cico { font-size:1.55rem; line-height:1.2; flex:0 0 auto; }
+    #panel .panel-scroll .callout strong { color:var(--accent,#7bc96f); }
+    #panel .panel-scroll .callout p { margin:0; max-width:none; }
+    /* contact rows */
+    #panel .panel-scroll .contact-list { display:grid; gap:10px; margin:8px 0 20px; }
+    #panel .panel-scroll .contact-row { display:flex; align-items:center; gap:15px; padding:13px 16px; border-radius:14px; text-decoration:none;
+      color:#eaf2ea; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); transition:transform .18s ease, background .2s ease, border-color .2s ease; }
+    #panel .panel-scroll .contact-row:hover { transform:translateX(5px);
+      background:color-mix(in srgb,var(--accent,#7bc96f) 12%, rgba(255,255,255,.03)); border-color:color-mix(in srgb,var(--accent,#7bc96f) 42%, transparent); }
+    #panel .panel-scroll .contact-row .ci { font-size:1.35rem; width:44px; height:44px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:12px;
+      background:rgba(255,255,255,.05); background:color-mix(in srgb,var(--accent,#7bc96f) 17%, rgba(255,255,255,.04)); }
+    #panel .panel-scroll .contact-row b { display:block; color:#fff; font-weight:600; font-size:.95rem; margin-bottom:1px; }
+    #panel .panel-scroll .contact-row small { color:#9fb39f; font-size:.85rem; }
+    /* project cards */
+    .proj { padding:18px 20px; margin:0 0 14px; border-radius:16px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      border-left:3px solid var(--accent,#7bc96f); transition:transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+    .proj:hover { transform:translateY(-3px); box-shadow:0 16px 38px rgba(0,0,0,.42); border-color:color-mix(in srgb,var(--accent,#7bc96f) 50%, rgba(255,255,255,.1)); }
     .proj h3 { margin-top:0; }
-    @media (max-width:680px){ #panel{ inset:6vh 5vw; } #panel .panel-head{ padding:24px 64px 14px 22px; } #panel .panel-scroll{ padding:18px 22px 30px; } }
+    .proj h3::before { display:none; }   /* project titles aren't section labels */
+    .proj h3 { font-size:1.05rem; letter-spacing:0; text-transform:none; color:#fff; margin-bottom:8px; }
+    /* staggered entrance for body blocks */
+    @keyframes panelRise { from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
+    #panel.show .panel-scroll > * { animation:panelRise .5s cubic-bezier(.2,.8,.2,1) both; }
+    #panel.show .panel-scroll > :nth-child(1){animation-delay:.03s} #panel.show .panel-scroll > :nth-child(2){animation-delay:.08s}
+    #panel.show .panel-scroll > :nth-child(3){animation-delay:.13s} #panel.show .panel-scroll > :nth-child(4){animation-delay:.18s}
+    #panel.show .panel-scroll > :nth-child(5){animation-delay:.23s} #panel.show .panel-scroll > :nth-child(6){animation-delay:.28s}
+    #panel.show .panel-scroll > :nth-child(7){animation-delay:.33s} #panel.show .panel-scroll > :nth-child(8){animation-delay:.38s}
+    #panel.show .panel-scroll > :nth-child(n+9){animation-delay:.42s}
+    @media (prefers-reduced-motion:reduce){ #panel.show .panel-scroll > *{ animation:none!important; } }
+    @media (max-width:680px){ #panel{ inset:6vh 5vw; } #panel .panel-head{ padding:24px 64px 16px 22px; } #panel .panel-scroll{ padding:18px 22px 30px; } #panel .panel-scroll .lead{ font-size:1.08rem; } }
 
     #sound { position:fixed; top:16px; right:16px; z-index:30; width:44px; height:44px; border:none; border-radius:50%;
       background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.15rem; cursor:pointer; border:1px solid rgba(255,255,255,.1); }
@@ -325,25 +376,29 @@
     // market1=fish · market2=vegetables · market3=bakery · market4=weapon · market5=meat
     const SECTORS={
       fish:      { topic:'about',    title:'About Me',          ico:'🐟', accent:'#6ba8e0',
+                   kicker:'Who I am', sub:'Developer, builder, and perpetual tinkerer.',
                    html:`
-                     <p>Hi, I'm <strong>Kishore DP</strong> — <em>a developer who likes turning ideas into things people can click, play and actually use.</em></p>
+                     <p class="lead">Hi, I'm <strong>Kishore DP</strong> — a developer with a habit of turning random "what if…" ideas into things people can actually click, play, and (hopefully) enjoy.</p>
                      <h3>Who I am</h3>
-                     <p><em>[Add 2–3 sentences here: what you study or do, where you're based, and what first pulled you into building software.]</em></p>
+                     <p>I'm a high-school student with an unhealthy curiosity for building things. My interests live somewhere between <strong>AI</strong>, <strong>full-stack development</strong>, <strong>game development</strong> and <strong>embedded systems</strong> — so it's not unusual for me to spend one day designing a website, the next building a Roblox game, and another making LEDs blink for reasons that felt important at 2&nbsp;AM. I learn best by creating, breaking, fixing, and repeating.</p>
                      <h3>What I care about</h3>
                      <ul>
-                       <li>Clean, thoughtful interfaces that feel good to use</li>
-                       <li>Learning by building real projects end-to-end</li>
-                       <li>Performance, detail and the last 10% of polish</li>
-                       <li>Sharing what I learn and helping others build</li>
+                       <li>Crafting interfaces that are simple, intuitive and satisfying to use.</li>
+                       <li>Building real projects instead of collecting unfinished tutorials.</li>
+                       <li>Obsessing over the tiny details most people don't notice — but everyone feels.</li>
+                       <li>Sharing what I learn and helping others build better.</li>
                      </ul>
                      <h3>How I work</h3>
-                     <p>I like to start from the user's experience and work backwards — prototype quickly, get something on screen, then refine until it feels right. <em>[Tweak this to match how you actually like to work.]</em></p>
+                     <p>I believe great software starts with <em>people</em>, not code. I begin with the user's experience, prototype quickly, experiment without hesitation, and refine relentlessly until everything feels effortless. For me, the first version is just proof that the idea works — the real fun begins in making it feel <em>right</em>.</p>
                      <h3>Beyond the keyboard</h3>
-                     <p><em>[A line or two about hobbies and interests — games, music, sport, art, travel… whatever makes you, you.]</em></p>
-                     <div class="tags"><span>Builder</span><span>Problem solver</span><span>Lifelong learner</span><span>Team player</span></div>` },
+                     <p>Beyond coding, I thrive wherever ideas, leadership and teamwork come together.</p>
+                     <div class="callout"><span class="cico">🏆</span><p>Being elected <strong>House Captain</strong> at my school taught me to lead with responsibility, communicate under pressure, and bring people together toward a common goal — skills I value just as much as writing good code.</p></div>
+                     <p>Whether I'm debating, playing sports, exploring the latest breakthroughs in AI, or diving into a new challenge, I'm always looking for ways to learn, lead, and leave things better than I found them. And yes… I still have a habit of starting "just one more project" before finishing the last one.</p>
+                     <div class="tags"><span>Builder</span><span>Problem solver</span><span>Lifelong learner</span><span>Team player</span><span>House Captain</span></div>` },
       vegetables:{ topic:'skills',   title:'Expertise',    ico:'🥕', accent:'#e0a45a',
+                   kicker:'My toolkit', sub:'The languages, frameworks and tools I build with.',
                    html:`
-                     <p>The toolkit I reach for when bringing a project to life. <em>[Trim, reorder or extend these so they match your real stack.]</em></p>
+                     <p class="lead">The toolkit I reach for when bringing a project to life. <em>[Trim, reorder or extend these so they match your real stack.]</em></p>
                      <h3>Languages</h3>
                      <div class="tags"><span>JavaScript</span><span>TypeScript</span><span>Python</span><span>Java</span><span>C / C++</span></div>
                      <h3>Frontend</h3>
@@ -355,8 +410,9 @@
                      <h3>Currently levelling up</h3>
                      <p><em>[What you're actively learning right now — a framework, a concept, a certification, a language.]</em></p>` },
       bakery:    { topic:'done',     title:"My Creations", ico:'🍞', accent:'#7bc96f',
+                   kicker:'Shipped work', sub:'Things I\'ve designed, built and shipped.',
                    html:`
-                     <p>A selection of projects I've designed, built and shipped. <em>[Replace these three with your real work — keep the card layout.]</em></p>
+                     <p class="lead">A selection of projects I've designed, built and shipped. <em>[Replace these three with your real work — keep the card layout.]</em></p>
                      <div class="proj"><h3>Project One</h3>
                        <p><em>[One or two lines on what it does, the problem it solves and what you're proud of.]</em></p>
                        <div class="tags"><span>React</span><span>Node</span><span>MongoDB</span></div>
@@ -370,8 +426,9 @@
                        <div class="tags"><span>Three.js</span><span>WebGL</span></div>
                        <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>` },
       weapon:    { topic:'building', title:'Ongoing Projects',ico:'⚔️', accent:'#b48be0',
+                   kicker:'On my workbench', sub:'Ideas in motion and things I\'m actively shaping.',
                    html:`
-                     <p>What's on my workbench right now — ideas in motion and things I'm actively shaping. <em>[Swap in your in-progress work.]</em></p>
+                     <p class="lead">What's on my workbench right now — ideas in motion and things I'm actively shaping. <em>[Swap in your in-progress work.]</em></p>
                      <div class="proj"><h3>In progress · <em>Project Name</em></h3>
                        <p><em>[What you're building, what already works, and what's next.]</em></p>
                        <div class="tags"><span>Status: building</span><span>React</span></div></div>
@@ -385,12 +442,15 @@
                        <li><em>[A problem you keep coming back to]</em></li>
                      </ul>` },
       meat:      { topic:'contact',  title:"Let's Connect",     ico:'🥩', accent:'#e07a6b',
+                   kicker:'Get in touch', sub:'Always happy to talk projects, opportunities or a good idea.',
                    html:`
-                     <p>I'm always happy to talk about projects, opportunities, or a good idea. <em>[Mention if you're open to internships, roles or freelance.]</em></p>
+                     <p class="lead">I'm always happy to talk about projects, opportunities, or a good idea. <em>[Mention if you're open to internships, roles or freelance.]</em></p>
                      <h3>Reach me</h3>
-                     <p>📧 <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a><br>
-                        💻 <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">github.com/Kishore-DP</a><br>
-                        🔗 <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">linkedin.com/in/kishore-dp</a></p>
+                     <div class="contact-list">
+                       <a class="contact-row" href="mailto:kishoredp27@gmail.com"><span class="ci">📧</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
+                       <a class="contact-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="ci">💻</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
+                       <a class="contact-row" href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener"><span class="ci">🔗</span><span><b>LinkedIn</b><small>linkedin.com/in/kishore-dp</small></span></a>
+                     </div>
                      <h3>Let's build something</h3>
                      <p>Whether it's a collaboration, a question, or just to say hi — drop me a message and I'll get back to you. The fastest way to reach me is email.</p>
                      <div class="tags"><span>Open to opportunities</span><span>Collaborations welcome</span></div>` },
@@ -697,7 +757,7 @@
     const scrimEl=document.getElementById('scrim');
     function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
       panelEl.innerHTML=`<button id="panelClose" aria-label="Close">&times;</button>`
-        +`<div class="panel-head"><div class="eyebrow"><span class="ico">${sec.ico}</span> Topic</div><h2>${sec.title}</h2></div>`
+        +`<div class="panel-head"><div class="eyebrow"><span class="ico">${sec.ico}</span> ${sec.kicker||'Topic'}</div><h2>${sec.title}</h2>${sec.sub?`<p class="psub">${sec.sub}</p>`:''}</div>`
         +`<div class="panel-scroll">${sec.html}</div>`;
       panelEl.querySelector('#panelClose').addEventListener('click', e=>{ e.stopPropagation(); closePanel(); });
       scrimEl.classList.add('show'); panelEl.classList.add('show');
