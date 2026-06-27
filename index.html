@@ -354,8 +354,6 @@
     let world=null;                 // the market FBX (scaled)
     const player=new THREE.Group(); scene.add(player);
     let charRoot=null, mixer=null, walkAction=null, idleAction=null; const walkBones={}; let walkPhase=0;
-    const headBones=[]; let headYaw=0, headPitch=0;           // head-look: turn the head toward the camera aim while standing still
-    const HEAD_YAW=1.15, HEAD_PITCH=0.30;                     // realistic clamps (~66° left/right, ~17° up/down)
     let groundY=0; const raycaster=new THREE.Raycaster(); const camRay=new THREE.Raycaster(); const wallRay=new THREE.Raycaster(); const DOWN=new THREE.Vector3(0,-1,0);
     const PLAYER_R=1.2;  // horizontal collision radius
     let RAY_UP=2.5, RAY_FAR=14, STEP_UP=0.6, STEP_DOWN=1.2, topY=50, bound=60;
@@ -415,6 +413,7 @@
       ZONES=[];
       for(const k in acc){ if(!SECTORS[k]||!acc[k].n) continue; const x=acc[k].x/acc[k].n, z=acc[k].z/acc[k].n;
         ZONES.push({ key:k, ...SECTORS[k], x, z }); }
+      enlargeBoards(1.45);  // make the signboards bigger / easier to read from a distance
       placeBoardTitles();   // paint each market's title directly onto its signboard (no floating UI)
 
       // shadow sized to world
@@ -448,9 +447,6 @@
       _boardMat=new THREE.MeshStandardMaterial({ map:tex, roughness:.72, metalness:.04 });
       return _boardMat;
     }
-    function drawSpaced(ctx,text,sp,y){ const ws=[...text].map(ch=>ctx.measureText(ch).width);
-      const total=ws.reduce((a,b)=>a+b,0)+sp*(text.length-1); let x=ctx.canvas.width/2-total/2; const al=ctx.textAlign; ctx.textAlign='left';
-      for(let i=0;i<text.length;i++){ ctx.fillText(text[i],x,y); x+=ws[i]+sp; } ctx.textAlign=al; }
     const titlePlanes=[];
     function makeBoardPlaque(sec){
       const W=1024, H=356; const cv=document.createElement('canvas'); cv.width=W; cv.height=H; const ctx=cv.getContext('2d');
@@ -464,21 +460,29 @@
       ctx.save(); ctx.clip();
       ctx.lineWidth=3; ctx.strokeStyle='rgba(255,255,255,.08)'; ctx.strokeRect(pad,pad-2,W-2*pad,2); ctx.restore();   // top highlight bevel
       roundRect(ctx,pad,pad,W-2*pad,H-2*pad,r); ctx.lineWidth=5; ctx.strokeStyle=sec.accent; ctx.globalAlpha=.9; ctx.stroke(); ctx.globalAlpha=1;
-      // eyebrow
+      // just the title — centred, off-white, with a short accent underline
       ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.font='600 30px "Segoe UI", system-ui, sans-serif'; ctx.fillStyle=sec.accent; drawSpaced(ctx,'MARKET STALL',7,74);
-      // title (off-white for readability) with accent underline
-      const title=sec.title.toUpperCase(); let size=118; const sf=()=>ctx.font=`800 ${size}px "Segoe UI", system-ui, sans-serif`; sf();
-      while(ctx.measureText(title).width > W*0.80 && size>52){ size-=4; sf(); }
-      const cy=H/2+16;
+      const title=sec.title.toUpperCase(); let size=140; const sf=()=>ctx.font=`800 ${size}px "Segoe UI", system-ui, sans-serif`; sf();
+      while(ctx.measureText(title).width > W*0.82 && size>54){ size-=4; sf(); }
+      const cy=H/2-4;
       ctx.shadowColor='rgba(0,0,0,.55)'; ctx.shadowBlur=12; ctx.shadowOffsetY=5;
       ctx.fillStyle='#f5edda'; ctx.fillText(title, W/2, cy); ctx.shadowColor='transparent';
-      const tw=ctx.measureText(title).width, uw=Math.min(tw*0.5, W*0.4);
-      ctx.fillStyle=sec.accent; roundRect(ctx, W/2-uw/2, cy+size*0.52, uw, 6, 3); ctx.fill();
-      // gentle call-to-action
-      ctx.font='500 25px "Segoe UI", system-ui, sans-serif'; ctx.fillStyle='rgba(245,237,218,.52)';
-      ctx.fillText(sec.ico+'   click the orb to explore', W/2, H-50);
+      const tw=ctx.measureText(title).width, uw=Math.min(tw*0.55, W*0.45);
+      ctx.fillStyle=sec.accent; roundRect(ctx, W/2-uw/2, cy+size*0.5, uw, 7, 3); ctx.fill();
       const tex=new THREE.CanvasTexture(cv); tex.colorSpace=THREE.SRGBColorSpace; tex.anisotropy=8; return tex;
+    }
+    // scale up the signboard panels in place (keeps each board's centre fixed so it doesn't drift off its post)
+    function enlargeBoards(f){
+      world.updateMatrixWorld(true);
+      world.traverse(c=>{ if(c.isMesh && /^Place\d/i.test(c.name||'')){
+        c.updateWorldMatrix(true,false);
+        const c0=new THREE.Box3().setFromObject(c).getCenter(new THREE.Vector3());
+        c.scale.multiplyScalar(f); c.updateWorldMatrix(true,false);
+        const c1=new THREE.Box3().setFromObject(c).getCenter(new THREE.Vector3());
+        const pInv=new THREE.Matrix4().copy(c.parent.matrixWorld).invert();   // re-centre in parent space
+        c.position.add(c0.applyMatrix4(pInv).sub(c1.applyMatrix4(pInv)));
+        c.updateWorldMatrix(true,false);
+      }});
     }
     function placeBoardTitles(){
       // gather the signboard panels ("PlaceN") with their world centre, face normal and face dimensions
@@ -557,7 +561,6 @@
         fitChar(charRoot, cfg.charH);
         charRoot.traverse(c=>{ if(c.isMesh||c.isSkinnedMesh){ c.castShadow=true; c.frustumCulled=false; } });
         player.add(charRoot);
-        charRoot.traverse(o=>{ if(o.isBone && /head/i.test(o.name||'')) headBones.push(o); });   // grab the head bone(s) for head-look
         // animations: use baked clips if present, else procedural leg/arm swing on a humanoid rig
         const clips=gltf.animations||[];
         if(clips.length){ mixer=new THREE.AnimationMixer(charRoot);
@@ -727,37 +730,37 @@
 
     // ---- calm, soothing ambient: all synthesized in-browser (original, no files, no copyright) ----
     function startMusic(){
-      // soft, short reverb tail — spacious but never washy
-      const ir=actx.createBuffer(2, actx.sampleRate*2.6, actx.sampleRate);
-      for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3.2); } }
+      // gentle, warm "lo-fi lounge" — soft pad bed under a mellow FM electric-piano (Rhodes) melody
+      const ir=actx.createBuffer(2, actx.sampleRate*2.8, actx.sampleRate);
+      for(let ch=0;ch<2;ch++){ const d=ir.getChannelData(ch); for(let i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,3); } }
       const rev=actx.createConvolver(); rev.buffer=ir;
-      const wet=actx.createGain(); wet.gain.value=0.45; rev.connect(wet).connect(musicGain);
-      const dry=actx.createGain(); dry.gain.value=0.7;  dry.connect(musicGain);
-      // warm master low-pass with a very slow drift so the pad gently breathes
-      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=680; lp.Q.value=0.4;
+      const wet=actx.createGain(); wet.gain.value=0.4;  rev.connect(wet).connect(musicGain);
+      const dry=actx.createGain(); dry.gain.value=0.78; dry.connect(musicGain);
+      const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=1100; lp.Q.value=0.3;
       lp.connect(dry); lp.connect(rev);
-      const lfo=actx.createOscillator(); lfo.frequency.value=0.04; const lfoG=actx.createGain(); lfoG.gain.value=160;
-      lfo.connect(lfoG).connect(lp.frequency); lfo.start();
       const bus=lp;   // all voices -> lp -> dry/wet -> musicGain
 
-      // slow, warm low-register progression (Hz): Dadd9 · F#m7 · Bm · A — gentle and resolving
-      const CHORDS=[ [146.83,220.00,277.18,329.63], [185.00,277.18,329.63,440.00], [123.47,185.00,246.94,293.66], [110.00,164.81,220.00,277.18] ];
-      const PENT=[293.66,329.63,440.00,493.88,587.33];   // soft pentatonic chimes, mid register
-      const LEN=15; let ci=0;
+      // warm, jazzy F-major loop (Hz): Fmaj7 · Am7 · Dm7 · B♭maj7
+      const CHORDS=[ [174.61,261.63,329.63,440.00], [220.00,261.63,329.63,440.00], [146.83,220.00,261.63,349.23], [233.08,293.66,349.23,466.16] ];
+      const NOTES=[349.23,392.00,440.00,523.25,587.33,659.25];   // soft F-major pentatonic melody for the Rhodes
+      const LEN=13; let ci=0;
       function pad(freqs,t){ freqs.forEach((f,k)=>{
-        const o=actx.createOscillator();  o.type='sine';     o.frequency.value=f; o.detune.value=(k-1.5)*2.5; // gentle detune warmth
-        const o2=actx.createOscillator(); o2.type='triangle'; o2.frequency.value=f; o2.detune.value=5;
-        const g=actx.createGain();  g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.06,t+4.5); g.gain.linearRampToValueAtTime(0.0001,t+LEN); // long, soft swell
-        const g2=actx.createGain(); g2.gain.value=0.35; o2.connect(g2).connect(g);   // triangle layered quietly under the sine
-        o.connect(g).connect(bus); o.start(t); o2.start(t); o.stop(t+LEN+0.2); o2.stop(t+LEN+0.2);
+        const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f; o.detune.value=(k-1.5)*2;
+        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.05,t+4); g.gain.linearRampToValueAtTime(0.0001,t+LEN);
+        o.connect(g).connect(bus); o.start(t); o.stop(t+LEN+0.2);
       }); }
-      function chime(t){ const f=PENT[(Math.random()*PENT.length)|0];
-        const o=actx.createOscillator(); o.type='sine'; o.frequency.value=f;
-        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.045,t+0.7); g.gain.exponentialRampToValueAtTime(0.0001,t+5.5); // slow, soft, long decay
-        o.connect(g).connect(bus); o.start(t); o.stop(t+5.6); }
+      // FM electric-piano voice: 2:1 carrier:modulator, modulation index decays = bell attack settling to a mellow tone
+      function note(t){ const f=NOTES[(Math.random()*NOTES.length)|0];
+        const car=actx.createOscillator(); car.type='sine'; car.frequency.value=f;
+        const mod=actx.createOscillator(); mod.type='sine'; mod.frequency.value=f*2;
+        const mg=actx.createGain(); mg.gain.setValueAtTime(f*1.3,t); mg.gain.exponentialRampToValueAtTime(0.01,t+0.85);
+        mod.connect(mg).connect(car.frequency);
+        const g=actx.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(0.06,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+3.6);
+        car.connect(g).connect(bus); car.start(t); mod.start(t); car.stop(t+3.7); mod.stop(t+3.7);
+      }
       (function loop(){ const t=actx.currentTime+0.1; pad(CHORDS[ci++%CHORDS.length],t);
-        if(Math.random()<0.55) chime(t+3+Math.random()*9);   // sparse, occasional chime — never busy
-        setTimeout(loop, LEN*1000); })();   // overlapping fades make the loop seamless
+        const n=1+((Math.random()*2)|0); for(let i=0;i<n;i++){ if(Math.random()<0.7) note(t+1+Math.random()*(LEN-2)); }  // a few soft melody notes per chord
+        setTimeout(loop, LEN*1000); })();   // overlapping fades keep the loop seamless
     }
 
     function syncSoundIcon(){ soundBtn.textContent=(soundOn && !audio.muted)?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn && !audio.muted)); }
@@ -810,8 +813,6 @@
     const clock=new THREE.Clock(); const camTarget=new THREE.Vector3(), camPivot=new THREE.Vector3();
     const _q=new THREE.Quaternion(), _ax=new THREE.Vector3(1,0,0); const _proj=new THREE.Vector3();
     const _estPos=new THREE.Vector3(), _estLook=new THREE.Vector3(), _lookTmp=new THREE.Vector3();
-    const _pq=new THREE.Quaternion(), _qa=new THREE.Quaternion(), _qb=new THREE.Quaternion(), _delta=new THREE.Quaternion();
-    const _axU=new THREE.Vector3(), _axR=new THREE.Vector3(), _hUp=new THREE.Vector3(0,1,0), _hRight=new THREE.Vector3();
     function step(dt){
       let moving=false;
       if(started){
@@ -857,28 +858,6 @@
           charRoot.position.y = charRoot.userData.baseY + (moving? Math.abs(s)*0.14 : Math.sin(performance.now()*0.0016)*0.03);
       }
       if(mixer) mixer.update(dt);
-
-      // ---- HEAD LOOK: while standing still, only the head turns toward where the camera is aimed ----
-      // (applied after the animation mixer so it layers on top of idle/walk; body keeps facing forward)
-      if(headBones.length){
-        let ty=0, tp=0;
-        if(!moving){
-          let rel=(camYaw+Math.PI)-player.rotation.y; rel=Math.atan2(Math.sin(rel),Math.cos(rel));   // camera aim relative to body facing
-          ty=Math.max(-HEAD_YAW, Math.min(HEAD_YAW, rel));
-          tp=Math.max(-HEAD_PITCH, Math.min(HEAD_PITCH, (camPitch-cfg.camPitch)*0.9));
-        }
-        const k=Math.min(1,dt*9); headYaw+=(ty-headYaw)*k; headPitch+=(tp-headPitch)*k;   // smooth, and ease back to neutral when moving
-        if(Math.abs(headYaw)>1e-4 || Math.abs(headPitch)>1e-4){
-          _hRight.set(Math.cos(camYaw),0,-Math.sin(camYaw));   // camera-right axis (for up/down tilt)
-          for(const hb of headBones){ if(!hb.parent) continue;
-            hb.parent.getWorldQuaternion(_pq).invert();         // convert world axes into the bone's parent space
-            _axU.copy(_hUp).applyQuaternion(_pq).normalize();
-            _axR.copy(_hRight).applyQuaternion(_pq).normalize();
-            _qa.setFromAxisAngle(_axU, headYaw); _qb.setFromAxisAngle(_axR, headPitch);
-            hb.quaternion.premultiply(_delta.copy(_qa).multiply(_qb));   // layer the look-rotation over the animated pose
-          }
-        }
-      }
 
       // spin each orb's glass sphere slowly + a gentle float bob
       for(const o of orbs){ if(o.sphere) o.sphere.rotation.y += dt*0.5;
