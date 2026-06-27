@@ -203,7 +203,6 @@
     </div>
   </div>
   <div id="fallback" role="alert">3D not supported — try a recent Chrome/Edge/Firefox/Safari with hardware acceleration.</div>
-  <div id="hint">WASD / arrows to move · hold right mouse to look around · click a glowing ❓ orb to open a topic</div>
   <div id="toast"></div>
   <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔇</button>
   <div id="dpad" aria-hidden="true">
@@ -224,7 +223,6 @@
       <div class="ctl"><label>Master volume <span id="vMaster">85%</span></label><input id="sMaster" type="range" min="0" max="100" value="85"></div>
       <div class="ctl"><label>Music <span id="vMusic">55%</span></label><input id="sMusic" type="range" min="0" max="100" value="55"></div>
       <div class="ctl"><label>Sound effects <span id="vSfx">70%</span></label><input id="sSfx" type="range" min="0" max="100" value="70"></div>
-      <label class="menu-mute"><input id="cMute" type="checkbox"> Mute all sound</label>
     </section>
 
     <section class="menu-sec">
@@ -235,7 +233,7 @@
         <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
         <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close a panel with the red ✕, press Esc, or simply start moving.</span></li>
       </ul>
-      <p class="help-tip">💡 Tip: every market stall is a different topic — About Me, Skills, Projects, Currently Building and Contact. Visit them all to explore the full portfolio.</p>
+      <p class="help-tip">💡 Tip: every market stall is a different topic — About Me, Skills, My Creations, Ongoing Projects and Contact. Visit them all to explore the full portfolio.</p>
     </section>
 
     <section class="menu-sec">
@@ -261,7 +259,7 @@
       <li><span class="keys"><span class="keycap">❓ orb</span></span> <span>Click the glowing question-mark orb at a stall to open that topic's panel.</span></li>
       <li><span class="keys"><span class="keycap">Esc</span><span class="keycap">✕</span></span> <span>Close any panel with the ✕, press Esc, or simply start moving.</span></li>
     </ul>
-    <p class="help-tip">💡 Each stall is a topic — About Me, Skills, Projects, Currently Building and Contact. Explore them all! You can reopen this guide anytime from the ☰ menu.</p>
+    <p class="help-tip">💡 Each stall is a topic — About Me, Skills, My Creations, Ongoing Projects and Contact. Explore them all! You can reopen this guide anytime from the ☰ menu.</p>
     <div class="wfoot">Press ✕ or start moving to begin exploring.</div>
   </section>
 
@@ -350,7 +348,7 @@
                      <div class="tags"><span>Git &amp; GitHub</span><span>VS Code</span><span>Figma</span><span>Linux</span><span>Vite</span></div>
                      <h3>Currently levelling up</h3>
                      <p><em>[What you're actively learning right now — a framework, a concept, a certification, a language.]</em></p>` },
-      bakery:    { topic:'done',     title:"Things I've Built", ico:'🍞', accent:'#7bc96f',
+      bakery:    { topic:'done',     title:"My Creations", ico:'🍞', accent:'#7bc96f',
                    html:`
                      <p>A selection of projects I've designed, built and shipped. <em>[Replace these three with your real work — keep the card layout.]</em></p>
                      <div class="proj"><h3>Project One</h3>
@@ -365,7 +363,7 @@
                        <p><em>[A third project — even a small or fun one shows range and curiosity.]</em></p>
                        <div class="tags"><span>Three.js</span><span>WebGL</span></div>
                        <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>` },
-      weapon:    { topic:'building', title:'Currently Building',ico:'⚔️', accent:'#b48be0',
+      weapon:    { topic:'building', title:'Ongoing Projects',ico:'⚔️', accent:'#b48be0',
                    html:`
                      <p>What's on my workbench right now — ideas in motion and things I'm actively shaping. <em>[Swap in your in-progress work.]</em></p>
                      <div class="proj"><h3>In progress · <em>Project Name</em></h3>
@@ -402,12 +400,12 @@
     function reveal(){ revealed=true; loaderEl.classList.add('hidden');
       if(reducedMotion){ startEl.classList.add('show'); beginStart(); }   // reduced motion: skip the descent
       else { intro=true; } }                                              // play the top-down -> establishing descent
-    let _lt=0; function loadTick(ts){ const dt=Math.min((ts-_lt)/1000||0,0.05); _lt=ts;
+    // Timer-driven (not rAF) so the bar still advances if the tab is backgrounded mid-load.
+    let _lt=performance.now(); const _loadTimer=setInterval(()=>{ const now=performance.now(), dt=Math.min((now-_lt)/1000,0.1); _lt=now;
       if(loadShown<loadTarget) loadShown=Math.min(loadTarget, loadShown + dt/LOAD_MIN);   // cap fill speed
       if(ringEl) ringEl.style.strokeDashoffset=RING_C*(1-loadShown);
       if(pctEl && pctEl.firstChild) pctEl.firstChild.nodeValue=Math.round(loadShown*100);
-      if(!revealed){ if(loadShown>=0.999 && sceneReady) reveal(); requestAnimationFrame(loadTick); } }
-    requestAnimationFrame(loadTick);
+      if(!revealed && loadShown>=0.999 && sceneReady){ reveal(); clearInterval(_loadTimer); } }, 33);
     const fbxL=new FBXLoader(manager), gltfL=new GLTFLoader(manager), texL=new THREE.TextureLoader(manager), tgaL=new TGALoader(manager);
     const T={}; const NOFLIP=new Set(['environment','latern']);
     function png(name){ if(!T[name]){ const t=texL.load(`models/market/${name}.png`); t.colorSpace=THREE.SRGBColorSpace; t.flipY=!NOFLIP.has(name); T[name]=t; } return T[name]; }
@@ -741,7 +739,7 @@
     document.querySelectorAll('#dpad button').forEach(b=>{ const d=b.dataset.dir; const set=v=>e=>{e.preventDefault();keys[d]=v;if(v){if(welcomeOpen())closeWelcome();if(panelOpen())closePanel();hideHint();}};
       b.addEventListener('touchstart',set(true),{passive:false}); b.addEventListener('touchend',set(false));
       b.addEventListener('mousedown',set(true)); b.addEventListener('mouseup',set(false)); b.addEventListener('mouseleave',set(false)); });
-    let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true; hintEl.style.opacity='0';} }
+    let hintHidden=false; function hideHint(){ if(!hintHidden){hintHidden=true; if(hintEl) hintEl.style.opacity='0';} }
 
     // ---- click a ? orb to open its topic; click empty space or press Esc to close ----
     const pickRay=new THREE.Raycaster(); const ptr=new THREE.Vector2();
@@ -773,7 +771,7 @@
     });
 
     // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
-    function beginStart(){ if(started||starting||intro) return; starting=true; startEl.classList.remove('show'); hintEl.style.opacity='1'; if(reducedMotion) started=true; }   // ignore clicks until the descent settles
+    function beginStart(){ if(started||starting||intro) return; starting=true; startEl.classList.remove('show'); if(reducedMotion) started=true; }   // ignore clicks until the descent settles
     addEventListener('click', beginStart);
     addEventListener('touchstart', beginStart, {passive:true});
 
@@ -839,14 +837,12 @@
 
     // --- sound settings: sliders + mute, wired to the master/music/sfx gain graph ---
     const sMaster=document.getElementById('sMaster'), sMusic=document.getElementById('sMusic'),
-          sSfx=document.getElementById('sSfx'), cMute=document.getElementById('cMute');
+          sSfx=document.getElementById('sSfx');
     const setPct=(id,v)=>{ document.getElementById(id).textContent=Math.round(v*100)+'%'; };
     sMaster.addEventListener('input',()=>{ audioInit(); audio.master=sMaster.value/100; setPct('vMaster',audio.master); applyAudio(0.12); });
     sMusic.addEventListener('input',()=>{ audioInit(); if(actx&&actx.state==='suspended') actx.resume();
       audio.music=sMusic.value/100; soundOn=audio.music>0; setPct('vMusic',audio.music); applyAudio(0.12); syncSoundIcon(); });
     sSfx.addEventListener('input',()=>{ audioInit(); audio.sfx=sSfx.value/100; setPct('vSfx',audio.sfx); applyAudio(0.12); });
-    cMute.addEventListener('change',()=>{ audioInit(); audio.muted=cMute.checked; applyAudio(0.3); syncSoundIcon();
-      [sMaster,sMusic,sSfx].forEach(s=>s.disabled=audio.muted); });
 
     // --- rating + feedback (kept locally; no backend involved) ---
     let rating=0; const starEls=[...document.querySelectorAll('#stars span')];
