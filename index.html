@@ -876,7 +876,7 @@
       const set=(p,v)=>{ p.cancelScheduledValues(t); p.setValueAtTime(p.value,t); p.linearRampToValueAtTime(Math.max(0.0001,v),t+ramp); };
       set(masterGain.gain, audio.muted?0:audio.master);
       set(musicGain.gain, soundOn?audio.music:0);
-      set(sfxGain.gain, audio.sfx);
+      set(sfxGain.gain, soundOn?audio.sfx:0);   // the top-right toggle gates ALL sound, not just music
     }
 
     // ---- background music: looped ambient track, routed through musicGain so the sliders/mute still apply ----
@@ -913,7 +913,7 @@
           const g=actx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.17,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
           o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.62); }); }
     };
-    function sfx(name){ if(!actx||actx.state!=='running'||audio.muted||audio.sfx<=0) return; try{ (SFX[name]||(()=>{}))(); }catch(e){} }
+    function sfx(name){ if(!actx||actx.state!=='running'||!soundOn||audio.muted||audio.sfx<=0) return; try{ (SFX[name]||(()=>{}))(); }catch(e){} }
 
     // birds chirp roughly once a minute (only once audio is active and the tab is visible)
     (function birdLoop(){ setTimeout(()=>{ if(!document.hidden) sfx('bird'); birdLoop(); }, 55000+Math.random()*10000); })();
