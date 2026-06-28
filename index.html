@@ -929,7 +929,7 @@
       if(!stepGain){ stepGain=actx.createGain(); stepGain.gain.value=0.0001; stepGain.connect(sfxGain); }
       if(on && !stepSrc){ stepSrc=actx.createBufferSource(); stepSrc.buffer=_stepBuf; stepSrc.loop=true; stepSrc.connect(stepGain); stepSrc.start(); }
       const t=actx.currentTime, g=stepGain.gain; g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001,g.value),t);
-      g.linearRampToValueAtTime(on?0.95:0.0001, t+(on?0.05:0.14)); }
+      g.linearRampToValueAtTime(on?0.4:0.0001, t+(on?0.05:0.14)); }
 
     function syncSoundIcon(){ soundBtn.textContent=(soundOn && !audio.muted)?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn && !audio.muted)); }
     soundBtn.addEventListener('click',()=>{ audioInit(); if(actx.state==='suspended') actx.resume();
