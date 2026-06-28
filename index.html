@@ -869,7 +869,7 @@
       musicGain=actx.createGain();  musicGain.gain.value=0;            // music swells in only once turned on
       sfxGain=actx.createGain();    sfxGain.gain.value=audio.sfx;
       musicGain.connect(masterGain); sfxGain.connect(masterGain);
-      startMusic();
+      startMusic(); ensureSteps();   // preload the footstep recording so the first step isn't delayed
     }
     // gently apply the current levels everywhere (long ramps = never a sudden spike)
     function applyAudio(ramp=0.5){ if(!actx) return; const t=actx.currentTime;
@@ -898,9 +898,6 @@
         o.frequency.setValueAtTime(900,t); o.frequency.exponentialRampToValueAtTime(1650,t+0.03);
         const g=actx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.005); g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);
         o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.1); },
-      step(){ const t=actx.currentTime, src=actx.createBufferSource(); src.buffer=noiseBuf(0.14,2.2);
-        const lp=actx.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=460+Math.random()*160; lp.Q.value=1.1;
-        const g=actx.createGain(); g.gain.value=0.5; src.connect(lp).connect(g).connect(sfxGain); src.start(t); },
       bird(){ const t0=actx.currentTime, n=2+((Math.random()*3)|0);
         for(let k=0;k<n;k++){ const t=t0+k*(0.1+Math.random()*0.06), o=actx.createOscillator(); o.type='sine'; const f=1900+Math.random()*1500;
           o.frequency.setValueAtTime(f,t); o.frequency.exponentialRampToValueAtTime(f*1.6,t+0.04); o.frequency.exponentialRampToValueAtTime(f*1.05,t+0.1);
@@ -920,6 +917,19 @@
 
     // birds chirp roughly once a minute (only once audio is active and the tab is visible)
     (function birdLoop(){ setTimeout(()=>{ if(!document.hidden) sfx('bird'); birdLoop(); }, 55000+Math.random()*10000); })();
+
+    // ---- footsteps: a looped recording, gain-faded in/out with movement (routed through sfxGain) ----
+    let _stepBuf=null, _stepLoading=false, stepSrc=null, stepGain=null, stepWantOn=false;
+    function ensureSteps(){ if(_stepBuf||_stepLoading||!actx) return; _stepLoading=true;
+      fetch('audio/footstep.mp3').then(r=>r.arrayBuffer()).then(b=>actx.decodeAudioData(b))
+        .then(buf=>{ _stepBuf=buf; _stepLoading=false; if(stepWantOn) setFootsteps(true); })
+        .catch(e=>{ _stepLoading=false; console.error('footstep load failed', e); }); }
+    function setFootsteps(on){ stepWantOn=on; if(!actx||actx.state!=='running') return;
+      if(!_stepBuf){ if(on) ensureSteps(); return; }
+      if(!stepGain){ stepGain=actx.createGain(); stepGain.gain.value=0.0001; stepGain.connect(sfxGain); }
+      if(on && !stepSrc){ stepSrc=actx.createBufferSource(); stepSrc.buffer=_stepBuf; stepSrc.loop=true; stepSrc.connect(stepGain); stepSrc.start(); }
+      const t=actx.currentTime, g=stepGain.gain; g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001,g.value),t);
+      g.linearRampToValueAtTime(on?0.95:0.0001, t+(on?0.05:0.14)); }
 
     function syncSoundIcon(){ soundBtn.textContent=(soundOn && !audio.muted)?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn && !audio.muted)); }
     soundBtn.addEventListener('click',()=>{ audioInit(); if(actx.state==='suspended') actx.resume();
@@ -978,7 +988,7 @@
     const _q=new THREE.Quaternion(), _ax=new THREE.Vector3(1,0,0); const _proj=new THREE.Vector3();
     const _estPos=new THREE.Vector3(), _estLook=new THREE.Vector3(), _lookTmp=new THREE.Vector3();
     const _topPos=new THREE.Vector3(), _ctr=new THREE.Vector3(0,0,0);   // straight-down intro view of the island
-    let stepClock=0; const STEP_GAP=0.34;   // footstep cadence
+    let _stepsOn=false;   // footstep loop on/off
     function step(dt){
       let moving=false;
       if(started){
@@ -1007,8 +1017,8 @@
           d=Math.atan2(Math.sin(d),Math.cos(d)); player.rotation.y+=d*Math.min(1,dt*16);
         }
       }
-      // footstep sounds, paced to the walk
-      if(started && moving){ stepClock+=dt; if(stepClock>=STEP_GAP){ stepClock-=STEP_GAP; sfx('step'); } } else stepClock=STEP_GAP*0.55;
+      // footstep loop — the recording plays while moving and fades out when stopped
+      { const want=started&&moving; if(want!==_stepsOn){ _stepsOn=want; setFootsteps(want); } }
       player.position.y += (groundY-player.position.y)*Math.min(1,dt*12);
 
       // walk anim
