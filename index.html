@@ -331,9 +331,7 @@
 
     <section class="menu-sec">
       <h3>🔊 Sound Settings</h3>
-      <div class="ctl"><label>Master volume <span id="vMaster">85%</span></label><input id="sMaster" type="range" min="0" max="100" value="85"></div>
-      <div class="ctl"><label>Music <span id="vMusic">55%</span></label><input id="sMusic" type="range" min="0" max="100" value="55"></div>
-      <div class="ctl"><label>Sound effects <span id="vSfx">70%</span></label><input id="sSfx" type="range" min="0" max="100" value="70"></div>
+      <div class="ctl"><label>Music <span id="vMusic">70%</span></label><input id="sMusic" type="range" min="0" max="100" value="70"></div>
     </section>
 
     <section class="menu-sec">
@@ -981,26 +979,33 @@
     addEventListener('touchstart', beginStart, {passive:true});
 
     // ---------- ambient audio ----------
-    // Routing: every voice -> musicGain (or sfxGain) -> masterGain -> speakers.
-    // The menu in Task 8 adjusts the `audio` levels and calls applyAudio(); music on/off is `soundOn`.
+    // ONE volume bus controls everything: music + every SFX -> musicGain/sfxGain -> masterGain -> speakers.
+    // `audio.level` is the single "Music" slider; `soundOn` is the on/off toggle. When OFF we ramp the
+    // master to silence AND suspend the AudioContext, so nothing (music, footsteps, birds…) can be heard.
     const soundBtn=document.getElementById('sound');
     let actx=null, soundOn=true, masterGain=null, musicGain=null, sfxGain=null, musicSrc=null;   // sound ON by default; unlocks on the first user gesture
-    const audio={ master:0.85, music:0.55, sfx:0.7, muted:false };   // 0..1 user levels
+    const audio={ level:0.7 };   // single 0..1 volume for the whole site
+    let _suspendT=null;          // pending context-suspend timer (set when sound is turned off)
 
     function audioInit(){ if(actx) return;
       actx=new (window.AudioContext||window.webkitAudioContext)();
-      masterGain=actx.createGain(); masterGain.gain.value=audio.muted?0:audio.master; masterGain.connect(actx.destination);
-      musicGain=actx.createGain();  musicGain.gain.value=0;            // music swells in only once turned on
-      sfxGain=actx.createGain();    sfxGain.gain.value=audio.sfx;
+      masterGain=actx.createGain(); masterGain.gain.value=soundOn?audio.level:0; masterGain.connect(actx.destination);
+      musicGain=actx.createGain();  musicGain.gain.value=0.85;   // fixed sub-mix balance (music sits just under the effects)
+      sfxGain=actx.createGain();    sfxGain.gain.value=1.0;      // fixed sub-mix; the single master slider is the only user control
       musicGain.connect(masterGain); sfxGain.connect(masterGain);
       startMusic(); ensureSteps();   // preload the footstep recording so the first step isn't delayed
     }
-    // gently apply the current levels everywhere (long ramps = never a sudden spike)
-    function applyAudio(ramp=0.5){ if(!actx) return; const t=actx.currentTime;
-      const set=(p,v)=>{ p.cancelScheduledValues(t); p.setValueAtTime(p.value,t); p.linearRampToValueAtTime(Math.max(0.0001,v),t+ramp); };
-      set(masterGain.gain, (audio.muted||!soundOn)?0:audio.master);   // top-right toggle kills the whole output when off
-      set(musicGain.gain, soundOn?audio.music:0);
-      set(sfxGain.gain, soundOn?audio.sfx:0);   // the top-right toggle gates ALL sound, not just music
+    // apply the single volume to the one master bus (gentle ramp = no sudden spike)
+    function applyAudio(ramp=0.4){ if(!actx) return; const t=actx.currentTime, g=masterGain.gain;
+      g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001,g.value),t);
+      g.linearRampToValueAtTime(soundOn?Math.max(0.0001,audio.level):0.0001, t+ramp);
+    }
+    // turn all sound on/off: resume+swell when on; fade then SUSPEND the whole context when off (guaranteed silence)
+    function setSoundOn(on){ soundOn=on; audioInit();
+      clearTimeout(_suspendT);
+      if(on){ if(actx.state==='suspended') actx.resume(); applyAudio(0.6); }
+      else { if(actx.state==='running') applyAudio(0.25); _suspendT=setTimeout(()=>{ if(!soundOn && actx) actx.suspend().catch(()=>{}); }, 320); }
+      syncSoundIcon();
     }
 
     // ---- background music: looped ambient track, routed through musicGain so the sliders/mute still apply ----
@@ -1037,7 +1042,7 @@
           const g=actx.createGain(); g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.17,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.6);
           o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.62); }); }
     };
-    function sfx(name){ if(!actx||actx.state!=='running'||!soundOn||audio.muted||audio.sfx<=0) return; try{ (SFX[name]||(()=>{}))(); }catch(e){} }
+    function sfx(name){ if(!actx||actx.state!=='running'||!soundOn) return; try{ (SFX[name]||(()=>{}))(); }catch(e){} }
 
     // birds chirp roughly once a minute (only once audio is active and the tab is visible)
     (function birdLoop(){ setTimeout(()=>{ if(!document.hidden) sfx('bird'); birdLoop(); }, 55000+Math.random()*10000); })();
@@ -1055,11 +1060,10 @@
       const t=actx.currentTime, g=stepGain.gain; g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001,g.value),t);
       g.linearRampToValueAtTime(on?0.4:0.0001, t+(on?0.05:0.14)); }
 
-    function syncSoundIcon(){ soundBtn.textContent=(soundOn && !audio.muted)?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn && !audio.muted)); }
-    soundBtn.addEventListener('click',()=>{ audioInit(); if(actx.state==='suspended') actx.resume();
-      soundOn=!soundOn;
-      if(soundOn && audio.music<=0){ audio.music=0.55; const sM=document.getElementById('sMusic'); if(sM){ sM.value=55; document.getElementById('vMusic').textContent='55%'; } }
-      applyAudio(1.4); syncSoundIcon(); });                  // gentle 1.4s swell in/out
+    function syncSoundIcon(){ soundBtn.textContent=soundOn?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn)); }
+    soundBtn.addEventListener('click',()=>{ const turningOn=!soundOn;
+      if(turningOn && audio.level<=0){ audio.level=0.7; const sM=document.getElementById('sMusic'), v=document.getElementById('vMusic'); if(sM) sM.value=70; if(v) v.textContent='70%'; }
+      setSoundOn(turningOn); });
 
     // ---------- top-right menu (sound settings · help · rating) ----------
     const menuBtn=document.getElementById('menuBtn'), menuEl=document.getElementById('menu'), menuScrim=document.getElementById('menuScrim');
@@ -1081,14 +1085,10 @@
     welcomeScrim.addEventListener('click', closeWelcome);
     addEventListener('keydown', e=>{ if(e.code==='Escape' && welcomeOpen()) closeWelcome(); });
 
-    // --- sound settings: sliders + mute, wired to the master/music/sfx gain graph ---
-    const sMaster=document.getElementById('sMaster'), sMusic=document.getElementById('sMusic'),
-          sSfx=document.getElementById('sSfx');
-    const setPct=(id,v)=>{ document.getElementById(id).textContent=Math.round(v*100)+'%'; };
-    sMaster.addEventListener('input',()=>{ audioInit(); audio.master=sMaster.value/100; setPct('vMaster',audio.master); applyAudio(0.12); });
-    sMusic.addEventListener('input',()=>{ audioInit(); if(actx&&actx.state==='suspended') actx.resume();
-      audio.music=sMusic.value/100; soundOn=audio.music>0; setPct('vMusic',audio.music); applyAudio(0.12); syncSoundIcon(); });
-    sSfx.addEventListener('input',()=>{ audioInit(); audio.sfx=sSfx.value/100; setPct('vSfx',audio.sfx); applyAudio(0.12); });
+    // --- sound settings: one "Music" slider controls the whole site's volume ---
+    const sMusic=document.getElementById('sMusic');
+    const setPct=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=Math.round(v*100)+'%'; };
+    sMusic.addEventListener('input',()=>{ audioInit(); audio.level=sMusic.value/100; setPct('vMusic',audio.level); setSoundOn(audio.level>0); });
 
     // --- rating + feedback (kept locally; no backend involved) ---
     let rating=0; const starEls=[...document.querySelectorAll('#stars span')];
