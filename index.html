@@ -315,7 +315,7 @@
   </div>
   <div id="fallback" role="alert">3D not supported — try a recent Chrome/Edge/Firefox/Safari with hardware acceleration.</div>
   <div id="toast"></div>
-  <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔇</button>
+  <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔊</button>
   <div id="dpad" aria-hidden="true">
     <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
     <button class="dp-right" data-dir="right">▶</button><button class="dp-down" data-dir="down">▼</button>
@@ -483,20 +483,19 @@
                          <figure class="cert" data-full="certs/social-mun.png" data-cap="Model United Nations (MUN)">
                            <div class="cert-thumb"><img src="certs/social-mun.png" alt="Model United Nations certificate" loading="lazy"></div>
                            <figcaption><b>Model United Nations</b><small>Debate, diplomacy &amp; public speaking</small></figcaption></figure>
-                         <figure class="cert cert-pending">
-                           <div class="cert-thumb">🔒 Coming soon</div>
-                           <figcaption><b>School Council Member</b><small>Certificate coming soon</small></figcaption></figure>
+                         <figure class="cert" data-full="certs/social-council.png" data-cap="House Captain — Diadem House · Elected for the 2024–25 session">
+                           <div class="cert-thumb"><img src="certs/social-council.png" alt="House Captain — Diadem House 2024-25" loading="lazy"></div>
+                           <figcaption><b>House Captain</b><small>Diadem House · Elected leadership · 2024–25</small></figcaption></figure>
                        </div>
                      </div>
 
                      <div class="xp-sec">
-                       <div class="xp-head"><span class="xp-ico">🎓</span><h3>Courses</h3></div>
-                       <div class="card-grid">
-                         <div class="xp-card">
-                           <div class="xc-top"><span class="xc-ico">🧠</span><h4>AI &amp; Machine Learning</h4></div>
-                           <p>Completed an <strong>Artificial Intelligence &amp; Machine Learning</strong> course from <strong>IIT&nbsp;Madras</strong> — covering the foundations of AI, ML models and how they're applied in the real world.</p>
-                           <div class="tags"><span>IIT Madras</span><span>AI / ML</span><span>Python</span></div>
-                         </div>
+                       <div class="xp-head"><span class="xp-ico">🎓</span><h3>Courses</h3><span class="xp-count">1 certificate</span></div>
+                       <p class="xp-note">An 8-week certification from IIT&nbsp;Madras' Centre for Outreach &amp; Digital Education — foundations of AI, ML and how they're applied in the real world.</p>
+                       <div class="cert-grid">
+                         <figure class="cert" data-full="certs/course-iitm.jpeg" data-cap="Data Science &amp; AI — IIT Madras (CODE) · 8-week certification · Oct 2024">
+                           <div class="cert-thumb"><img src="certs/course-iitm.jpeg" alt="IIT Madras Data Science and AI certificate" loading="lazy"></div>
+                           <figcaption><b>Data Science &amp; AI</b><small>IIT&nbsp;Madras · 8-week certification · 2024</small></figcaption></figure>
                        </div>
                      </div>
 
@@ -976,6 +975,7 @@
 
     // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
     function beginStart(){ audioInit(); if(actx&&actx.state==='suspended') actx.resume();   // the start gesture unlocks audio
+      applyAudio(1.4); syncSoundIcon();   // sound is on by default — swell the music/SFX in now that audio is unlocked
       if(started||starting||intro) return; starting=true; startEl.classList.remove('show'); sfx('whoosh'); if(reducedMotion) started=true; }   // ignore clicks until the descent settles
     addEventListener('click', beginStart);
     addEventListener('touchstart', beginStart, {passive:true});
@@ -984,7 +984,7 @@
     // Routing: every voice -> musicGain (or sfxGain) -> masterGain -> speakers.
     // The menu in Task 8 adjusts the `audio` levels and calls applyAudio(); music on/off is `soundOn`.
     const soundBtn=document.getElementById('sound');
-    let actx=null, soundOn=false, masterGain=null, musicGain=null, sfxGain=null, musicSrc=null;
+    let actx=null, soundOn=true, masterGain=null, musicGain=null, sfxGain=null, musicSrc=null;   // sound ON by default; unlocks on the first user gesture
     const audio={ master:0.85, music:0.55, sfx:0.7, muted:false };   // 0..1 user levels
 
     function audioInit(){ if(actx) return;
