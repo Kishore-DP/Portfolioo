@@ -998,7 +998,7 @@
     // gently apply the current levels everywhere (long ramps = never a sudden spike)
     function applyAudio(ramp=0.5){ if(!actx) return; const t=actx.currentTime;
       const set=(p,v)=>{ p.cancelScheduledValues(t); p.setValueAtTime(p.value,t); p.linearRampToValueAtTime(Math.max(0.0001,v),t+ramp); };
-      set(masterGain.gain, audio.muted?0:audio.master);
+      set(masterGain.gain, (audio.muted||!soundOn)?0:audio.master);   // top-right toggle kills the whole output when off
       set(musicGain.gain, soundOn?audio.music:0);
       set(sfxGain.gain, soundOn?audio.sfx:0);   // the top-right toggle gates ALL sound, not just music
     }
