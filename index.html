@@ -556,6 +556,9 @@
         <li><span class="keys"><span class="kbd-only"><span class="keycap">Right mouse</span></span><span class="touch-only"><span class="keycap">Drag</span></span></span> <span><span class="kbd-only">Hold the right mouse button and move to look around.</span><span class="touch-only">Drag on the scene to look around.</span></span></li>
         <li><span class="keys"><span class="keycap">❓ orb</span></span> <span><span class="kbd-only">Click</span><span class="touch-only">Tap</span> the glowing question-mark orb to open that topic's panel.</span></li>
         <li><span class="keys"><span class="kbd-only"><span class="keycap">Esc</span><span class="keycap">✕</span></span><span class="touch-only"><span class="keycap">✕</span></span></span> <span>Close a panel with the <span class="kbd-only">red ✕, press Esc, or simply start moving</span><span class="touch-only">✕, or simply start moving</span>.</span></li>
+        <li class="kbd-only"><span class="keys"><span class="keycap">Q</span></span> <span>Open Quick View — every topic on one scrollable page.</span></li>
+        <li class="kbd-only"><span class="keys"><span class="keycap">O</span></span> <span>Open the printable One-Pager.</span></li>
+        <li class="kbd-only"><span class="keys"><span class="keycap">M</span></span> <span>Toggle sound on/off.</span></li>
       </ul>
       <p class="help-tip">💡 Tip: every topic is a different part of the portfolio — About Me, Expertise, My Creations, Active Projects and Contact. Visit them all to explore the full portfolio.</p>
     </section>
@@ -1375,6 +1378,14 @@
     // any print attempt (Ctrl/Cmd+P) should produce a sensible page — default to Quick View unless the one-pager is already open
     addEventListener('beforeprint', ()=>{ if(!qvIsOpen() && !opIsOpen()){ qvAutoOpenedForPrint=true; buildQuickView(); qvEl.classList.add('show'); } });
     addEventListener('afterprint', ()=>{ if(qvAutoOpenedForPrint){ qvAutoOpenedForPrint=false; qvClose(); } if(opAutoOpenedForPrint){ opAutoOpenedForPrint=false; opClose(); } });
+
+    // ---- power-user keyboard shortcuts: Q = Quick View, O = One-Pager, M = mute toggle ----
+    addEventListener('keydown', e=>{
+      if(menuIsOpen() || welcomeOpen() || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')) return;   // don't hijack typing
+      if(e.code==='KeyQ'){ qvIsOpen()?qvClose():(opClose(),qvOpen()); }
+      else if(e.code==='KeyO'){ opIsOpen()?opClose():(qvClose(),opOpen()); }
+      else if(e.code==='KeyM'){ soundBtn.click(); }
+    });
 
     // --- welcome / how-it-works popup (auto-shown once the intro settles; closes on ✕ or first movement) ---
     const welcomeEl=document.getElementById('welcome'), welcomeScrim=document.getElementById('welcomeScrim');
