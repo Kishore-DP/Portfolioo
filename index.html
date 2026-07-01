@@ -5,6 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Kishore DP — Medieval Market Portfolio</title>
   <meta name="description" content="Kishore DP's portfolio — explore a floating medieval market; each topic is a different part of the portfolio." />
+  <meta name="theme-color" content="#07060f" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="512x512" href="favicon.png" />
+  <link rel="apple-touch-icon" href="favicon.png" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://kishore-dp.github.io/Portfolioo/" />
+  <meta property="og:title" content="Kishore DP — Medieval Market Portfolio" />
+  <meta property="og:description" content="Walk through a floating medieval market to explore my work — about me, expertise, creations, active projects and contact, all in an interactive 3D world." />
+  <meta property="og:image" content="https://kishore-dp.github.io/Portfolioo/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Kishore DP — Medieval Market Portfolio" />
+  <meta name="twitter:description" content="Walk through a floating medieval market to explore my work — about me, expertise, creations, active projects and contact, all in an interactive 3D world." />
+  <meta name="twitter:image" content="https://kishore-dp.github.io/Portfolioo/og-image.jpg" />
   <style>
     :root { --ui:#11161b; --card:rgba(20,26,33,.82); --txt:#eaf2ea; }
     * { margin:0; padding:0; box-sizing:border-box; }
@@ -27,9 +43,24 @@
       font-size:1.6rem; font-weight:800; color:#fff; text-shadow:0 2px 12px rgba(0,0,0,.9); font-variant-numeric:tabular-nums; }
     #loadPct span { font-size:.8rem; margin-left:2px; margin-top:.18rem; opacity:.85; }
 
-    #fallback { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:2rem; text-align:center; }
+    #fallback { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:6vh 5vw;
+      background:#07060f radial-gradient(ellipse at 50% 30%, rgba(123,201,111,.08), transparent 60%); overflow-y:auto; }
     #fallback.show { display:flex; }
-    #fallback a { color:#7bc96f; }
+    #fallback .fb-card { max-width:520px; width:100%; text-align:left; background:var(--card); border:1px solid rgba(255,255,255,.1);
+      border-radius:22px; padding:40px 38px; box-shadow:0 30px 80px rgba(0,0,0,.55); }
+    #fallback .fb-eyebrow { font-size:.76rem; letter-spacing:.16em; text-transform:uppercase; color:#7bc96f; font-weight:700; margin-bottom:10px; }
+    #fallback h1 { font-size:2rem; color:#fff; margin-bottom:6px; font-weight:800; }
+    #fallback .fb-role { color:#9fb39f; font-size:1rem; margin-bottom:20px; }
+    #fallback p { line-height:1.6; color:#dbe6db; margin-bottom:14px; max-width:60ch; }
+    #fallback .fb-note { font-size:.85rem; color:#7d8a7d; border-left:3px solid rgba(123,201,111,.4); padding-left:12px; margin:22px 0; }
+    #fallback .fb-links { display:grid; gap:10px; margin-top:22px; }
+    #fallback a.fb-row { display:flex; align-items:center; gap:14px; padding:13px 16px; border-radius:14px; text-decoration:none;
+      color:#eaf2ea; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); transition:transform .18s ease, background .2s ease; }
+    #fallback a.fb-row:hover { transform:translateX(4px); background:rgba(123,201,111,.12); border-color:rgba(123,201,111,.4); }
+    #fallback a.fb-row span.fi { font-size:1.3rem; width:38px; text-align:center; }
+    #fallback a.fb-row b { display:block; font-size:.95rem; }
+    #fallback a.fb-row small { color:#9fb39f; font-size:.82rem; }
+    @media (max-width:480px){ #fallback .fb-card{ padding:28px 22px; } #fallback h1{ font-size:1.55rem; } }
 
     #hint { position:fixed; left:50%; bottom:16px; transform:translateX(-50%); z-index:20; font-size:.82rem; color:#cfe0cf;
       background:rgba(0,0,0,.45); backdrop-filter:blur(6px); padding:8px 16px; border-radius:99px; transition:opacity .5s ease; border:1px solid rgba(255,255,255,.08); opacity:0; }
@@ -313,7 +344,21 @@
       <div id="loadPct">0<span>%</span></div>
     </div>
   </div>
-  <div id="fallback" role="alert">3D not supported — try a recent Chrome/Edge/Firefox/Safari with hardware acceleration.</div>
+  <div id="fallback" role="alert">
+    <div class="fb-card">
+      <div class="fb-eyebrow">Kishore DP</div>
+      <h1>Developer, builder, perpetual tinkerer</h1>
+      <p class="fb-role">High-school student building across AI, full-stack, game dev &amp; embedded systems.</p>
+      <p>My portfolio is normally an interactive 3D floating market you can walk through — but this browser or device can't run WebGL, so here's the short version instead.</p>
+      <p>I turn "what if…" ideas into things people can click, play and (hopefully) enjoy — from web apps to Unity/Roblox games to Arduino &amp; ESP32 projects. Elected <strong>House Captain</strong> at school; I'm open to internships, freelance work, hackathons and collaborations.</p>
+      <p class="fb-note">💡 For the full experience, try a recent Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+      <div class="fb-links">
+        <a class="fb-row" href="mailto:kishoredp27@gmail.com"><span class="fi">📧</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
+        <a class="fb-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="fi">💻</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
+        <a class="fb-row" href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener"><span class="fi">🔗</span><span><b>LinkedIn</b><small>linkedin.com/in/kishore-dp</small></span></a>
+      </div>
+    </div>
+  </div>
   <div id="toast"></div>
   <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔊</button>
   <div id="dpad" aria-hidden="true">
@@ -407,7 +452,8 @@
     const renderer=new THREE.WebGLRenderer({antialias:!isMobile});
     renderer.setPixelRatio(Math.min(devicePixelRatio,isMobile?1.5:2)); renderer.setSize(innerWidth,innerHeight);
     renderer.outputColorSpace=THREE.SRGBColorSpace; renderer.toneMapping=THREE.ACESFilmicToneMapping; renderer.toneMappingExposure=1.38;
-    renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;   // soft, real shadows
+    renderer.shadowMap.enabled=true;
+    renderer.shadowMap.type=isMobile?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;   // soft shadows on desktop; cheaper single-sample shadows on phones
     document.body.appendChild(renderer.domElement);
 
     const scene=new THREE.Scene();
@@ -420,7 +466,8 @@
     scene.add(new THREE.AmbientLight(0x4a5570, 0.55));                                  // soft cool ambient so shadows read but never go black
     scene.add(new THREE.HemisphereLight(0xdce8ff, 0x7a6038, 0.9));                      // cool sky light + warm ground bounce
     const sun=new THREE.DirectionalLight(0xffdca6, 3.6); sun.castShadow=true;           // warm golden-hour key (the shadow caster)
-    sun.shadow.mapSize.set(2048,2048); sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.6; sun.shadow.radius=4;
+    const shadowRes=isMobile?1024:2048; sun.shadow.mapSize.set(shadowRes,shadowRes);   // quarter the shadow-map memory/cost on phones
+    sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.6; sun.shadow.radius=4;
     scene.add(sun); scene.add(sun.target);
     const rim=new THREE.DirectionalLight(0x7793c8, 0.7); rim.position.set(-90,70,-80); scene.add(rim); // cool back-light to lift models off the dark void
 
@@ -456,20 +503,20 @@
                      <div class="xp-sec">
                        <div class="xp-head"><span class="xp-ico">🏅</span><h3>Sports</h3><span class="xp-count">5 certificates</span></div>
                        <div class="cert-grid">
-                         <figure class="cert" data-full="certs/sports-basketball.png" data-cap="Basketball — Intramural Winners · 2022–23">
-                           <div class="cert-thumb"><img src="certs/sports-basketball.png" alt="Basketball — Winners 2022-23" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/sports-basketball.jpg" data-cap="Basketball — Intramural Winners · 2022–23">
+                           <div class="cert-thumb"><img src="certs/sports-basketball.jpg" alt="Basketball — Winners 2022-23" loading="lazy"></div>
                            <figcaption><b>Basketball</b><small>Annual Intramurals · 🏆 Winners · 2022–23</small></figcaption></figure>
-                         <figure class="cert" data-full="certs/sports-carrom.png" data-cap="Carrom — Intramural Winner · 2024–25">
-                           <div class="cert-thumb"><img src="certs/sports-carrom.png" alt="Carrom — Winner 2024-25" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/sports-carrom.jpg" data-cap="Carrom — Intramural Winner · 2024–25">
+                           <div class="cert-thumb"><img src="certs/sports-carrom.jpg" alt="Carrom — Winner 2024-25" loading="lazy"></div>
                            <figcaption><b>Carrom</b><small>Annual Intramurals · 🏆 Winner · 2024–25</small></figcaption></figure>
-                         <figure class="cert" data-full="certs/sports-khokho.png" data-cap="Kho-Kho — CPS Intra School Sports · Silver Medal (2nd), U-19 · 2025">
-                           <div class="cert-thumb"><img src="certs/sports-khokho.png" alt="Kho-Kho — Silver, Second Place 2025" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/sports-khokho.jpg" data-cap="Kho-Kho — CPS Intra School Sports · Silver Medal (2nd), U-19 · 2025">
+                           <div class="cert-thumb"><img src="certs/sports-khokho.jpg" alt="Kho-Kho — Silver, Second Place 2025" loading="lazy"></div>
                            <figcaption><b>Kho-Kho</b><small>Intra School Sports · 🥈 Silver · U-19 · 2025</small></figcaption></figure>
-                         <figure class="cert" data-full="certs/sports-relay.png" data-cap="4×100m Relay — CPS Olympix '25 · Silver Medal (2nd), U-19">
-                           <div class="cert-thumb"><img src="certs/sports-relay.png" alt="4x100m Relay — Silver, Second Place 2025" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/sports-relay.jpg" data-cap="4×100m Relay — CPS Olympix '25 · Silver Medal (2nd), U-19">
+                           <div class="cert-thumb"><img src="certs/sports-relay.jpg" alt="4x100m Relay — Silver, Second Place 2025" loading="lazy"></div>
                            <figcaption><b>4×100m Relay</b><small>CPS Olympix '25 · 🥈 Silver · U-19</small></figcaption></figure>
-                         <figure class="cert" data-full="certs/sports-marchpast.png" data-cap="March-Past — Annual Sports Meet · Participation · 2022–23">
-                           <div class="cert-thumb"><img src="certs/sports-marchpast.png" alt="March-Past — Participation 2022-23" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/sports-marchpast.jpg" data-cap="March-Past — Annual Sports Meet · Participation · 2022–23">
+                           <div class="cert-thumb"><img src="certs/sports-marchpast.jpg" alt="March-Past — Participation 2022-23" loading="lazy"></div>
                            <figcaption><b>March-Past</b><small>Annual Sports Meet · Participation · 2022–23</small></figcaption></figure>
                        </div>
                      </div>
@@ -478,11 +525,11 @@
                        <div class="xp-head"><span class="xp-ico">🤝</span><h3>Social Skills</h3><span class="xp-count">2</span></div>
                        <p class="xp-note">Leadership, debate and representation — building confidence beyond the classroom.</p>
                        <div class="cert-grid">
-                         <figure class="cert" data-full="certs/social-mun.png" data-cap="Model United Nations (MUN)">
-                           <div class="cert-thumb"><img src="certs/social-mun.png" alt="Model United Nations certificate" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/social-mun.jpg" data-cap="Model United Nations (MUN)">
+                           <div class="cert-thumb"><img src="certs/social-mun.jpg" alt="Model United Nations certificate" loading="lazy"></div>
                            <figcaption><b>Model United Nations</b><small>Debate, diplomacy &amp; public speaking</small></figcaption></figure>
-                         <figure class="cert" data-full="certs/social-council.png" data-cap="House Captain — Diadem House · Elected for the 2024–25 session">
-                           <div class="cert-thumb"><img src="certs/social-council.png" alt="House Captain — Diadem House 2024-25" loading="lazy"></div>
+                         <figure class="cert" data-full="certs/social-council.jpg" data-cap="House Captain — Diadem House · Elected for the 2024–25 session">
+                           <div class="cert-thumb"><img src="certs/social-council.jpg" alt="House Captain — Diadem House 2024-25" loading="lazy"></div>
                            <figcaption><b>House Captain</b><small>Diadem House · Elected leadership · 2024–25</small></figcaption></figure>
                        </div>
                      </div>
