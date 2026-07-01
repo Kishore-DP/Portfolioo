@@ -1137,7 +1137,7 @@
     const setPct=(id,v)=>{ const el=document.getElementById(id); if(el) el.textContent=Math.round(v*100)+'%'; };
     sMusic.addEventListener('input',()=>{ audioInit(); audio.level=sMusic.value/100; setPct('vMusic',audio.level); setSoundOn(audio.level>0); });
 
-    // --- rating + feedback (kept locally; no backend involved) ---
+    // --- rating + feedback: saved locally as a backup, AND emailed to Kishore via a pre-filled mailto: (no backend/account needed) ---
     let rating=0; const starEls=[...document.querySelectorAll('#stars span')];
     function paintStars(n){ starEls.forEach(s=>s.classList.toggle('on', +s.dataset.v<=n)); }
     starEls.forEach(s=>{ s.addEventListener('click',()=>{ rating=+s.dataset.v; paintStars(rating); });
@@ -1147,9 +1147,14 @@
       const text=document.getElementById('rateText').value.trim();
       try{ const all=JSON.parse(localStorage.getItem('kdp_feedback')||'[]');
         all.push({ rating, text, at:new Date().toISOString() }); localStorage.setItem('kdp_feedback', JSON.stringify(all)); }catch(e){}
+      // open the visitor's email client, pre-filled — this is what actually gets the feedback to Kishore
+      const stars='★'.repeat(rating)+'☆'.repeat(5-rating);
+      const subject=`Portfolio feedback (${rating>0?stars:'no rating'})`;
+      const body=`Rating: ${rating>0?`${rating}/5 ${stars}`:'(none given)'}\n\n${text||'(no written feedback)'}\n\n— sent from kishoredp27's portfolio`;
+      window.open(`mailto:kishoredp27@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
       const th=document.getElementById('rateThanks'), btn=document.getElementById('rateSubmit');
-      th.classList.add('show'); btn.textContent='Submitted ✓';
-      setTimeout(()=>{ th.classList.remove('show'); btn.textContent='Submit feedback'; rating=0; paintStars(0); document.getElementById('rateText').value=''; }, 2600);
+      th.textContent='Opening your email app to send it… 💚'; th.classList.add('show'); btn.textContent='Submitted ✓';
+      setTimeout(()=>{ th.classList.remove('show'); th.textContent='Thank you for your feedback! 💚'; btn.textContent='Submit feedback'; rating=0; paintStars(0); document.getElementById('rateText').value=''; }, 3600);
     });
 
     addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
