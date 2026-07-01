@@ -516,13 +516,40 @@
     camera.position.set(0,40,60);
 
     // ---- cinematic lighting: warm golden key + cool sky fill + cool back-rim, soft shadows ----
-    scene.add(new THREE.AmbientLight(0x4a5570, 0.55));                                  // soft cool ambient so shadows read but never go black
-    scene.add(new THREE.HemisphereLight(0xdce8ff, 0x7a6038, 0.9));                      // cool sky light + warm ground bounce
+    // (base colors below are the 5pm "golden hour" look; applyTimeOfDay() re-tints all of these to the visitor's real local time)
+    const ambient=new THREE.AmbientLight(0x4a5570, 0.55); scene.add(ambient);            // soft cool ambient so shadows read but never go black
+    const hemi=new THREE.HemisphereLight(0xdce8ff, 0x7a6038, 0.9); scene.add(hemi);      // cool sky light + warm ground bounce
     const sun=new THREE.DirectionalLight(0xffdca6, 3.6); sun.castShadow=true;           // warm golden-hour key (the shadow caster)
     const shadowRes=isMobile?1024:2048; sun.shadow.mapSize.set(shadowRes,shadowRes);   // quarter the shadow-map memory/cost on phones
     sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.6; sun.shadow.radius=4;
     scene.add(sun); scene.add(sun.target);
     const rim=new THREE.DirectionalLight(0x7793c8, 0.7); rim.position.set(-90,70,-80); scene.add(rim); // cool back-light to lift models off the dark void
+
+    // ---- time of day: retint the whole scene to the visitor's real local clock (night -> dawn -> day -> golden hour -> dusk -> night) ----
+    // sun position/angle stays fixed (this is a stylized void, not a literal sky) — only color/intensity/fog shift, so shadows never break.
+    const TOD_KEYS=[
+      { h:0,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35 },  // deep night
+      { h:5,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35 },  // pre-dawn
+      { h:7,  sun:0xffb87a, sunI:2.60, hemiSky:0xffd9b0, hemiGnd:0x7a5030, hemiI:0.85, amb:0x4a4570, ambI:0.50, bg:0x1a1020, fogD:0.0017, rimI:0.55 },  // dawn
+      { h:12, sun:0xfff3d8, sunI:4.10, hemiSky:0xdfeeff, hemiGnd:0x8a7048, hemiI:1.00, amb:0x5a6590, ambI:0.60, bg:0x141428, fogD:0.0012, rimI:0.75 },  // midday
+      { h:17, sun:0xffdca6, sunI:3.60, hemiSky:0xdce8ff, hemiGnd:0x7a6038, hemiI:0.90, amb:0x4a5570, ambI:0.55, bg:0x07060f, fogD:0.0013, rimI:0.70 },  // golden hour (the original look)
+      { h:20, sun:0x5a5a9a, sunI:1.00, hemiSky:0x30306a, hemiGnd:0x1c1830, hemiI:0.55, amb:0x2a3060, ambI:0.45, bg:0x05040c, fogD:0.0016, rimI:0.50 },  // dusk
+      { h:24, sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35 },  // wraps to night
+    ];
+    function applyTimeOfDay(){
+      const hr=new Date().getHours()+new Date().getMinutes()/60;
+      let a=TOD_KEYS[0], b=TOD_KEYS[1];
+      for(let i=0;i<TOD_KEYS.length-1;i++){ if(hr>=TOD_KEYS[i].h && hr<=TOD_KEYS[i+1].h){ a=TOD_KEYS[i]; b=TOD_KEYS[i+1]; break; } }
+      const t=(hr-a.h)/((b.h-a.h)||1);
+      const lc=(c1,c2)=>new THREE.Color(c1).lerp(new THREE.Color(c2),t);
+      const ln=(n1,n2)=>THREE.MathUtils.lerp(n1,n2,t);
+      sun.color.copy(lc(a.sun,b.sun)); sun.intensity=ln(a.sunI,b.sunI);
+      hemi.color.copy(lc(a.hemiSky,b.hemiSky)); hemi.groundColor.copy(lc(a.hemiGnd,b.hemiGnd)); hemi.intensity=ln(a.hemiI,b.hemiI);
+      ambient.color.copy(lc(a.amb,b.amb)); ambient.intensity=ln(a.ambI,b.ambI);
+      rim.intensity=ln(a.rimI,b.rimI);
+      const bgc=lc(a.bg,b.bg); scene.background.copy(bgc); scene.fog.color.copy(bgc); scene.fog.density=ln(a.fogD,b.fogD);
+    }
+    setInterval(applyTimeOfDay, 5*60*1000);   // keep drifting correctly through a long-lived tab
 
     // ---------- SECTORS: each market -> a topic ----------
     // matched to market material names found in the FBX
@@ -775,6 +802,8 @@
       // shadow sized to world
       const h=cfg.world*0.8, sc=sun.shadow.camera; sc.left=-h;sc.right=h;sc.top=h;sc.bottom=-h;sc.near=1;sc.far=cfg.world*5; sc.updateProjectionMatrix();
       sun.position.set(cfg.world*0.75, cfg.world*0.98, cfg.world*0.5); sun.target.position.set(0,0,0); // high 3/4 angle: lights the scene yet still throws shadows
+
+      applyTimeOfDay();   // tint the whole scene to the visitor's real local clock (night/dawn/day/dusk) — see definition below
 
       // ---- space grid floor: a vast dark plane with faint purple grid + X marks, fading into the void (reference look) ----
       const gcv=document.createElement('canvas'); gcv.width=gcv.height=128; const gx=gcv.getContext('2d');
