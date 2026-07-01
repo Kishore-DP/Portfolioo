@@ -241,15 +241,48 @@
     #quickView .qv-sec-head h2 { font-size:1.7rem; color:#fff; line-height:1.1; letter-spacing:-.01em; }
     #quickView .qv-sec-sub { margin-top:7px; color:#9fb39f; font-size:.95rem; }
     @media (max-width:680px){ #quickView .qv-inner{ padding:28px 18px 70px; } #quickView .qv-sec-head h2{ font-size:1.35rem; } #quickView .qv-bar{ padding:13px 16px; } }
+
+    /* ===== One-Pager: a condensed, single printable page + QR code, for handing out at events ===== */
+    #onePager { position:fixed; inset:0; z-index:70; display:none; flex-direction:column; background:#171421; opacity:0; transition:opacity .3s ease; }
+    #onePager.show { display:flex; opacity:1; }
+    #onePager .op-scroll { flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain; padding:38px 20px 70px; display:flex; justify-content:center; }
+    #onePager .op-page { width:100%; max-width:760px; min-height:900px; background:#fdfbf6; color:#1c1a24; border-radius:6px;
+      box-shadow:0 30px 90px rgba(0,0,0,.55); padding:56px 60px; font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+    #onePager .op-top { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:22px;
+      padding-bottom:22px; border-bottom:2px solid #1c1a24; }
+    #onePager .op-name { font-size:2.1rem; font-weight:800; letter-spacing:-.01em; }
+    #onePager .op-role { font-size:1rem; color:#54524f; margin-top:4px; }
+    #onePager .op-qr { text-align:center; flex:0 0 auto; }
+    #onePager .op-qr img { width:110px; height:110px; display:block; border:1px solid #e4e0d4; border-radius:6px; }
+    #onePager .op-qr small { display:block; margin-top:6px; font-size:.68rem; color:#7a776e; max-width:110px; }
+    #onePager .op-page h3 { font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; color:#7a5a2a; font-weight:800; margin:22px 0 10px; }
+    #onePager .op-page p { font-size:.92rem; line-height:1.55; color:#332f2a; margin-bottom:4px; }
+    #onePager .op-grid { display:grid; grid-template-columns:1fr 1fr; gap:28px; margin-top:6px; }
+    #onePager .op-page ul { list-style:none; padding:0; margin:0; }
+    #onePager .op-page li { font-size:.88rem; line-height:1.6; padding-left:16px; position:relative; color:#332f2a; }
+    #onePager .op-page li::before { content:'▪'; position:absolute; left:0; color:#c98a3a; }
+    #onePager .op-tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:4px; }
+    #onePager .op-tags span { font-size:.72rem; padding:4px 10px; border-radius:99px; background:#f1ead9; color:#5a4520; border:1px solid #e4d8b8; }
+    #onePager .op-contact { display:flex; gap:22px; flex-wrap:wrap; margin-top:6px; font-size:.86rem; color:#332f2a; }
+    #onePager .op-contact a { color:#7a5a2a; text-decoration:none; font-weight:600; }
+    #onePager .op-foot { margin-top:26px; padding-top:16px; border-top:1px solid #e4e0d4; font-size:.76rem; color:#8a8678; text-align:center; }
+    @media (max-width:680px){ #onePager .op-page{ padding:30px 22px; } #onePager .op-name{ font-size:1.5rem; } #onePager .op-grid{ grid-template-columns:1fr; gap:18px; } }
+
     @media print {
-      body > *:not(#quickView) { display:none !important; }
-      html,body { overflow:visible !important; background:#fff !important; }
-      #quickView { position:static !important; display:block !important; opacity:1 !important; background:#fff !important; color:#111 !important; }
+      body:has(#quickView.show) > *:not(#quickView) { display:none !important; }
+      html:has(#quickView.show) body, body:has(#quickView.show) { overflow:visible !important; background:#fff !important; }
+      body:has(#quickView.show) #quickView { position:static !important; display:block !important; opacity:1 !important; background:#fff !important; color:#111 !important; }
       #quickView .qv-bar, #certLightbox { display:none !important; }
       #quickView .qv-body { overflow:visible !important; }
       #quickView h2, #quickView h3, #quickView b, #quickView strong { color:#111 !important; }
       #quickView p, #quickView li, #quickView small { color:#333 !important; }
       #quickView .qv-sec { break-inside:avoid; }
+
+      body:has(#onePager.show) > *:not(#onePager) { display:none !important; }
+      body:has(#onePager.show) { overflow:visible !important; background:#fff !important; }
+      #onePager { position:static !important; display:block !important; opacity:1 !important; background:#fff !important; }
+      #onePager .op-scroll { overflow:visible !important; padding:0 !important; display:block !important; }
+      #onePager .op-page { box-shadow:none !important; max-width:100% !important; min-height:0 !important; border-radius:0 !important; }
     }
     /* staggered entrance for body blocks */
     @keyframes panelRise { from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
@@ -340,6 +373,7 @@
       color:#0c1420; font-weight:700; font-size:.92rem; cursor:pointer; transition:filter .2s, transform .2s; }
     .menu-cta:hover { filter:brightness(1.08); }
     .menu-cta:active { transform:scale(.98); }
+    .menu-cta-alt { background:linear-gradient(90deg,#e0a45a,#f0c48e); color:#241608; }
     #rateThanks { display:none; margin-top:14px; padding:12px; border-radius:11px; text-align:center; color:#bff0ac;
       background:rgba(123,201,111,.12); border:1px solid rgba(123,201,111,.3); font-size:.9rem; }
     #rateThanks.show { display:block; }
@@ -415,6 +449,56 @@
     <div class="qv-body"><div class="qv-inner" id="qvInner"></div></div>
   </div>
 
+  <div id="onePager" role="dialog" aria-modal="true" aria-label="Printable one-page summary">
+    <div class="qv-bar">
+      <div class="qv-brand">Kishore DP <span>— One-Pager</span></div>
+      <div class="qv-actions"><button id="opPrint" title="Print or save as PDF">🖨️ Print</button><button id="opClose" aria-label="Close one-pager">&times;</button></div>
+    </div>
+    <div class="op-scroll"><div class="op-page">
+      <div class="op-top">
+        <div>
+          <div class="op-name">Kishore DP</div>
+          <div class="op-role">Developer &middot; Builder &middot; Perpetual Tinkerer</div>
+        </div>
+        <div class="op-qr"><img src="qr-code.png" alt="QR code linking to the live 3D portfolio"><small>Scan for the full interactive portfolio</small></div>
+      </div>
+
+      <p>High-school student building across AI, full-stack development, game development and embedded systems. I turn "what if…" ideas into things people can click, play and enjoy — and I learn best by creating, breaking, fixing, and repeating.</p>
+
+      <div class="op-grid">
+        <div>
+          <h3>Highlights</h3>
+          <ul>
+            <li>Elected <strong>House Captain</strong>, Diadem House (2024–25)</li>
+            <li>Data Science &amp; AI certification — IIT Madras (2024)</li>
+            <li>Model United Nations delegate</li>
+            <li>Basketball &amp; Carrom — Intramural Winner</li>
+            <li>Kho-Kho &amp; 4&times;100m Relay — Silver, U-19</li>
+          </ul>
+        </div>
+        <div>
+          <h3>What I Build With</h3>
+          <div class="op-tags">
+            <span>Unity</span><span>Roblox Studio</span><span>JavaScript</span>
+            <span>Three.js</span><span>Arduino</span><span>ESP32</span>
+            <span>AI / ML</span><span>Claude Skills</span>
+          </div>
+          <h3 style="margin-top:20px;">Open To</h3>
+          <p style="font-size:.86rem;">Internships, freelance work, hackathons and collaborations — anything that involves building.</p>
+        </div>
+      </div>
+
+      <h3>Contact</h3>
+      <div class="op-contact">
+        <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a>
+        <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">github.com/Kishore-DP</a>
+        <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">linkedin.com/in/kishore-dp</a>
+      </div>
+
+      <div class="op-foot">Full interactive 3D portfolio &mdash; kishore-dp.github.io/Portfolioo</div>
+    </div></div>
+  </div>
+
   <!-- top-right hamburger menu -->
   <button id="menuBtn" aria-label="Open menu" aria-expanded="false"><span></span><span></span><span></span></button>
   <div id="menuScrim"></div>
@@ -425,6 +509,8 @@
       <h3>📄 In a hurry?</h3>
       <p class="help-tip" style="margin-top:0;margin-bottom:12px;">Skip walking around — see everything on one scrollable page instead.</p>
       <button id="quickViewBtn" class="menu-cta">Open Quick View</button>
+      <p class="help-tip" style="margin-bottom:12px;">Or grab a condensed, printable one-pager with a QR code back to this site — handy for events.</p>
+      <button id="onePagerBtn" class="menu-cta menu-cta-alt">Open One-Pager</button>
     </section>
 
     <section class="menu-sec">
@@ -1220,13 +1306,25 @@
     function qvOpen(){ buildQuickView(); qvEl.classList.add('show'); closeMenu(); if(panelOpen()) closePanel(); sfx('whoosh'); }
     function qvClose(){ qvEl.classList.remove('show'); }
     function qvIsOpen(){ return qvEl.classList.contains('show'); }
-    document.getElementById('quickViewBtn').addEventListener('click', qvOpen);
+    document.getElementById('quickViewBtn').addEventListener('click', ()=>{ opClose(); qvOpen(); });
     document.getElementById('qvClose').addEventListener('click', qvClose);
     document.getElementById('qvPrint').addEventListener('click', ()=>window.print());
     addEventListener('keydown', e=>{ if(e.code==='Escape' && qvIsOpen()) qvClose(); });
-    // any print attempt (Ctrl/Cmd+P) should produce a sensible page even if Quick View was never opened
-    addEventListener('beforeprint', ()=>{ if(!qvIsOpen()){ qvAutoOpenedForPrint=true; buildQuickView(); qvEl.classList.add('show'); } });
-    addEventListener('afterprint', ()=>{ if(qvAutoOpenedForPrint){ qvAutoOpenedForPrint=false; qvClose(); } });
+
+    // ---- One-Pager: a condensed, single printable page + QR code, for handing out at events ----
+    const opEl=document.getElementById('onePager');
+    let opAutoOpenedForPrint=false;
+    function opOpen(){ opEl.classList.add('show'); closeMenu(); if(panelOpen()) closePanel(); sfx('whoosh'); }
+    function opClose(){ opEl.classList.remove('show'); }
+    function opIsOpen(){ return opEl.classList.contains('show'); }
+    document.getElementById('onePagerBtn').addEventListener('click', ()=>{ qvClose(); opOpen(); });
+    document.getElementById('opClose').addEventListener('click', opClose);
+    document.getElementById('opPrint').addEventListener('click', ()=>window.print());
+    addEventListener('keydown', e=>{ if(e.code==='Escape' && opIsOpen()) opClose(); });
+
+    // any print attempt (Ctrl/Cmd+P) should produce a sensible page — default to Quick View unless the one-pager is already open
+    addEventListener('beforeprint', ()=>{ if(!qvIsOpen() && !opIsOpen()){ qvAutoOpenedForPrint=true; buildQuickView(); qvEl.classList.add('show'); } });
+    addEventListener('afterprint', ()=>{ if(qvAutoOpenedForPrint){ qvAutoOpenedForPrint=false; qvClose(); } if(opAutoOpenedForPrint){ opAutoOpenedForPrint=false; opClose(); } });
 
     // --- welcome / how-it-works popup (auto-shown once the intro settles; closes on ✕ or first movement) ---
     const welcomeEl=document.getElementById('welcome'), welcomeScrim=document.getElementById('welcomeScrim');
