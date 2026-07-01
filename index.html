@@ -9,6 +9,11 @@
   <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
   <link rel="icon" type="image/png" sizes="512x512" href="favicon.png" />
   <link rel="apple-touch-icon" href="favicon.png" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Kishore DP" />
 
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://kishore-dp.github.io/Portfolioo/" />
@@ -1471,6 +1476,12 @@
       const sy=surfaceTop(SPAWN.x,SPAWN.z)??0; groundY=sy; player.position.set(SPAWN.x,sy,SPAWN.z); player.rotation.y=camYaw+Math.PI; // face away from camera
       sceneReady=true; animate();   // scene built; the loader's slowed bar finishes, then reveal() hides it + starts the descent
     })();
+  </script>
+  <script>
+    // registered unconditionally (outside the module script) so even the no-WebGL fallback page benefits from offline caching
+    if ('serviceWorker' in navigator) {
+      addEventListener('load', () => { navigator.serviceWorker.register('sw.js').catch(() => {}); });
+    }
   </script>
 </body>
 </html>
