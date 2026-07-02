@@ -376,31 +376,56 @@
     @media (max-width:680px){ #quickView .qv-inner{ padding:30px 18px 70px; } #quickView .qv-sec-head h2{ font-size:1.5rem; } #quickView .qv-bar{ padding:13px 16px; } }
     @media (max-width:430px){ .qv-brand span{ display:none; } .qv-actions button{ padding:9px 12px; } .qv-actions .qv-print-label{ display:none; } }
 
-    /* ===== One-Pager: a condensed, single printable page + QR code, for handing out at events ===== */
+    /* ===== One-Pager: an actual resume-formatted document + QR code, for handing out at events ===== */
     #onePager { position:fixed; inset:0; z-index:70; display:none; flex-direction:column; background:#0e0d0c; opacity:0; transition:opacity .4s var(--ease-smooth); }
     #onePager.show { display:flex; opacity:1; }
     #onePager .op-scroll { flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain; padding:40px 20px 70px; display:flex; justify-content:center; }
-    #onePager .op-page { width:100%; max-width:760px; min-height:900px; background:#fdfbf6; color:#1c1a24; border-radius:8px;
-      box-shadow:0 40px 110px rgba(0,0,0,.6); padding:58px 62px; font-family:var(--font-body); }
-    #onePager .op-top { display:flex; justify-content:space-between; align-items:flex-start; gap:24px; margin-bottom:24px;
-      padding-bottom:22px; border-bottom:2px solid #1c1a24; }
-    #onePager .op-name { font-family:var(--font-display); font-size:2.15rem; font-weight:700; letter-spacing:.01em; }
-    #onePager .op-role { font-size:1rem; color:#54524f; margin-top:5px; }
+    #onePager .op-page { width:100%; max-width:800px; min-height:920px; background:#fdfcfa; color:#22201d; border-radius:6px;
+      box-shadow:0 40px 110px rgba(0,0,0,.6); padding:46px 50px; font-family:var(--font-body); font-size:.85rem; line-height:1.5; }
+
+    /* header: name/role/contact-line on the left, a compact QR on the right — never competing for attention */
+    #onePager .op-top { display:flex; justify-content:space-between; align-items:flex-start; gap:20px; margin-bottom:20px;
+      padding-bottom:16px; border-bottom:2.5px solid #1c1a24; }
+    #onePager .op-name { font-family:var(--font-display); font-size:1.9rem; font-weight:700; letter-spacing:.02em; line-height:1; }
+    #onePager .op-role { font-size:.92rem; color:#54524f; margin-top:6px; font-weight:500; }
+    #onePager .op-contact-line { margin-top:9px; font-size:.78rem; color:#4a4742; display:flex; flex-wrap:wrap; gap:0; }
+    #onePager .op-contact-line a { color:#22201d; text-decoration:none; font-weight:600; }
+    #onePager .op-contact-line a:hover { color:#a56a1f; }
+    #onePager .op-contact-line .sep { margin:0 8px; color:#c9c2b4; }
     #onePager .op-qr { text-align:center; flex:0 0 auto; }
-    #onePager .op-qr img { width:112px; height:112px; display:block; border:1px solid #e4e0d4; border-radius:8px; }
-    #onePager .op-qr small { display:block; margin-top:7px; font-size:.68rem; color:#7a776e; max-width:112px; }
-    #onePager .op-page h3 { font-size:.72rem; letter-spacing:.18em; text-transform:uppercase; color:#a56a1f; font-weight:800; margin:23px 0 11px; }
-    #onePager .op-page p { font-size:.92rem; line-height:1.58; color:#332f2a; margin-bottom:4px; }
-    #onePager .op-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:7px; }
+    #onePager .op-qr img { width:64px; height:64px; display:block; border:1px solid #e4e0d4; border-radius:5px; }
+    #onePager .op-qr small { display:block; margin-top:5px; font-size:.6rem; color:#8a8678; max-width:70px; line-height:1.3; }
+
+    /* two-column resume body: narrow sidebar + main column, like a real modern resume */
+    #onePager .op-body { display:grid; grid-template-columns:0.98fr 1.7fr; gap:34px; align-items:start; }
+    #onePager .op-block { margin-bottom:19px; }
+    #onePager .op-block:last-child { margin-bottom:0; }
+    #onePager .op-page h3 { font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:#a56a1f; font-weight:800;
+      margin:0 0 9px; padding-bottom:5px; border-bottom:1px solid #e4d8b8; }
+    #onePager .op-page p { font-size:.83rem; line-height:1.55; color:#332f2a; margin-bottom:4px; }
     #onePager .op-page ul { list-style:none; padding:0; margin:0; }
-    #onePager .op-page li { font-size:.88rem; line-height:1.65; padding-left:17px; position:relative; color:#332f2a; }
-    #onePager .op-page li::before { content:'▪'; position:absolute; left:0; color:#c98a3a; }
-    #onePager .op-tags { display:flex; flex-wrap:wrap; gap:7px; margin-top:5px; }
-    #onePager .op-tags span { font-size:.72rem; font-weight:600; padding:5px 11px; border-radius:99px; background:#f1ead9; color:#5a4520; border:1px solid #e4d8b8; }
-    #onePager .op-contact { display:flex; gap:22px; flex-wrap:wrap; margin-top:7px; font-size:.86rem; color:#332f2a; }
-    #onePager .op-contact a { color:#a56a1f; text-decoration:none; font-weight:700; }
-    #onePager .op-foot { margin-top:28px; padding-top:17px; border-top:1px solid #e4e0d4; font-size:.76rem; color:#8a8678; text-align:center; letter-spacing:.02em; }
-    @media (max-width:680px){ #onePager .op-page{ padding:30px 22px; } #onePager .op-name{ font-size:1.5rem; } #onePager .op-grid{ grid-template-columns:1fr; gap:18px; } }
+    #onePager .op-page li { font-size:.82rem; line-height:1.55; padding-left:14px; position:relative; color:#332f2a; margin-bottom:6px; }
+    #onePager .op-page li::before { content:'–'; position:absolute; left:0; color:#c98a3a; font-weight:700; }
+    #onePager .op-page li:last-child { margin-bottom:0; }
+    #onePager .op-page li b { color:#1c1a24; }
+
+    /* sidebar entries: a bold label line + a muted meta line, the standard resume "item" shape */
+    #onePager .op-item { margin-bottom:11px; }
+    #onePager .op-item:last-child { margin-bottom:0; }
+    #onePager .op-item b { display:block; font-size:.83rem; color:#1c1a24; font-weight:700; }
+    #onePager .op-item span { display:block; font-size:.76rem; color:#655f56; margin-top:1px; }
+    #onePager .op-item small { display:block; font-size:.72rem; color:#8a8678; margin-top:1px; }
+
+    /* project entries in the main column */
+    #onePager .op-proj { margin-bottom:13px; }
+    #onePager .op-proj:last-child { margin-bottom:0; }
+    #onePager .op-proj-head { display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:3px; }
+    #onePager .op-proj-head b { font-size:.86rem; color:#1c1a24; font-weight:700; }
+    #onePager .op-proj-head span { font-size:.72rem; color:#a56a1f; font-weight:600; white-space:nowrap; }
+    #onePager .op-proj p { margin-bottom:0; }
+
+    @media (max-width:680px){ #onePager .op-page{ padding:32px 24px; } #onePager .op-name{ font-size:1.5rem; }
+      #onePager .op-body{ grid-template-columns:1fr; gap:22px; } #onePager .op-top{ flex-direction:column; } }
 
     @media print {
       body:has(#quickView.show) > *:not(#quickView) { display:none !important; }
@@ -656,45 +681,91 @@
     <div class="op-scroll"><div class="op-page">
       <div class="op-top">
         <div>
-          <div class="op-name">Kishore DP</div>
+          <div class="op-name">KISHORE DP</div>
           <div class="op-role">Developer &middot; Builder &middot; Perpetual Tinkerer</div>
-        </div>
-        <div class="op-qr"><img src="qr-code.png" alt="QR code linking to the live 3D portfolio"><small>Scan for the full interactive portfolio</small></div>
-      </div>
-
-      <p>High-school student building across AI, full-stack development, game development and embedded systems. I turn "what if…" ideas into things people can click, play and enjoy — and I learn best by creating, breaking, fixing, and repeating.</p>
-
-      <div class="op-grid">
-        <div>
-          <h3>Highlights</h3>
-          <ul>
-            <li>Elected <strong>House Captain</strong>, Diadem House (2024–25)</li>
-            <li>Data Science &amp; AI certification — IIT Madras (2024)</li>
-            <li>Model United Nations delegate</li>
-            <li>Basketball &amp; Carrom — Intramural Winner</li>
-            <li>Kho-Kho &amp; 4&times;100m Relay — Silver, U-19</li>
-          </ul>
-        </div>
-        <div>
-          <h3>What I Build With</h3>
-          <div class="op-tags">
-            <span>Unity</span><span>Roblox Studio</span><span>JavaScript</span>
-            <span>Three.js</span><span>Arduino</span><span>ESP32</span>
-            <span>AI / ML</span><span>Claude Skills</span>
+          <div class="op-contact-line">
+            <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a><span class="sep">|</span>
+            <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">linkedin.com/in/kishore-dp</a><span class="sep">|</span>
+            <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">github.com/Kishore-DP</a><span class="sep">|</span>
+            <a href="https://kishore-dp.github.io/Portfolioo/" target="_blank" rel="noopener">kishore-dp.github.io/Portfolioo</a>
           </div>
-          <h3 style="margin-top:20px;">Open To</h3>
-          <p style="font-size:.86rem;">Internships, freelance work, hackathons and collaborations — anything that involves building.</p>
         </div>
+        <div class="op-qr"><img src="qr-code.png" alt="QR code linking to the live 3D portfolio"><small>Scan for interactive portfolio</small></div>
       </div>
 
-      <h3>Contact</h3>
-      <div class="op-contact">
-        <a href="mailto:kishoredp27@gmail.com">kishoredp27@gmail.com</a>
-        <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">github.com/Kishore-DP</a>
-        <a href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener">linkedin.com/in/kishore-dp</a>
-      </div>
+      <div class="op-body">
+        <aside class="op-side">
+          <div class="op-block">
+            <h3>Education</h3>
+            <div class="op-item">
+              <b>Chennai Public School</b>
+              <span>Anna Nagar, Chennai</span>
+              <small>Grades IX – XII</small>
+            </div>
+          </div>
 
-      <div class="op-foot">Full interactive 3D portfolio &mdash; kishore-dp.github.io/Portfolioo</div>
+          <div class="op-block">
+            <h3>Certifications</h3>
+            <div class="op-item">
+              <b>Data Science &amp; AI</b>
+              <span>IIT Madras &middot; Centre for Outreach &amp; Digital Education</span>
+              <small>8-week certification &middot; 2024</small>
+            </div>
+          </div>
+
+          <div class="op-block">
+            <h3>Technical Skills</h3>
+            <div class="op-item"><b>Web</b><span>JavaScript, Three.js, HTML/CSS</span></div>
+            <div class="op-item"><b>Game Development</b><span>Unity (C#), Roblox Studio (Lua)</span></div>
+            <div class="op-item"><b>Embedded / IoT</b><span>Arduino, ESP32</span></div>
+            <div class="op-item"><b>AI / ML</b><span>Python, applied fundamentals</span></div>
+          </div>
+
+          <div class="op-block">
+            <h3>Athletics</h3>
+            <ul>
+              <li>Basketball &amp; Carrom — Intramural Winner</li>
+              <li>Kho-Kho &amp; 4&times;100m Relay — Silver, U-19</li>
+            </ul>
+          </div>
+        </aside>
+
+        <main class="op-main">
+          <div class="op-block">
+            <h3>Summary</h3>
+            <p>High-school builder working across AI, full-stack development, game development and embedded systems. Learns by shipping — prototyping quickly, iterating fast, and refining until it feels right.</p>
+          </div>
+
+          <div class="op-block">
+            <h3>Projects</h3>
+            <div class="op-proj">
+              <div class="op-proj-head"><b>Interactive 3D Portfolio</b><span>Three.js &middot; WebGL</span></div>
+              <p>Designed and built a walkable 3D "medieval market" portfolio from scratch — custom loading sequence, dynamic camera work, and this document.</p>
+            </div>
+            <div class="op-proj">
+              <div class="op-proj-head"><b>Playnix</b><span>React Native &middot; Expo &middot; Firebase</span></div>
+              <p>A music app with offline library and social features — friends, chat, presence and shared playlists.</p>
+            </div>
+            <div class="op-proj">
+              <div class="op-proj-head"><b>Roblox Game Development</b><span>Lua &middot; Roblox Studio</span></div>
+              <p>Building an original multiplayer game from the ground up in Roblox Studio.</p>
+            </div>
+          </div>
+
+          <div class="op-block">
+            <h3>Leadership &amp; Activities</h3>
+            <ul>
+              <li><b>House Captain</b>, Diadem House — elected student leadership role, 2024–25</li>
+              <li><b>Model United Nations</b> delegate — debate and diplomacy</li>
+            </ul>
+          </div>
+
+          <div class="op-block">
+            <h3>Open To</h3>
+            <p>Internships, freelance work, hackathons and collaborations — anything that involves building.</p>
+          </div>
+        </main>
+      </div>
     </div></div>
   </div>
 
