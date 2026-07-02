@@ -272,6 +272,41 @@
     .proj h3 { margin-top:0; }
     .proj h3::before { display:none; }   /* project titles aren't section labels */
     .proj h3 { font-size:1.08rem; letter-spacing:0; text-transform:none; color:#fff; font-weight:700; margin-bottom:9px; }
+    /* expandable project cards (My Creations / Active Projects) — only the overview (thumb, title,
+       tagline, tags) shows by default; the write-up, meta and photo gallery only render once opened */
+    .pc { margin:0 0 16px; border-radius:18px; background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09);
+      border-left:3px solid var(--accent,#7bc96f); overflow:hidden; transition:border-color .2s ease, box-shadow .25s ease, background .2s ease; }
+    .pc:hover { border-color:color-mix(in srgb,var(--accent,#7bc96f) 55%, rgba(255,255,255,.1)); box-shadow:0 20px 44px rgba(0,0,0,.35); }
+    .pc[open] { background:rgba(255,255,255,.045); }
+    .pc-head { list-style:none; cursor:pointer; padding:18px 21px; display:flex; align-items:center; gap:16px; -webkit-tap-highlight-color:transparent; }
+    .pc-head::-webkit-details-marker { display:none; }
+    .pc-head::marker { content:''; }
+    .pc-thumb { flex:0 0 auto; width:64px; height:64px; border-radius:13px; overflow:hidden;
+      background:color-mix(in srgb,var(--accent,#7bc96f) 16%, rgba(255,255,255,.04));
+      border:1px solid color-mix(in srgb,var(--accent,#7bc96f) 30%, transparent); display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
+    .pc-thumb img { width:100%; height:100%; object-fit:cover; }
+    .pc-head-text { flex:1 1 auto; min-width:0; }
+    .pc-head-text h3 { margin:0 0 4px; font-size:1.05rem; letter-spacing:0; text-transform:none; color:#fff; font-weight:700;
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+    .pc-head-text h3::before { display:none; }
+    .pc-tagline { margin:0; font-size:.87rem; color:#a5a29a; line-height:1.4; }
+    .pc-badge { font-size:.62rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; padding:3px 10px; border-radius:99px;
+      color:#dff5df; background:color-mix(in srgb, #6bc96f 30%, transparent); border:1px solid color-mix(in srgb,#6bc96f 55%, transparent); }
+    .pc-badge.pc-badge-amber { color:#ffe9c2; background:color-mix(in srgb,#e0a45a 30%, transparent); border-color:color-mix(in srgb,#e0a45a 55%, transparent); }
+    .pc-chevron { flex:0 0 auto; width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1); color:#c9cdc8; font-size:1rem;
+      transition:transform .35s var(--ease-out), background .2s ease; }
+    .pc[open] .pc-chevron { transform:rotate(90deg); background:color-mix(in srgb,var(--accent,#7bc96f) 22%, rgba(255,255,255,.04)); }
+    .pc-body { display:block !important; max-height:0; overflow:hidden; opacity:0; padding:0 21px;
+      transition:max-height .45s var(--ease-out), opacity .35s ease; border-top:0 solid rgba(255,255,255,.07); }
+    .pc[open] .pc-body { opacity:1; border-top-width:1px; }
+    .pc-body-in { padding:19px 0 24px; }
+    .pc-meta { display:flex; flex-wrap:wrap; gap:12px 30px; margin-bottom:18px; }
+    .pc-meta div { display:flex; flex-direction:column; gap:3px; }
+    .pc-meta b { font-size:.65rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--accent,#7bc96f); }
+    .pc-meta span { font-size:.88rem; color:#dcded9; }
+    .pc-gallery { margin:18px 0 4px; }
+    .pc-links { margin-top:8px; }
     /* live GitHub activity feed */
     .gh-feed { margin:0 0 24px; padding:19px 21px; border-radius:17px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); }
     .gh-feed-head { display:flex; align-items:center; gap:9px; font-size:.72rem; letter-spacing:.16em; text-transform:uppercase; font-weight:800; color:var(--accent,#b48be0); margin-bottom:15px; }
@@ -1131,19 +1166,52 @@
       bakery:    { topic:'done',     title:"My Creations", ico:'🍞', accent:'#7bc96f',
                    kicker:'Shipped work', sub:'Things I\'ve designed, built and shipped.',
                    html:`
-                     <p class="lead">A selection of projects I've designed, built and shipped. <em>[Replace these three with your real work — keep the card layout.]</em></p>
-                     <div class="proj"><h3>Project One</h3>
-                       <p><em>[One or two lines on what it does, the problem it solves and what you're proud of.]</em></p>
-                       <div class="tags"><span>React</span><span>Node</span><span>MongoDB</span></div>
-                       <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>
-                     <div class="proj"><h3>Project Two</h3>
-                       <p><em>[What it is and one interesting technical detail or challenge you solved.]</em></p>
-                       <div class="tags"><span>Python</span><span>API</span></div>
-                       <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>
-                     <div class="proj"><h3>Project Three</h3>
-                       <p><em>[A third project — even a small or fun one shows range and curiosity.]</em></p>
-                       <div class="tags"><span>Three.js</span><span>WebGL</span></div>
-                       <p><a href="#" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="#" target="_blank" rel="noopener">Code ↗</a></p></div>` },
+                     <p class="lead">A selection of projects I've designed, built and shipped. Click a card to see the full write-up and photos.</p>
+
+                     <details class="pc">
+                       <summary class="pc-head">
+                         <div class="pc-thumb"><img src="screenshots/feature-market-overview.jpg" alt="" loading="lazy"></div>
+                         <div class="pc-head-text">
+                           <h3>Interactive 3D Portfolio <span class="pc-badge">This site</span></h3>
+                           <p class="pc-tagline">A walkable medieval market, built from scratch as a portfolio.</p>
+                         </div>
+                         <span class="pc-chevron">›</span>
+                       </summary>
+                       <div class="pc-body"><div class="pc-body-in">
+                         <div class="pc-meta">
+                           <div><b>Started</b><span>June 2026</span></div>
+                           <div><b>Status</b><span>Live · actively maintained</span></div>
+                           <div><b>Stack</b><span>Three.js · WebGL · Vanilla JS</span></div>
+                         </div>
+                         <p>You're standing in it right now. Instead of a page you scroll, this portfolio is a floating market island you walk through — five stalls, five topics, one Three.js scene. It's as much a "build something ambitious end-to-end" project as it is a resume.</p>
+                         <h3>What's in it</h3>
+                         <ul>
+                           <li>A walkable 3D world — WASD or arrow keys to move, right-mouse-drag (or touch-drag on mobile) to look around</li>
+                           <li>Bloom-lit glowing orbs at each stall open a topic panel: About Me, Expertise, My Creations, Active Projects, Contact</li>
+                           <li>A "Quick View" mode that collapses the whole market onto one scrollable page for a fast skim</li>
+                           <li>A printable One-Pager résumé with a QR code back to the live site</li>
+                           <li>Day/night lighting tied to the visitor's local clock, with fireflies and shooting stars after dark</li>
+                           <li>Installable as an offline-capable PWA, plus shareable deep links straight to any topic</li>
+                           <li>A hidden developer terminal easter egg — try typing "sudo" anywhere</li>
+                         </ul>
+                         <div class="tags"><span>Three.js</span><span>WebGL</span><span>JavaScript</span><span>PWA</span></div>
+                         <div class="pc-gallery cert-grid">
+                           <figure class="cert" data-full="screenshots/feature-market-overview.jpg" data-cap="<b>The market, from the inside</b><br>Signboards mark each topic — My Creations, Active Projects, About Me.">
+                             <div class="cert-thumb"><img src="screenshots/feature-market-overview.jpg" alt="Floating market overview with signboards" loading="lazy"></div>
+                             <figcaption><b>Market overview</b><small>The island, walkable in 3D</small></figcaption>
+                           </figure>
+                           <figure class="cert" data-full="screenshots/feature-orb-glow.jpg" data-cap="<b>A topic orb, glowing</b><br>Bloom post-processing makes the clickable orbs and signage glow.">
+                             <div class="cert-thumb"><img src="screenshots/feature-orb-glow.jpg" alt="Glowing question-mark orb at a stall" loading="lazy"></div>
+                             <figcaption><b>Glowing orb</b><small>Click to open a topic panel</small></figcaption>
+                           </figure>
+                           <figure class="cert" data-full="screenshots/feature-market-detail.jpg" data-cap="<b>Market detail</b><br>Hand-placed stalls, lanterns and foliage across the island.">
+                             <div class="cert-thumb"><img src="screenshots/feature-market-detail.jpg" alt="Vegetable stall with hanging lantern" loading="lazy"></div>
+                             <figcaption><b>Stall detail</b><small>Lantern-lit corners of the market</small></figcaption>
+                           </figure>
+                         </div>
+                         <p class="pc-links"><a href="https://kishore-dp.github.io/Portfolioo/" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="https://github.com/Kishore-DP/Portfolioo" target="_blank" rel="noopener">Code ↗</a></p>
+                       </div></div>
+                     </details>` },
       weapon:    { topic:'building', title:'Active Projects',ico:'⚔️', accent:'#b48be0',
                    kicker:'On my workbench', sub:'Ideas in motion and things I\'m actively shaping.',
                    html:`
@@ -1671,6 +1739,17 @@
     function closeCert(){ certLB.classList.remove('show'); }
     certLB.addEventListener('click', e=>{ if(e.target===certImg) return; closeCert(); });   // clicking the image keeps it; backdrop/✕ closes
     document.addEventListener('click', e=>{ const c=e.target.closest('.cert[data-full]'); if(c) openCert(c.dataset.full, c.dataset.cap||''); });   // works from the panel AND Quick View
+
+    // ---- expandable project cards (My Creations / Active Projects): animate the reveal since native
+    // <details> snaps open instantly — 'toggle' doesn't bubble, so listen on the capture phase instead ----
+    document.addEventListener('toggle', e=>{
+      const d=e.target; if(!(d instanceof HTMLElement) || !d.matches('.pc')) return;
+      const body=d.querySelector('.pc-body'); if(!body) return;
+      if(d.open){
+        body.style.maxHeight=body.scrollHeight+'px';
+        body.addEventListener('transitionend', function done(ev){ if(ev.propertyName==='max-height'){ body.style.maxHeight='none'; body.removeEventListener('transitionend',done); } });
+      } else body.style.maxHeight='0px';
+    }, true);
 
     // ---- 3D flip business card (Let's Connect) ----
     document.addEventListener('click', e=>{ const card=e.target.closest('.biz-card'); if(card) card.classList.toggle('flipped'); });
