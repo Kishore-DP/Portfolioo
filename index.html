@@ -397,6 +397,15 @@
       background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.15rem; cursor:pointer; border:1px solid rgba(255,255,255,.1); }
 
     #dpad { position:fixed; right:18px; bottom:20px; z-index:30; display:none; grid-template-columns:repeat(3,54px); grid-template-rows:repeat(3,54px); gap:6px; }
+
+    /* day/night mode chip — reflects the same clock-driven lighting curve so the shift reads as intentional */
+    #todChip { position:fixed; top:16px; left:16px; z-index:30; display:flex; align-items:center; gap:7px;
+      padding:8px 14px 8px 10px; border-radius:99px; background:rgba(0,0,0,.5); backdrop-filter:blur(6px);
+      border:1px solid rgba(255,255,255,.1); color:#eaf2ea; font-size:.82rem; font-weight:600; letter-spacing:.02em;
+      opacity:0; transform:translateY(-6px); transition:opacity .5s ease .3s, transform .5s ease .3s; pointer-events:none; }
+    #todChip.show { opacity:1; transform:none; }
+    #todChip .tod-ico { font-size:1rem; line-height:1; }
+    @media (max-width:680px){ #todChip{ font-size:.74rem; padding:6px 12px 6px 9px; top:12px; left:12px; } }
     #dpad button { width:54px; height:54px; border:none; border-radius:14px; background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.3rem; border:1px solid rgba(255,255,255,.1); touch-action:none; }
     #dpad button:active { background:#7bc96f; color:#11161b; }
     .dp-up{grid-area:1/2;} .dp-left{grid-area:2/1;} .dp-right{grid-area:2/3;} .dp-down{grid-area:3/2;}
@@ -537,6 +546,7 @@
     <div class="ach-icon">🏆</div>
     <div class="ach-text"><b>Market Explorer</b><span>You've visited every corner of the market!</span></div>
   </div>
+  <div id="todChip" aria-hidden="true"><span class="tod-ico">☀️</span><span class="tod-label">Day</span></div>
   <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔊</button>
   <div id="dpad" aria-hidden="true">
     <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
@@ -751,6 +761,7 @@
       { h:24, sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // wraps to night
     ];
     let nightFactor=0, todLabel='Day';   // 0=full day..1=full night; shared with fireflies/shooting stars/mode chip
+    const TOD_ICONS={Night:'🌙', Dawn:'🌅', Day:'☀️', 'Golden Hour':'🌇', Dusk:'🌆'};
     function applyTimeOfDay(){
       const hr=new Date().getHours()+new Date().getMinutes()/60;
       let a=TOD_KEYS[0], b=TOD_KEYS[1];
@@ -765,6 +776,8 @@
       const bgc=lc(a.bg,b.bg); scene.background.copy(bgc); scene.fog.color.copy(bgc); scene.fog.density=ln(a.fogD,b.fogD);
       nightFactor=ln(a.night,b.night);
       todLabel = hr<5.5||hr>=20 ? 'Night' : hr<7.5 ? 'Dawn' : hr<16.5 ? 'Day' : hr<18.5 ? 'Golden Hour' : 'Dusk';
+      const chip=document.getElementById('todChip');
+      if(chip){ chip.querySelector('.tod-ico').textContent=TOD_ICONS[todLabel]||'☀️'; chip.querySelector('.tod-label').textContent=todLabel; chip.classList.add('show'); }
     }
     setInterval(applyTimeOfDay, 5*60*1000);   // keep drifting correctly through a long-lived tab
 
