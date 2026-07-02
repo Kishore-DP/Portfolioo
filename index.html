@@ -100,7 +100,8 @@
     #fallback a.fb-row { display:flex; align-items:center; gap:14px; padding:14px 17px; border-radius:15px; text-decoration:none;
       color:#eaf2ea; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); transition:transform .25s var(--ease-spring), background .2s ease, border-color .2s ease; }
     #fallback a.fb-row:hover { transform:translateX(5px); background:color-mix(in srgb,var(--brand) 14%, transparent); border-color:color-mix(in srgb,var(--brand) 40%, transparent); }
-    #fallback a.fb-row span.fi { font-size:1.3rem; width:38px; text-align:center; }
+    #fallback a.fb-row span.fi { font-size:.95rem; width:38px; text-align:center; font-family:var(--font-display); font-weight:800; color:var(--brand); }
+    #fallback a.fb-row span.fi-at { font-family:var(--font-body); font-weight:700; font-size:1.2rem; }
     #fallback a.fb-row b { display:block; font-size:.95rem; font-weight:700; }
     #fallback a.fb-row small { color:#9a9d99; font-size:.82rem; }
     @media (max-width:480px){ #fallback .fb-card{ padding:30px 24px; } #fallback h1{ font-size:1.6rem; } }
@@ -123,7 +124,7 @@
       box-shadow:0 24px 60px rgba(0,0,0,.55), 0 0 36px rgba(232,179,77,.2), inset 0 1px 0 rgba(255,255,255,.06);
       transition:opacity .55s var(--ease-spring), transform .55s var(--ease-spring); }
     #achieve.show { opacity:1; transform:translate(-50%,0) scale(1); }
-    #achieve .ach-icon { font-size:2rem; filter:drop-shadow(0 0 12px rgba(232,179,77,.75)); animation:achBounce 1.4s ease-in-out infinite; }
+    #achieve .ach-icon { font-size:2rem; color:var(--brand,#e8b34d); filter:drop-shadow(0 0 12px rgba(232,179,77,.75)); animation:achBounce 1.4s ease-in-out infinite; }
     @keyframes achBounce { 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-4px) rotate(-8deg); } }
     #achieve .ach-text { display:flex; flex-direction:column; gap:3px; }
     #achieve .ach-text b { font-family:var(--font-display); color:var(--brand-2); font-size:1rem; letter-spacing:.03em; }
@@ -164,9 +165,10 @@
     #panel .panel-head { flex:0 0 auto; padding:36px 76px 24px 42px; border-bottom:1px solid rgba(255,255,255,.08); position:relative;
       background:radial-gradient(130% 150% at 0% -30%, color-mix(in srgb,var(--accent) 15%, transparent), transparent 58%), linear-gradient(180deg, rgba(255,255,255,.03), transparent); }
     #panel .eyebrow { display:flex; align-items:center; gap:13px; font-size:.72rem; letter-spacing:.24em; text-transform:uppercase; color:var(--accent,#7bc96f); margin-bottom:15px; font-weight:800; }
-    #panel .eyebrow .ico { font-size:1.2rem; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:13px;
+    #panel .eyebrow .ico { font-size:1.1rem; width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border-radius:13px;
       background:color-mix(in srgb,var(--accent) 20%, rgba(255,255,255,.04));
-      border:1px solid color-mix(in srgb,var(--accent) 40%, transparent); box-shadow:0 8px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08); }
+      border:1px solid color-mix(in srgb,var(--accent) 40%, transparent); box-shadow:0 8px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08);
+      font-family:var(--font-display); font-weight:700; color:var(--accent,#7bc96f); }
     #panel h2 { font-family:var(--font-display); font-size:clamp(1.85rem,3.8vw,2.9rem); font-weight:700; line-height:1.1; letter-spacing:.005em; color:#fdf9f0; }
     #panel .psub { margin-top:11px; color:#a5a29a; font-size:1.02rem; line-height:1.55; max-width:58ch; }
 
@@ -208,7 +210,8 @@
       background:linear-gradient(135deg, color-mix(in srgb,var(--accent,#7bc96f) 13%, rgba(255,255,255,.02)), color-mix(in srgb,var(--accent,#7bc96f) 5%, rgba(255,255,255,.01)));
       border:1px solid color-mix(in srgb,var(--accent,#7bc96f) 32%, transparent); border-left:3px solid var(--accent,#7bc96f);
       box-shadow:0 12px 32px rgba(0,0,0,.22); }
-    .panel .panel-scroll .callout .cico { font-size:1.6rem; line-height:1.2; flex:0 0 auto; filter:drop-shadow(0 0 8px color-mix(in srgb,var(--accent,#7bc96f) 50%, transparent)); }
+    .panel .panel-scroll .callout .cico { font-size:1.1rem; line-height:1.2; flex:0 0 auto; font-family:var(--font-display); font-weight:800; color:var(--accent,#7bc96f);
+      filter:drop-shadow(0 0 8px color-mix(in srgb,var(--accent,#7bc96f) 50%, transparent)); }
     .panel .panel-scroll .callout strong { color:var(--accent,#7bc96f); }
     .panel .panel-scroll .callout p { margin:0; max-width:none; }
     /* contact rows */
@@ -261,8 +264,10 @@
     .panel .panel-scroll .contact-row:hover { transform:translateX(6px);
       background:color-mix(in srgb,var(--accent,#7bc96f) 13%, rgba(255,255,255,.03)); border-color:color-mix(in srgb,var(--accent,#7bc96f) 45%, transparent);
       box-shadow:0 10px 26px rgba(0,0,0,.28); }
-    .panel .panel-scroll .contact-row .ci { font-size:1.35rem; width:46px; height:46px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:13px;
-      background:color-mix(in srgb,var(--accent,#7bc96f) 18%, rgba(255,255,255,.04)); box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+    .panel .panel-scroll .contact-row .ci { font-size:1rem; width:46px; height:46px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:13px;
+      background:color-mix(in srgb,var(--accent,#7bc96f) 18%, rgba(255,255,255,.04)); box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+      font-family:var(--font-display); font-weight:800; color:var(--accent,#7bc96f); }
+    .panel .panel-scroll .contact-row .ci-at { font-family:var(--font-body); font-weight:700; font-size:1.3rem; }
     .panel .panel-scroll .contact-row b { display:block; color:#fff; font-weight:700; font-size:.96rem; margin-bottom:2px; letter-spacing:.01em; }
     .panel .panel-scroll .contact-row small { color:#9a9d99; font-size:.85rem; }
     /* project cards */
@@ -327,9 +332,9 @@
     .panel .xp-sec { margin:0 0 28px; }
     .panel .xp-sec:last-child { margin-bottom:4px; }
     .panel .xp-head { display:flex; align-items:center; gap:13px; margin:0 0 16px; }
-    .panel .xp-head .xp-ico { font-size:1.2rem; width:42px; height:42px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:13px;
+    .panel .xp-head .xp-ico { font-size:1rem; width:42px; height:42px; flex:0 0 auto; display:flex; align-items:center; justify-content:center; border-radius:13px;
       background:color-mix(in srgb,var(--accent,#e0a45a) 18%, rgba(255,255,255,.03)); border:1px solid color-mix(in srgb,var(--accent,#e0a45a) 36%, transparent);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08); font-family:var(--font-display); font-weight:700; color:var(--accent,#e0a45a); }
     .panel .xp-head h3 { margin:0; padding:0; font-family:var(--font-body); font-size:1.08rem; letter-spacing:.005em; text-transform:none; color:#fff; font-weight:800; display:block; }
     .panel .xp-head h3::before { display:none; }
     .panel .xp-count { margin-left:auto; font-size:.7rem; font-weight:700; letter-spacing:.07em; color:var(--accent,#e0a45a);
@@ -363,7 +368,8 @@
       border-top:3px solid var(--accent,#e0a45a); transition:transform .25s var(--ease-out), box-shadow .25s ease, border-color .2s ease, background .2s ease; }
     .panel .xp-card:hover { transform:translateY(-4px); box-shadow:0 18px 38px rgba(0,0,0,.4); background:rgba(255,255,255,.05); }
     .panel .xp-card .xc-top { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
-    .panel .xp-card .xc-ico { font-size:1.3rem; line-height:1; }
+    .panel .xp-card .xc-ico { font-size:.72rem; line-height:1; font-family:var(--font-display); font-weight:800; letter-spacing:.03em; color:var(--accent,#e0a45a);
+      padding:5px 9px; border-radius:8px; background:color-mix(in srgb,var(--accent,#e0a45a) 16%, rgba(255,255,255,.03)); border:1px solid color-mix(in srgb,var(--accent,#e0a45a) 34%, transparent); }
     .panel .xp-card h4 { margin:0; font-size:1.02rem; color:#fff; font-weight:700; }
     .panel .xp-card p { margin:0 0 10px; font-size:.9rem; color:#b5b8b0; line-height:1.55; max-width:none; }
     .panel .xp-card .tags { margin:0; }
@@ -393,7 +399,8 @@
     #quickView .qv-brand span { font-family:var(--font-body); font-weight:500; color:var(--brand); font-size:.86rem; }
     #quickView .qv-actions { display:flex; gap:10px; }
     #quickView .qv-actions button { border:1px solid rgba(255,255,255,.14); background:rgba(255,255,255,.045); color:#eaf2ea;
-      border-radius:12px; padding:9px 17px; font-size:.86rem; font-weight:600; cursor:pointer; transition:background .2s ease, transform .2s var(--ease-spring), border-color .2s ease; }
+      border-radius:12px; padding:9px 17px; font-size:.86rem; font-weight:600; cursor:pointer; transition:background .2s ease, transform .2s var(--ease-spring), border-color .2s ease;
+      display:inline-flex; align-items:center; gap:8px; }
     #quickView .qv-actions button:hover { background:rgba(255,255,255,.1); transform:translateY(-2px); border-color:color-mix(in srgb,var(--brand) 45%, transparent); }
     #quickView #qvClose { width:38px; padding:9px 0; font-size:1.2rem; line-height:1; }
     /* sticky section navigator — lets you jump straight to a topic instead of scrolling through all five */
@@ -404,7 +411,8 @@
     #quickView .qv-nav button { flex:0 0 auto; display:flex; align-items:center; gap:7px; padding:7px 15px 7px 11px; border-radius:99px;
       border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03); color:#9a9d99;
       font-size:.8rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .25s var(--ease-out); }
-    #quickView .qv-nav button .qvn-ico { font-size:.95rem; }
+    #quickView .qv-nav button .qvn-ico { font-family:var(--font-display); font-weight:700; font-size:.85rem; width:18px; height:18px; flex:0 0 auto;
+      display:inline-flex; align-items:center; justify-content:center; border-radius:50%; background:color-mix(in srgb,var(--nav-accent,#7bc96f) 30%, transparent); }
     #quickView .qv-nav button:hover { background:rgba(255,255,255,.08); color:#eaf2ea; }
     #quickView .qv-nav button.active { background:color-mix(in srgb,var(--nav-accent,#7bc96f) 20%, rgba(255,255,255,.04));
       border-color:color-mix(in srgb,var(--nav-accent,#7bc96f) 55%, transparent); color:#fff;
@@ -414,14 +422,15 @@
     #quickView .qv-sec { margin-bottom:54px; padding-bottom:46px; border-bottom:1px solid rgba(255,255,255,.08); scroll-margin-top:14px; }
     #quickView .qv-sec:last-child { border-bottom:none; margin-bottom:0; }
     #quickView .qv-sec-head { display:flex; align-items:flex-start; gap:17px; margin-bottom:24px; }
-    #quickView .qv-sec-ico { font-size:1.5rem; width:54px; height:54px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    #quickView .qv-sec-ico { font-size:1.4rem; width:54px; height:54px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
       border-radius:16px; background:color-mix(in srgb,var(--accent,#7bc96f) 16%, rgba(255,255,255,.03)); border:1px solid color-mix(in srgb,var(--accent,#7bc96f) 36%, transparent);
-      box-shadow:inset 0 1px 0 rgba(255,255,255,.08); }
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.08); font-family:var(--font-display); font-weight:700; color:var(--accent,#7bc96f); }
     #quickView .qv-sec-kicker { font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; color:var(--accent,#7bc96f); font-weight:800; margin-bottom:7px; }
     #quickView .qv-sec-head h2 { font-family:var(--font-display); font-size:1.9rem; font-weight:700; color:#fdf9f0; line-height:1.12; letter-spacing:.005em; }
     #quickView .qv-sec-sub { margin-top:8px; color:#9a9d99; font-size:.95rem; }
     #quickView .qv-copy-link { flex:0 0 auto; width:40px; height:40px; border-radius:50%; border:1px solid rgba(255,255,255,.16);
-      background:rgba(255,255,255,.05); color:#eaf2ea; font-size:1rem; cursor:pointer; transition:background .2s ease, transform .22s var(--ease-spring); }
+      background:rgba(255,255,255,.05); color:#eaf2ea; font-size:1rem; cursor:pointer; transition:background .2s ease, transform .22s var(--ease-spring);
+      display:flex; align-items:center; justify-content:center; }
     #quickView .qv-copy-link:hover { background:rgba(255,255,255,.13); transform:scale(1.12) rotate(-8deg); }
     @media (max-width:680px){ #quickView .qv-inner{ padding:30px 18px 70px; } #quickView .qv-sec-head h2{ font-size:1.5rem; } #quickView .qv-bar{ padding:13px 16px; } }
     @media (max-width:430px){ .qv-brand span{ display:none; } .qv-actions button{ padding:9px 12px; } .qv-actions .qv-print-label{ display:none; } }
@@ -526,7 +535,11 @@
 
     #sound { position:fixed; top:16px; right:16px; z-index:30; width:44px; height:44px; border:none; border-radius:50%;
       background:rgba(10,8,14,.55); backdrop-filter:blur(8px); color:#fff; font-size:1.1rem; cursor:pointer;
-      border:1px solid rgba(255,255,255,.12); transition:transform .25s var(--ease-spring), background .25s ease, border-color .25s ease, box-shadow .25s ease; }
+      border:1px solid rgba(255,255,255,.12); transition:transform .25s var(--ease-spring), background .25s ease, border-color .25s ease, box-shadow .25s ease;
+      display:flex; align-items:center; justify-content:center; }
+    #sound .snd-mute { display:none; }
+    #sound.is-muted .snd-wave { display:none; }
+    #sound.is-muted .snd-mute { display:inline; }
     #sound:hover { transform:scale(1.08); border-color:color-mix(in srgb, var(--brand) 55%, transparent); box-shadow:0 0 0 1px color-mix(in srgb, var(--brand) 30%, transparent), 0 8px 22px rgba(0,0,0,.35); }
     #sound:active { transform:scale(.92); }
 
@@ -741,20 +754,27 @@
       <p class="fb-role">High-school student building across AI, full-stack, game dev &amp; embedded systems.</p>
       <p>My portfolio is normally an interactive 3D floating market you can walk through — but this browser or device can't run WebGL, so here's the short version instead.</p>
       <p>I turn "what if…" ideas into things people can click, play and (hopefully) enjoy — from web apps to Unity/Roblox games to Arduino &amp; ESP32 projects. Elected <strong>House Captain</strong> at school; I'm open to internships, freelance work, hackathons and collaborations.</p>
-      <p class="fb-note">💡 For the full experience, try a recent Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
+      <p class="fb-note">For the full experience, try a recent Chrome, Edge, Firefox or Safari with hardware acceleration enabled.</p>
       <div class="fb-links">
-        <a class="fb-row" href="mailto:kishoredp27@gmail.com"><span class="fi">📧</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
-        <a class="fb-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="fi">💻</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
-        <a class="fb-row" href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener"><span class="fi">🔗</span><span><b>LinkedIn</b><small>linkedin.com/in/kishore-dp</small></span></a>
+        <a class="fb-row" href="mailto:kishoredp27@gmail.com"><span class="fi fi-at">@</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
+        <a class="fb-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="fi">GH</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
+        <a class="fb-row" href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener"><span class="fi">in</span><span><b>LinkedIn</b><small>linkedin.com/in/kishore-dp</small></span></a>
       </div>
     </div>
   </div>
   <div id="toast"></div>
   <div id="achieve" role="status" aria-live="polite">
-    <div class="ach-icon">🏆</div>
+    <div class="ach-icon">★</div>
     <div class="ach-text"><b>Market Explorer</b><span>You've visited every corner of the market!</span></div>
   </div>
-  <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔊</button>
+  <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">
+    <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor" stroke="none"/>
+      <path class="snd-wave" d="M15.3 8.7a5 5 0 0 1 0 6.6"/>
+      <path class="snd-wave" d="M18 6a9 9 0 0 1 0 12"/>
+      <path class="snd-mute" d="M15.5 9.5l5 5M20.5 9.5l-5 5"/>
+    </svg>
+  </button>
   <div id="dpad" aria-hidden="true">
     <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
     <button class="dp-right" data-dir="right">▶</button><button class="dp-down" data-dir="down">▼</button>
@@ -765,7 +785,7 @@
   <div id="quickView" class="panel" role="dialog" aria-modal="true" aria-label="Quick view of the full portfolio">
     <div class="qv-bar">
       <div class="qv-brand">Kishore DP <span>— Quick View</span></div>
-      <div class="qv-actions"><button id="qvPrint" title="Print or save as PDF">🖨️<span class="qv-print-label"> Print</span></button><button id="qvClose" aria-label="Close quick view">&times;</button></div>
+      <div class="qv-actions"><button id="qvPrint" title="Print or save as PDF"><svg class="qv-print-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M8 13h8v8H8z"/></svg><span class="qv-print-label">Print</span></button><button id="qvClose" aria-label="Close quick view">&times;</button></div>
     </div>
     <nav class="qv-nav" id="qvNav" aria-label="Jump to a section"></nav>
     <div class="qv-body"><div class="qv-inner" id="qvInner"></div></div>
@@ -774,7 +794,7 @@
   <div id="onePager" role="dialog" aria-modal="true" aria-label="Printable one-page summary">
     <div class="qv-bar">
       <div class="qv-brand">Kishore DP <span>— One-Pager</span></div>
-      <div class="qv-actions"><button id="opPrint" title="Print or save as PDF">🖨️<span class="qv-print-label"> Print</span></button><button id="opClose" aria-label="Close one-pager">&times;</button></div>
+      <div class="qv-actions"><button id="opPrint" title="Print or save as PDF"><svg class="qv-print-ico" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"/><rect x="4" y="9" width="16" height="8" rx="1.5"/><path d="M8 13h8v8H8z"/></svg><span class="qv-print-label">Print</span></button><button id="opClose" aria-label="Close one-pager">&times;</button></div>
     </div>
     <div class="op-scroll"><div class="op-page">
       <div class="op-top">
@@ -881,7 +901,7 @@
     <div class="menu-head"><h2>Menu</h2></div>
 
     <section class="menu-sec">
-      <h3>📄 In a hurry?</h3>
+      <h3>In a hurry?</h3>
       <p class="help-tip" style="margin-top:0;margin-bottom:12px;">Skip walking around — see everything on one scrollable page instead.</p>
       <button id="quickViewBtn" class="menu-cta">Open Quick View</button>
       <p class="help-tip" style="margin-bottom:12px;">Or grab a condensed, printable one-pager with a QR code back to this site — handy for events.</p>
@@ -889,32 +909,32 @@
     </section>
 
     <section class="menu-sec">
-      <h3>🔊 Sound Settings</h3>
+      <h3>Sound Settings</h3>
       <div class="ctl"><label>Music <span id="vMusic">70%</span></label><input id="sMusic" type="range" min="0" max="100" value="70"></div>
     </section>
 
     <section class="menu-sec">
-      <h3>❓ How This Website Works</h3>
+      <h3>How This Website Works</h3>
       <ul class="help-list">
         <li><span class="keys"><span class="kbd-only"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span><span class="touch-only"><span class="keycap">◀ ▲ ▼ ▶</span></span></span> <span>Walk around the floating market<span class="kbd-only"> with the keys</span><span class="touch-only"> using the on-screen arrow buttons</span>.</span></li>
         <li><span class="keys"><span class="kbd-only"><span class="keycap">Right mouse</span></span><span class="touch-only"><span class="keycap">Drag</span></span></span> <span><span class="kbd-only">Hold the right mouse button and move to look around.</span><span class="touch-only">Drag on the scene to look around.</span></span></li>
-        <li><span class="keys"><span class="keycap">❓ orb</span></span> <span><span class="kbd-only">Click</span><span class="touch-only">Tap</span> the glowing question-mark orb to open that topic's panel.</span></li>
+        <li><span class="keys"><span class="keycap">Orb</span></span> <span><span class="kbd-only">Click</span><span class="touch-only">Tap</span> the glowing question-mark orb to open that topic's panel.</span></li>
         <li><span class="keys"><span class="kbd-only"><span class="keycap">Esc</span><span class="keycap">✕</span></span><span class="touch-only"><span class="keycap">✕</span></span></span> <span>Close a panel with the <span class="kbd-only">red ✕, press Esc, or simply start moving</span><span class="touch-only">✕, or simply start moving</span>.</span></li>
         <li class="kbd-only"><span class="keys"><span class="keycap">Q</span></span> <span>Open Quick View — every topic on one scrollable page.</span></li>
         <li class="kbd-only"><span class="keys"><span class="keycap">O</span></span> <span>Open the printable One-Pager.</span></li>
         <li class="kbd-only"><span class="keys"><span class="keycap">M</span></span> <span>Toggle sound on/off.</span></li>
       </ul>
-      <p class="help-tip">💡 Tip: every topic is a different part of the portfolio — About Me, Expertise, My Creations, Active Projects and Contact. Visit them all to explore the full portfolio.</p>
+      <p class="help-tip">Tip: every topic is a different part of the portfolio — About Me, Expertise, My Creations, Active Projects and Contact. Visit them all to explore the full portfolio.</p>
     </section>
 
     <section class="menu-sec">
-      <h3>⭐ Rate &amp; Feedback</h3>
+      <h3>Rate &amp; Feedback</h3>
       <div class="stars" id="stars" role="radiogroup" aria-label="Rating">
         <span data-v="1" role="radio" aria-label="1 star">★</span><span data-v="2" role="radio" aria-label="2 stars">★</span><span data-v="3" role="radio" aria-label="3 stars">★</span><span data-v="4" role="radio" aria-label="4 stars">★</span><span data-v="5" role="radio" aria-label="5 stars">★</span>
       </div>
       <textarea id="rateText" placeholder="Tell me what you think… (optional)"></textarea>
       <button id="rateSubmit">Submit feedback</button>
-      <div id="rateThanks">Thank you for your feedback! 💚</div>
+      <div id="rateThanks">Thank you for your feedback!</div>
     </section>
 
     <div class="menu-foot" id="lastUpdated"></div>
@@ -1068,7 +1088,7 @@
     // matched to market material names found in the FBX
     // market1=fish · market2=vegetables · market3=bakery · market4=weapon · market5=meat
     const SECTORS={
-      fish:      { topic:'about',    title:'About Me',          ico:'🐟', accent:'#6ba8e0',
+      fish:      { topic:'about',    title:'About Me',          ico:'A', accent:'#6ba8e0',
                    kicker:'Who I am', sub:'Developer, builder, and perpetual tinkerer.',
                    html:`
                      <p class="lead">Hi, I'm <strong>Kishore DP</strong> — a developer with a habit of turning random "what if…" ideas into things people can actually click, play, and (hopefully) enjoy.</p>
@@ -1085,16 +1105,16 @@
                      <p>I believe great software starts with <em>people</em>, not code. I begin with the user's experience, prototype quickly, experiment without hesitation, and refine relentlessly until everything feels effortless. For me, the first version is just proof that the idea works — the real fun begins in making it feel <em>right</em>.</p>
                      <h3>Beyond the keyboard</h3>
                      <p>Beyond coding, I thrive wherever ideas, leadership and teamwork come together.</p>
-                     <div class="callout"><span class="cico">🏆</span><p>Being elected <strong>House Captain</strong> at my school taught me to lead with responsibility, communicate under pressure, and bring people together toward a common goal — skills I value just as much as writing good code.</p></div>
+                     <div class="callout"><span class="cico">★</span><p>Being elected <strong>House Captain</strong> at my school taught me to lead with responsibility, communicate under pressure, and bring people together toward a common goal — skills I value just as much as writing good code.</p></div>
                      <p>Whether I'm debating, playing sports, exploring the latest breakthroughs in AI, or diving into a new challenge, I'm always looking for ways to learn, lead, and leave things better than I found them. And yes… I still have a habit of starting "just one more project" before finishing the last one.</p>
                      <div class="tags"><span>Builder</span><span>Problem solver</span><span>Lifelong learner</span><span>Team player</span><span>House Captain</span></div>` },
-      vegetables:{ topic:'skills',   title:'Expertise',    ico:'🥕', accent:'#e0a45a',
+      vegetables:{ topic:'skills',   title:'Expertise',    ico:'E', accent:'#e0a45a',
                    kicker:'What I bring', sub:'Sports, leadership, learning and the things I build.',
                    html:`
                      <p class="lead">A mix of what I've <strong>played</strong>, <strong>led</strong>, <strong>learned</strong> and <strong>built</strong>. Tap any certificate to view it full-size.</p>
 
                      <div class="xp-sec">
-                       <div class="xp-head"><span class="xp-ico">🎯</span><h3>Focus Areas</h3></div>
+                       <div class="xp-head"><span class="xp-ico">F</span><h3>Focus Areas</h3></div>
                        <div class="radar-wrap">
                          <canvas class="radar-canvas" width="360" height="360" data-radar='[["AI / ML",3.5],["Web Dev",4.5],["Game Dev",3.5],["IoT",4],["Leadership",4.5]]'></canvas>
                        </div>
@@ -1102,20 +1122,20 @@
                      </div>
 
                      <div class="xp-sec">
-                       <div class="xp-head"><span class="xp-ico">🏅</span><h3>Sports</h3><span class="xp-count">5 certificates</span></div>
+                       <div class="xp-head"><span class="xp-ico">S</span><h3>Sports</h3><span class="xp-count">5 certificates</span></div>
                        <div class="cert-grid">
                          <figure class="cert" data-full="certs/sports-basketball.jpg" data-cap="Basketball — Intramural Winners · 2022–23">
                            <div class="cert-thumb"><img src="certs/sports-basketball.jpg" alt="Basketball — Winners 2022-23" loading="lazy"></div>
-                           <figcaption><b>Basketball</b><small>Annual Intramurals · 🏆 Winners · 2022–23</small></figcaption></figure>
+                           <figcaption><b>Basketball</b><small>Annual Intramurals · Winners · 2022–23</small></figcaption></figure>
                          <figure class="cert" data-full="certs/sports-carrom.jpg" data-cap="Carrom — Intramural Winner · 2024–25">
                            <div class="cert-thumb"><img src="certs/sports-carrom.jpg" alt="Carrom — Winner 2024-25" loading="lazy"></div>
-                           <figcaption><b>Carrom</b><small>Annual Intramurals · 🏆 Winner · 2024–25</small></figcaption></figure>
+                           <figcaption><b>Carrom</b><small>Annual Intramurals · Winner · 2024–25</small></figcaption></figure>
                          <figure class="cert" data-full="certs/sports-khokho.jpg" data-cap="Kho-Kho — CPS Intra School Sports · Silver Medal (2nd), U-19 · 2025">
                            <div class="cert-thumb"><img src="certs/sports-khokho.jpg" alt="Kho-Kho — Silver, Second Place 2025" loading="lazy"></div>
-                           <figcaption><b>Kho-Kho</b><small>Intra School Sports · 🥈 Silver · U-19 · 2025</small></figcaption></figure>
+                           <figcaption><b>Kho-Kho</b><small>Intra School Sports · Silver · U-19 · 2025</small></figcaption></figure>
                          <figure class="cert" data-full="certs/sports-relay.jpg" data-cap="4×100m Relay — CPS Olympix '25 · Silver Medal (2nd), U-19">
                            <div class="cert-thumb"><img src="certs/sports-relay.jpg" alt="4x100m Relay — Silver, Second Place 2025" loading="lazy"></div>
-                           <figcaption><b>4×100m Relay</b><small>CPS Olympix '25 · 🥈 Silver · U-19</small></figcaption></figure>
+                           <figcaption><b>4×100m Relay</b><small>CPS Olympix '25 · Silver · U-19</small></figcaption></figure>
                          <figure class="cert" data-full="certs/sports-marchpast.jpg" data-cap="March-Past — Annual Sports Meet · Participation · 2022–23">
                            <div class="cert-thumb"><img src="certs/sports-marchpast.jpg" alt="March-Past — Participation 2022-23" loading="lazy"></div>
                            <figcaption><b>March-Past</b><small>Annual Sports Meet · Participation · 2022–23</small></figcaption></figure>
@@ -1123,7 +1143,7 @@
                      </div>
 
                      <div class="xp-sec">
-                       <div class="xp-head"><span class="xp-ico">🤝</span><h3>Social Skills</h3><span class="xp-count">2</span></div>
+                       <div class="xp-head"><span class="xp-ico">SS</span><h3>Social Skills</h3><span class="xp-count">2</span></div>
                        <p class="xp-note">Leadership, debate and representation — building confidence beyond the classroom.</p>
                        <div class="cert-grid">
                          <figure class="cert" data-full="certs/social-mun.jpg" data-cap="Model United Nations (MUN)">
@@ -1136,7 +1156,7 @@
                      </div>
 
                      <div class="xp-sec">
-                       <div class="xp-head"><span class="xp-ico">🎓</span><h3>Courses</h3><span class="xp-count">1 certificate</span></div>
+                       <div class="xp-head"><span class="xp-ico">C</span><h3>Courses</h3><span class="xp-count">1 certificate</span></div>
                        <p class="xp-note">An 8-week certification from IIT&nbsp;Madras' Centre for Outreach &amp; Digital Education — foundations of AI, ML and how they're applied in the real world.</p>
                        <div class="cert-grid">
                          <figure class="cert" data-full="certs/course-iitm.jpeg" data-cap="Data Science &amp; AI — IIT Madras (CODE) · 8-week certification · Oct 2024">
@@ -1146,26 +1166,26 @@
                      </div>
 
                      <div class="xp-sec">
-                       <div class="xp-head"><span class="xp-ico">🛠️</span><h3>Other Skills</h3></div>
+                       <div class="xp-head"><span class="xp-ico">O</span><h3>Other Skills</h3></div>
                        <div class="card-grid">
                          <div class="xp-card">
-                           <div class="xc-top"><span class="xc-ico">🎮</span><h4>Game Development</h4></div>
+                           <div class="xc-top"><span class="xc-ico">GD</span><h4>Game Development</h4></div>
                            <p>Building interactive games and 3D experiences in <strong>Unity</strong> and <strong>Roblox Studio</strong> — from mechanics to level design.</p>
                            <div class="tags"><span>Unity</span><span>Roblox Studio</span><span>C#</span><span>Lua</span></div>
                          </div>
                          <div class="xp-card">
-                           <div class="xc-top"><span class="xc-ico">🌐</span><h4>App &amp; Web Development</h4></div>
+                           <div class="xc-top"><span class="xc-ico">W</span><h4>App &amp; Web Development</h4></div>
                            <p>Designing and shipping apps and websites — including AI-assisted builds powered by <strong>Claude skills</strong>.</p>
                            <div class="tags"><span>Web</span><span>Apps</span><span>Claude Skills</span><span>JavaScript</span></div>
                          </div>
                          <div class="xp-card">
-                           <div class="xc-top"><span class="xc-ico">🔌</span><h4>IoT &amp; Embedded</h4></div>
+                           <div class="xc-top"><span class="xc-ico">IoT</span><h4>IoT &amp; Embedded</h4></div>
                            <p>Excels at hands-on <strong>IoT projects</strong> with <strong>Arduino</strong> and <strong>ESP32</strong> — wiring sensors, microcontrollers and the real world together.</p>
                            <div class="tags"><span>Arduino</span><span>ESP32</span><span>IoT</span><span>Electronics</span></div>
                          </div>
                        </div>
                      </div>` },
-      bakery:    { topic:'done',     title:"My Creations", ico:'🍞', accent:'#7bc96f',
+      bakery:    { topic:'done',     title:"My Creations", ico:'C', accent:'#7bc96f',
                    kicker:'Shipped work', sub:'Things I\'ve designed, built and shipped.',
                    html:`
                      <p class="lead">A selection of projects I've designed, built and shipped. Click a card to see the full write-up and photos.</p>
@@ -1214,7 +1234,7 @@
                          <p class="pc-links"><a href="https://kishore-dp.github.io/Portfolioo/" target="_blank" rel="noopener">Live ↗</a> &nbsp;·&nbsp; <a href="https://github.com/Kishore-DP/Portfolioo" target="_blank" rel="noopener">Code ↗</a></p>
                        </div></div>
                      </details>` },
-      weapon:    { topic:'building', title:'Active Projects',ico:'⚔️', accent:'#b48be0',
+      weapon:    { topic:'building', title:'Active Projects',ico:'P', accent:'#b48be0',
                    kicker:'On my workbench', sub:'Ideas in motion and things I\'m actively shaping.',
                    html:`
                      <p class="lead">What's on my workbench right now — ideas in motion and things I'm actively shaping. Click a card for the full picture.</p>
@@ -1278,7 +1298,7 @@
                          </div>
                        </div></div>
                      </details>` },
-      meat:      { topic:'contact',  title:"Let's Connect",     ico:'🥩', accent:'#e07a6b',
+      meat:      { topic:'contact',  title:"Let's Connect",     ico:'L', accent:'#e07a6b',
                    kicker:'Get in touch', sub:'Open to internships, freelance, collabs and hackathons — anything that builds.',
                    html:`
                      <p class="lead">I'm always open to talking about projects, opportunities, or those "this might actually work…" ideas that usually turn into something real.</p>
@@ -1302,11 +1322,11 @@
 
                      <h3>Ping me here</h3>
                      <div class="contact-list">
-                       <a class="contact-row" href="mailto:kishoredp27@gmail.com"><span class="ci">📧</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
-                       <a class="contact-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="ci">💻</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
-                       <a class="contact-row" href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener"><span class="ci">🔗</span><span><b>LinkedIn</b><small>linkedin.com/in/kishore-dp</small></span></a>
+                       <a class="contact-row" href="mailto:kishoredp27@gmail.com"><span class="ci ci-at">@</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
+                       <a class="contact-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="ci">GH</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
+                       <a class="contact-row" href="https://www.linkedin.com/in/kishore-dp-929a95327/" target="_blank" rel="noopener"><span class="ci">in</span><span><b>LinkedIn</b><small>linkedin.com/in/kishore-dp</small></span></a>
                      </div>
-                     <h3>🚀 What you can hit me up for</h3>
+                     <h3>What you can hit me up for</h3>
                      <ul>
                        <li>"I have an idea but no idea how to build it" → I'm interested.</li>
                        <li>Internships, freelance work, or real-world experience.</li>
@@ -1314,12 +1334,14 @@
                        <li>AI, web dev, game dev, IoT — or anything that breaks things (and then fixes them).</li>
                        <li>Or just a "yo, check this out" message.</li>
                      </ul>
-                     <h3>🧠 Let's build something</h3>
+                     <h3>Let's build something</h3>
                      <p>Big idea, small idea, half idea — doesn't matter. If it's interesting, it's worth exploring.</p>
                      <p>I like turning random thoughts into working products, usually fueled by curiosity, occasional confusion, and a lot of trial-and-error.</p>
-                     <div class="callout"><span class="cico">🔗</span><p>Fastest way to reach me? <strong>LinkedIn</strong>. Second fastest? Also LinkedIn — I forget other apps exist sometimes.</p></div>
+                     <div class="callout"><span class="cico">in</span><p>Fastest way to reach me? <strong>LinkedIn</strong>. Second fastest? Also LinkedIn — I forget other apps exist sometimes.</p></div>
                      <div class="tags"><span>Open to opportunities</span><span>Internships</span><span>Freelance</span><span>Hackathons</span><span>Collaborations welcome</span></div>` },
     };
+
+    const LINK_ICO=`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2-2a5 5 0 0 0-7.07-7.07l-1 1"/><path d="M14 11a5 5 0 0 0-7.07 0l-2 2a5 5 0 0 0 7.07 7.07l1-1"/></svg>`;
 
     // ---------- loaders ----------
     const manager=new THREE.LoadingManager();
@@ -1692,7 +1714,7 @@
     const scrimEl=document.getElementById('scrim');
     function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
       trackTopicVisit(sec.topic);
-      panelEl.innerHTML=`<button id="panelCopyLink" aria-label="Copy link to this topic" title="Copy link to this topic">🔗</button>`
+      panelEl.innerHTML=`<button id="panelCopyLink" aria-label="Copy link to this topic" title="Copy link to this topic">${LINK_ICO}</button>`
         +`<button id="panelClose" aria-label="Close">&times;</button>`
         +`<div class="panel-head"><div class="eyebrow"><span class="ico">${sec.ico}</span> ${sec.kicker||'Topic'}</div><h2>${sec.title}</h2>${sec.sub?`<p class="psub">${sec.sub}</p>`:''}</div>`
         +`<div class="panel-scroll">${sec.html}</div>`;
@@ -1909,7 +1931,7 @@
       const t=actx.currentTime, g=stepGain.gain; g.cancelScheduledValues(t); g.setValueAtTime(Math.max(0.0001,g.value),t);
       g.linearRampToValueAtTime(on?0.4:0.0001, t+(on?0.05:0.14)); }
 
-    function syncSoundIcon(){ soundBtn.textContent=soundOn?'🔊':'🔇'; soundBtn.setAttribute('aria-pressed', String(soundOn)); }
+    function syncSoundIcon(){ soundBtn.classList.toggle('is-muted', !soundOn); soundBtn.setAttribute('aria-pressed', String(soundOn)); }
     soundBtn.addEventListener('click',()=>{ const turningOn=!soundOn;
       if(turningOn && audio.level<=0){ audio.level=0.7; const sM=document.getElementById('sMusic'), v=document.getElementById('vMusic'); if(sM) sM.value=70; if(v) v.textContent='70%'; }
       setSoundOn(turningOn); });
@@ -1934,7 +1956,7 @@
           <div class="qv-sec-head">
             <span class="qv-sec-ico">${sec.ico}</span>
             <div style="flex:1 1 auto;"><div class="qv-sec-kicker">${sec.kicker||''}</div><h2>${sec.title}</h2>${sec.sub?`<p class="qv-sec-sub">${sec.sub}</p>`:''}</div>
-            <button class="qv-copy-link" data-topic="${sec.topic}" data-title="${sec.title}" title="Copy link to this topic" aria-label="Copy link to ${sec.title}">🔗</button>
+            <button class="qv-copy-link" data-topic="${sec.topic}" data-title="${sec.title}" title="Copy link to this topic" aria-label="Copy link to ${sec.title}">${LINK_ICO}</button>
           </div>
           <div class="panel-scroll">${sec.html}</div>
         </section>`).join('');
@@ -2083,8 +2105,8 @@
       const body=`Rating: ${rating>0?`${rating}/5 ${stars}`:'(none given)'}\n\n${text||'(no written feedback)'}\n\n— sent from kishoredp27's portfolio`;
       window.open(`mailto:kishoredp27@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
       const th=document.getElementById('rateThanks'), btn=document.getElementById('rateSubmit');
-      th.textContent='Opening your email app to send it… 💚'; th.classList.add('show'); btn.textContent='Submitted ✓';
-      setTimeout(()=>{ th.classList.remove('show'); th.textContent='Thank you for your feedback! 💚'; btn.textContent='Submit feedback'; rating=0; paintStars(0); document.getElementById('rateText').value=''; }, 3600);
+      th.textContent='Opening your email app to send it…'; th.classList.add('show'); btn.textContent='Submitted ✓';
+      setTimeout(()=>{ th.classList.remove('show'); th.textContent='Thank you for your feedback!'; btn.textContent='Submit feedback'; rating=0; paintStars(0); document.getElementById('rateText').value=''; }, 3600);
     });
 
     addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight);
