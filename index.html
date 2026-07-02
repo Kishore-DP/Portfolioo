@@ -214,6 +214,9 @@
     .panel .xp-count { margin-left:auto; font-size:.7rem; font-weight:600; letter-spacing:.06em; color:var(--accent,#e0a45a);
       padding:3px 11px; border-radius:99px; background:color-mix(in srgb,var(--accent,#e0a45a) 14%, transparent); border:1px solid color-mix(in srgb,var(--accent,#e0a45a) 32%, transparent); }
     .panel .xp-note { margin:-6px 0 14px; color:#9fb39f; font-size:.92rem; }
+    .radar-wrap { display:flex; justify-content:center; margin:4px 0 8px; }
+    .radar-canvas { max-width:100%; height:auto; }
+    @media (max-width:680px){ .radar-canvas{ width:280px; height:280px; } }
     /* certificate cards */
     .panel .cert-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:14px; margin:0; }
     .panel .cert { margin:0; border-radius:14px; overflow:hidden; cursor:zoom-in; background:rgba(255,255,255,.04);
@@ -775,6 +778,14 @@
                      <p class="lead">A mix of what I've <strong>played</strong>, <strong>led</strong>, <strong>learned</strong> and <strong>built</strong>. Tap any certificate to view it full-size.</p>
 
                      <div class="xp-sec">
+                       <div class="xp-head"><span class="xp-ico">🎯</span><h3>Focus Areas</h3></div>
+                       <div class="radar-wrap">
+                         <canvas class="radar-canvas" width="360" height="360" data-radar='[["AI / ML",3.5],["Web Dev",4.5],["Game Dev",3.5],["IoT",4],["Leadership",4.5]]'></canvas>
+                       </div>
+                       <p class="xp-note" style="text-align:center;">A relative snapshot of where my time and energy go — not a certification score.</p>
+                     </div>
+
+                     <div class="xp-sec">
                        <div class="xp-head"><span class="xp-ico">🏅</span><h3>Sports</h3><span class="xp-count">5 certificates</span></div>
                        <div class="cert-grid">
                          <figure class="cert" data-full="certs/sports-basketball.jpg" data-cap="Basketball — Intramural Winners · 2022–23">
@@ -1221,6 +1232,37 @@
     }
     function renderGitHubFeed(){ fetchGitHubFeed().then(()=>{ document.querySelectorAll('.gh-feed').forEach(el=>{ el.innerHTML=ghFeedHtml; }); }); }
 
+    // ---- skill radar chart: canvas-drawn spider chart, reads its data + the section's accent from the DOM ----
+    function drawRadarChart(canvas){
+      const raw=canvas.dataset.radar; if(!raw) return;
+      let data; try{ data=JSON.parse(raw); }catch(e){ return; }
+      const ctx=canvas.getContext('2d'), W=canvas.width, H=canvas.height, cx=W/2, cy=H/2;
+      const accent=(getComputedStyle(canvas.closest('.panel')||canvas).getPropertyValue('--accent')||'#e0a45a').trim()||'#e0a45a';
+      const scaleMax=5, R=Math.min(W,H)*0.32, N=data.length;
+      ctx.clearRect(0,0,W,H);
+      ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+      for(let ring=1; ring<=scaleMax; ring++){ const r=R*(ring/scaleMax);
+        ctx.beginPath();
+        for(let i=0;i<=N;i++){ const a=-Math.PI/2+(i%N)*(2*Math.PI/N); const x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+        ctx.stroke();
+      }
+      ctx.fillStyle='#c2cdc2'; ctx.font='600 12px system-ui,sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      data.forEach(([label],i)=>{
+        const a=-Math.PI/2+i*(2*Math.PI/N), x=cx+Math.cos(a)*R, y=cy+Math.sin(a)*R;
+        ctx.strokeStyle='rgba(255,255,255,.14)'; ctx.beginPath(); ctx.moveTo(cx,cy); ctx.lineTo(x,y); ctx.stroke();
+        const lx=cx+Math.cos(a)*(R+30), ly=cy+Math.sin(a)*(R+30);
+        ctx.fillText(label, lx, ly);
+      });
+      ctx.beginPath();
+      data.forEach(([,val],i)=>{ const a=-Math.PI/2+i*(2*Math.PI/N), r=R*(Math.min(val,scaleMax)/scaleMax), x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+      ctx.closePath();
+      ctx.globalAlpha=0.3; ctx.fillStyle=accent; ctx.fill(); ctx.globalAlpha=1;
+      ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.stroke();
+      data.forEach(([,val],i)=>{ const a=-Math.PI/2+i*(2*Math.PI/N), r=R*(Math.min(val,scaleMax)/scaleMax), x=cx+Math.cos(a)*r, y=cy+Math.sin(a)*r;
+        ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fillStyle=accent; ctx.fill(); });
+    }
+    function renderRadarCharts(){ document.querySelectorAll('.radar-canvas').forEach(drawRadarChart); }
+
     // ---------- information popup ----------
     const scrimEl=document.getElementById('scrim');
     function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
@@ -1232,7 +1274,7 @@
       panelEl.querySelector('#panelCopyLink').addEventListener('click', e=>{ e.stopPropagation(); copyTopicLink(sec.topic, sec.title); });
       scrimEl.classList.add('show'); panelEl.classList.add('show');
       const sc=panelEl.querySelector('.panel-scroll'); if(sc) sc.scrollTop=0;
-      renderGitHubFeed();
+      renderGitHubFeed(); renderRadarCharts();
     }
     function hidePanel(){ panelEl.classList.remove('show'); scrimEl.classList.remove('show'); }
     function closePanel(){ activeTopic=null; hidePanel(); }                 // single close path (X, Esc, scrim, movement)
@@ -1455,7 +1497,7 @@
           </div>
           <div class="panel-scroll">${sec.html}</div>
         </section>`).join('');
-      renderGitHubFeed(); }
+      renderGitHubFeed(); renderRadarCharts(); }
     qvInner.addEventListener('click', e=>{ const b=e.target.closest('.qv-copy-link'); if(b) copyTopicLink(b.dataset.topic, b.dataset.title); });
     function qvOpen(){ buildQuickView(); qvEl.classList.add('show'); closeMenu(); if(panelOpen()) closePanel(); sfx('whoosh'); }
     function qvClose(){ qvEl.classList.remove('show'); }
