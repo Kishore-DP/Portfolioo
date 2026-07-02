@@ -438,6 +438,7 @@
       padding:20px 20px 16px; border-bottom:1px solid rgba(255,255,255,.08); background:rgba(15,20,26,.92); backdrop-filter:blur(8px); }
     #menu .menu-head h2 { font-size:1.12rem; letter-spacing:.04em; font-weight:700; }
     .menu-sec { padding:20px 22px; border-bottom:1px solid rgba(255,255,255,.06); }
+    .menu-foot { padding:16px 22px 22px; font-size:.76rem; color:#7d8a7d; text-align:center; }
     .menu-sec > h3 { font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:#9fd28c; margin-bottom:16px; display:flex; align-items:center; gap:9px; }
     .ctl { margin-bottom:16px; }
     .ctl label { display:flex; justify-content:space-between; font-size:.86rem; margin-bottom:7px; color:#cfe0cf; }
@@ -651,6 +652,8 @@
       <button id="rateSubmit">Submit feedback</button>
       <div id="rateThanks">Thank you for your feedback! 💚</div>
     </section>
+
+    <div class="menu-foot" id="lastUpdated"></div>
   </aside>
 
   <!-- welcome / how-it-works popup, shown automatically once the intro camera settles into 3rd person -->
@@ -696,6 +699,13 @@
       const g = h<5 ? 'Good night' : h<12 ? 'Good morning' : h<17 ? 'Good afternoon' : h<21 ? 'Good evening' : 'Good night';
       const el=document.getElementById('startGreet'); if(el) el.textContent=`${g} — welcome to the market`;
     })();
+    // real "last updated" indicator — reads the deployed file's actual Last-Modified header (honest, auto-accurate;
+    // GitHub Pages sends this reliably, local dev servers usually don't, so it just stays hidden there)
+    fetch('./', {method:'HEAD', cache:'no-store'}).then(r=>{
+      const lm=r.headers.get('last-modified'); if(!lm) return;
+      const d=new Date(lm), el=document.getElementById('lastUpdated'); if(!el) return;
+      el.textContent=`Last updated ${d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'})}`;
+    }).catch(()=>{});
     function webglOk(){ try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){return false;} }
     if(!webglOk()){ loaderEl.classList.add('hidden'); fbEl.classList.add('show'); throw new Error('no webgl'); }
 
