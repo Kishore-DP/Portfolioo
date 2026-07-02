@@ -355,6 +355,7 @@
       background:rgba(255,255,255,.05); color:#eaf2ea; font-size:1rem; cursor:pointer; transition:background .2s ease, transform .22s var(--ease-spring); }
     #quickView .qv-copy-link:hover { background:rgba(255,255,255,.13); transform:scale(1.12) rotate(-8deg); }
     @media (max-width:680px){ #quickView .qv-inner{ padding:30px 18px 70px; } #quickView .qv-sec-head h2{ font-size:1.5rem; } #quickView .qv-bar{ padding:13px 16px; } }
+    @media (max-width:430px){ .qv-brand span{ display:none; } .qv-actions button{ padding:9px 12px; } .qv-actions .qv-print-label{ display:none; } }
 
     /* ===== One-Pager: a condensed, single printable page + QR code, for handing out at events ===== */
     #onePager { position:fixed; inset:0; z-index:70; display:none; flex-direction:column; background:#0e0d0c; opacity:0; transition:opacity .4s var(--ease-smooth); }
@@ -623,7 +624,7 @@
   <div id="quickView" class="panel" role="dialog" aria-modal="true" aria-label="Quick view of the full portfolio">
     <div class="qv-bar">
       <div class="qv-brand">Kishore DP <span>— Quick View</span></div>
-      <div class="qv-actions"><button id="qvPrint" title="Print or save as PDF">🖨️ Print</button><button id="qvClose" aria-label="Close quick view">&times;</button></div>
+      <div class="qv-actions"><button id="qvPrint" title="Print or save as PDF">🖨️<span class="qv-print-label"> Print</span></button><button id="qvClose" aria-label="Close quick view">&times;</button></div>
     </div>
     <div class="qv-body"><div class="qv-inner" id="qvInner"></div></div>
   </div>
@@ -631,7 +632,7 @@
   <div id="onePager" role="dialog" aria-modal="true" aria-label="Printable one-page summary">
     <div class="qv-bar">
       <div class="qv-brand">Kishore DP <span>— One-Pager</span></div>
-      <div class="qv-actions"><button id="opPrint" title="Print or save as PDF">🖨️ Print</button><button id="opClose" aria-label="Close one-pager">&times;</button></div>
+      <div class="qv-actions"><button id="opPrint" title="Print or save as PDF">🖨️<span class="qv-print-label"> Print</span></button><button id="opClose" aria-label="Close one-pager">&times;</button></div>
     </div>
     <div class="op-scroll"><div class="op-page">
       <div class="op-top">
