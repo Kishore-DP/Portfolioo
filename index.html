@@ -714,6 +714,37 @@
       pos.needsUpdate=true;
     }
 
+    // ---- shooting stars: occasional bright streaks across the void backdrop, more frequent the deeper into night ----
+    const shootingStarTex=(()=>{ const c=document.createElement('canvas'); c.width=128; c.height=32; const gx=c.getContext('2d');
+      const g=gx.createLinearGradient(0,16,128,16);
+      g.addColorStop(0,'rgba(255,255,255,0)'); g.addColorStop(.7,'rgba(220,230,255,.85)'); g.addColorStop(1,'rgba(255,255,255,1)');
+      gx.fillStyle=g; gx.fillRect(0,11,128,10); return new THREE.CanvasTexture(c); })();
+    const starMat=new THREE.SpriteMaterial({ map:shootingStarTex, transparent:true, opacity:0, depthWrite:false, depthTest:false, blending:THREE.AdditiveBlending, fog:false });
+    const shootingStar=new THREE.Sprite(starMat); shootingStar.scale.set(70,17,1); shootingStar.renderOrder=999; scene.add(shootingStar);
+    let starState=null, starCooldown=6+Math.random()*8;
+    function updateShootingStar(dt){
+      if(!starState){
+        starCooldown-=dt*(0.3+nightFactor);   // ticks faster (appears more often) the deeper into night it is
+        if(starCooldown>0 || nightFactor<0.25) return;
+        starCooldown=10+Math.random()*18;
+        const fwd=new THREE.Vector3(); camera.getWorldDirection(fwd);
+        const right=new THREE.Vector3().crossVectors(fwd,camera.up).normalize();
+        const up=new THREE.Vector3().crossVectors(right,fwd).normalize();
+        const dist=650, rx=(Math.random()-0.5)*420, ry=90+Math.random()*150;
+        const base=camera.position.clone().addScaledVector(fwd,dist).addScaledVector(right,rx).addScaledVector(up,ry);
+        const dir=new THREE.Vector3(Math.random()-0.5, -(0.4+Math.random()*0.5), Math.random()-0.5).normalize();
+        const start=base.clone().addScaledVector(dir,-90), end=base.clone().addScaledVector(dir,90);
+        starState={ t:0, dur:0.5+Math.random()*0.35, start, end };
+        // approximate on-screen angle by projecting the travel direction onto the camera's own right/up basis (avoids relying on a possibly-stale projection matrix)
+        starMat.rotation=Math.atan2(dir.dot(up), dir.dot(right));
+        return;
+      }
+      starState.t+=dt; const p=Math.min(1, starState.t/starState.dur);
+      shootingStar.position.lerpVectors(starState.start, starState.end, p);
+      starMat.opacity=(p<0.15?p/0.15:p>0.8?Math.max(0,(1-p)/0.2):1) * Math.min(1,nightFactor*2);
+      if(p>=1){ starState=null; starMat.opacity=0; }
+    }
+
     // ---------- SECTORS: each market -> a topic ----------
     // matched to market material names found in the FBX
     // market1=fish · market2=vegetables · market3=bakery · market4=weapon · market5=meat
@@ -1582,7 +1613,7 @@
         camera.position.copy(_estPos); camera.lookAt(_estLook);
       }
       if(started && !welcomeShown){ welcomeShown=true; showWelcome(); }   // intro settled -> auto-show the how-it-works guide once
-      updateFireflies(dt);
+      updateFireflies(dt); updateShootingStar(dt);
     }
     function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
     let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
