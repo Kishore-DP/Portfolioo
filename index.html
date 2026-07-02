@@ -189,6 +189,20 @@
     .proj h3 { margin-top:0; }
     .proj h3::before { display:none; }   /* project titles aren't section labels */
     .proj h3 { font-size:1.05rem; letter-spacing:0; text-transform:none; color:#fff; margin-bottom:8px; }
+    /* live GitHub activity feed */
+    .gh-feed { margin:0 0 24px; padding:18px 20px; border-radius:16px; background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08); }
+    .gh-feed-head { display:flex; align-items:center; gap:8px; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; font-weight:700; color:var(--accent,#b48be0); margin-bottom:14px; }
+    .gh-dot { width:8px; height:8px; border-radius:50%; background:#e0555f; box-shadow:0 0 8px #e0555f; animation:ghPulse 1.8s ease-in-out infinite; }
+    @keyframes ghPulse { 0%,100%{opacity:1;} 50%{opacity:.35;} }
+    .gh-loading, .gh-empty { color:#9fb39f; font-size:.88rem; margin:0; }
+    .gh-repo { padding:12px 0; border-top:1px solid rgba(255,255,255,.06); }
+    .gh-repo:first-of-type { border-top:none; padding-top:0; }
+    .gh-repo a { display:flex; align-items:center; gap:10px; text-decoration:none; color:#fff; font-weight:700; font-size:.96rem; border-bottom:none; }
+    .gh-repo a:hover { color:var(--accent,#b48be0); }
+    .gh-repo .gh-lang { font-size:.72rem; font-weight:500; color:#9fb39f; background:rgba(255,255,255,.06); padding:2px 9px; border-radius:99px; }
+    .gh-repo p { margin:5px 0 3px; font-size:.86rem; color:#c2cdc2; max-width:none; }
+    .gh-repo small { color:#7d8a7d; font-size:.76rem; }
+    .gh-more { display:inline-block; margin-top:6px; font-size:.85rem; }
     /* ===== Expertise: grouped sections, certificate gallery + info cards ===== */
     .panel .xp-sec { margin:0 0 26px; }
     .panel .xp-sec:last-child { margin-bottom:4px; }
@@ -784,6 +798,7 @@
                    kicker:'On my workbench', sub:'Ideas in motion and things I\'m actively shaping.',
                    html:`
                      <p class="lead">What's on my workbench right now — ideas in motion and things I'm actively shaping. <em>[Swap in your in-progress work.]</em></p>
+                     <div class="gh-feed"><p class="gh-loading">Loading recent GitHub activity…</p></div>
                      <div class="proj"><h3>In progress · <em>Project Name</em></h3>
                        <p><em>[What you're building, what already works, and what's next.]</em></p>
                        <div class="tags"><span>Status: building</span><span>React</span></div></div>
@@ -1122,6 +1137,30 @@
       return best||{x:0,z:0,y:0};
     }
 
+    // ---- live GitHub activity: fetched once, rendered into every .gh-feed container currently in the DOM ----
+    const escHtml=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function relTime(iso){
+      const secs=(Date.now()-new Date(iso).getTime())/1000;
+      const units=[[31536000,'year'],[2592000,'month'],[86400,'day'],[3600,'hour'],[60,'minute']];
+      for(const [s,label] of units){ const n=Math.floor(secs/s); if(n>=1) return `${n} ${label}${n>1?'s':''} ago`; }
+      return 'just now';
+    }
+    let ghFeedHtml=null, ghFeedPromise=null;
+    function fetchGitHubFeed(){
+      if(ghFeedPromise) return ghFeedPromise;
+      return ghFeedPromise=fetch('https://api.github.com/users/Kishore-DP/repos?sort=updated&per_page=10')
+        .then(r=>r.ok?r.json():Promise.reject())
+        .then(repos=>{
+          const picks=repos.filter(r=>!r.fork && r.name!=='Portfolioo' && r.description).slice(0,4);
+          const head=`<div class="gh-feed-head"><span class="gh-dot"></span> Live from GitHub</div>`;
+          if(!picks.length){ ghFeedHtml=head+`<p class="gh-empty">No public repos to show yet.</p><a class="gh-more" href="https://github.com/Kishore-DP" target="_blank" rel="noopener">View my GitHub →</a>`; return; }
+          ghFeedHtml=head+picks.map(r=>`<div class="gh-repo"><a href="${escHtml(r.html_url)}" target="_blank" rel="noopener"><span>${escHtml(r.name)}</span>${r.language?`<span class="gh-lang">${escHtml(r.language)}</span>`:''}</a>${r.description?`<p>${escHtml(r.description)}</p>`:''}<small>Updated ${relTime(r.updated_at)}</small></div>`).join('')
+            +`<a class="gh-more" href="https://github.com/Kishore-DP" target="_blank" rel="noopener">View all repos on GitHub →</a>`;
+        })
+        .catch(()=>{ ghFeedHtml=`<p class="gh-empty">Couldn't load live GitHub activity right now. <a href="https://github.com/Kishore-DP" target="_blank" rel="noopener">View my GitHub →</a></p>`; });
+    }
+    function renderGitHubFeed(){ fetchGitHubFeed().then(()=>{ document.querySelectorAll('.gh-feed').forEach(el=>{ el.innerHTML=ghFeedHtml; }); }); }
+
     // ---------- information popup ----------
     const scrimEl=document.getElementById('scrim');
     function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
@@ -1133,6 +1172,7 @@
       panelEl.querySelector('#panelCopyLink').addEventListener('click', e=>{ e.stopPropagation(); copyTopicLink(sec.topic, sec.title); });
       scrimEl.classList.add('show'); panelEl.classList.add('show');
       const sc=panelEl.querySelector('.panel-scroll'); if(sc) sc.scrollTop=0;
+      renderGitHubFeed();
     }
     function hidePanel(){ panelEl.classList.remove('show'); scrimEl.classList.remove('show'); }
     function closePanel(){ activeTopic=null; hidePanel(); }                 // single close path (X, Esc, scrim, movement)
@@ -1354,7 +1394,8 @@
             <button class="qv-copy-link" data-topic="${sec.topic}" data-title="${sec.title}" title="Copy link to this topic" aria-label="Copy link to ${sec.title}">🔗</button>
           </div>
           <div class="panel-scroll">${sec.html}</div>
-        </section>`).join(''); }
+        </section>`).join('');
+      renderGitHubFeed(); }
     qvInner.addEventListener('click', e=>{ const b=e.target.closest('.qv-copy-link'); if(b) copyTopicLink(b.dataset.topic, b.dataset.title); });
     function qvOpen(){ buildQuickView(); qvEl.classList.add('show'); closeMenu(); if(panelOpen()) closePanel(); sfx('whoosh'); }
     function qvClose(){ qvEl.classList.remove('show'); }
