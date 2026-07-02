@@ -952,6 +952,11 @@
     import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
     import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
     import { TGALoader } from 'three/addons/loaders/TGALoader.js';
+    import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+    import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+    import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+    import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+    import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
     const loaderEl=document.getElementById('loader');
     const ringEl=document.querySelector('#loadRing .prog'), pctEl=document.getElementById('loadPct');
@@ -997,6 +1002,30 @@
     sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.6; sun.shadow.radius=4;
     scene.add(sun); scene.add(sun.target);
     const rim=new THREE.DirectionalLight(0x7793c8, 0.7); rim.position.set(-90,70,-80); scene.add(rim); // cool back-light to lift models off the dark void
+
+    // ---- image-based lighting: a soft studio environment so materials pick up believable ambient
+    // reflections/specular instead of looking flat-matte (subtle at roughness .92, but it's the
+    // difference between "painted" and "lit") ----
+    const pmrem=new THREE.PMREMGenerator(renderer);
+    scene.environment=pmrem.fromScene(new RoomEnvironment(), 0.045).texture;
+    pmrem.dispose();
+
+    // ---- bloom: lets the lanterns, the golden "?" orbs and the sun glints actually glow instead of
+    // just being bright pixels — skipped on phones, where the extra full-screen passes aren't worth the battery ----
+    const composer=new EffectComposer(renderer);
+    composer.addPass(new RenderPass(scene,camera));
+    let bloomPass=null;
+    if(!isMobile){
+      // threshold is tuned high because RenderPass writes un-tonemapped linear HDR into the composer's
+      // buffer (three.js only applies renderer.toneMapping when rendering straight to the screen) — the
+      // scene's own light levels (sun intensity 3.6) already sit above 1.0, so a "normal" 0-1-range
+      // threshold would bloom the entire scene instead of just the lanterns/orbs/sun glints
+      bloomPass=new UnrealBloomPass(new THREE.Vector2(innerWidth,innerHeight), 0.4, 0.4, 1.6);
+      composer.addPass(bloomPass);
+    }
+    composer.addPass(new OutputPass());
+    composer.setSize(innerWidth,innerHeight);
+    composer.setPixelRatio(renderer.getPixelRatio());
 
     // ---------- SECTORS: each market -> a topic ----------
     // matched to market material names found in the FBX
@@ -1194,8 +1223,9 @@
       if(!revealed && loadShown>=0.999 && sceneReady){ reveal(); clearInterval(_loadTimer); } }, 33);
     const fbxL=new FBXLoader(manager), gltfL=new GLTFLoader(manager), texL=new THREE.TextureLoader(manager), tgaL=new TGALoader(manager);
     const T={}; const NOFLIP=new Set(['environment','latern']);
-    function png(name){ if(!T[name]){ const t=texL.load(`models/market/${name}.png`); t.colorSpace=THREE.SRGBColorSpace; t.flipY=!NOFLIP.has(name); T[name]=t; } return T[name]; }
-    function grassTex(){ if(!T.g){ const t=tgaL.load('models/kit/grass_billboard.tga'); t.colorSpace=THREE.SRGBColorSpace; t.flipY=false; T.g=t; } return T.g; }
+    const maxAniso=renderer.capabilities.getMaxAnisotropy();
+    function png(name){ if(!T[name]){ const t=texL.load(`models/market/${name}.png`); t.colorSpace=THREE.SRGBColorSpace; t.flipY=!NOFLIP.has(name); t.anisotropy=maxAniso; T[name]=t; } return T[name]; }
+    function grassTex(){ if(!T.g){ const t=tgaL.load('models/kit/grass_billboard.tga'); t.colorSpace=THREE.SRGBColorSpace; t.flipY=false; t.anisotropy=maxAniso; T.g=t; } return T.g; }
     function texFor(name=''){ const n=name.toLowerCase();
       if(/baker/.test(n))return png('bakery'); if(/meat/.test(n))return png('meat'); if(/veget/.test(n))return png('vegetables');
       if(/weapon/.test(n))return png('weapon'); if(/fish/.test(n))return png('fish'); if(/latern|lantern/.test(n))return png('latern');
@@ -1282,7 +1312,7 @@
       gx.strokeStyle='rgba(150,90,200,0.20)'; gx.lineWidth=2; gx.strokeRect(0,0,128,128);
       gx.strokeStyle='rgba(210,110,180,0.32)'; gx.lineWidth=3; const dd=9;
       gx.beginPath(); gx.moveTo(64-dd,64-dd); gx.lineTo(64+dd,64+dd); gx.moveTo(64+dd,64-dd); gx.lineTo(64-dd,64+dd); gx.stroke();
-      const gtex=new THREE.CanvasTexture(gcv); gtex.wrapS=gtex.wrapT=THREE.RepeatWrapping; gtex.repeat.set(90,90);
+      const gtex=new THREE.CanvasTexture(gcv); gtex.wrapS=gtex.wrapT=THREE.RepeatWrapping; gtex.repeat.set(90,90); gtex.anisotropy=maxAniso;
       const grid=new THREE.Mesh(new THREE.PlaneGeometry(cfg.world*12, cfg.world*12), new THREE.MeshBasicMaterial({map:gtex}));
       grid.rotation.x=-Math.PI/2; grid.position.y=-0.6; grid.frustumCulled=false; scene.add(grid);
     }
@@ -1929,7 +1959,8 @@
       setTimeout(()=>{ th.classList.remove('show'); th.textContent='Thank you for your feedback! 💚'; btn.textContent='Submit feedback'; rating=0; paintStars(0); document.getElementById('rateText').value=''; }, 3600);
     });
 
-    addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight); });
+    addEventListener('resize',()=>{ camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight);
+      composer.setSize(innerWidth,innerHeight); if(bloomPass) bloomPass.setSize(innerWidth,innerHeight); });
 
     // ---------- loop ----------
     const clock=new THREE.Clock(); const camTarget=new THREE.Vector3(), camPivot=new THREE.Vector3();
@@ -2021,7 +2052,7 @@
       }
       if(started && !welcomeShown){ welcomeShown=true; showWelcome(); }   // intro settled -> auto-show the how-it-works guide once
     }
-    function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
+    function frame(){ step(Math.min(clock.getDelta(),0.05)); composer.render(); }
     let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
     setInterval(()=>{ if(performance.now()-lastRAF>200) frame(); },60);
 
