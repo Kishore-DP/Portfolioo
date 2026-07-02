@@ -285,6 +285,8 @@
       background:color-mix(in srgb,var(--accent,#7bc96f) 16%, rgba(255,255,255,.04));
       border:1px solid color-mix(in srgb,var(--accent,#7bc96f) 30%, transparent); display:flex; align-items:center; justify-content:center; font-size:1.6rem; }
     .pc-thumb img { width:100%; height:100%; object-fit:cover; }
+    .pc-thumb span { font-family:var(--font-display); font-weight:700; color:var(--accent,#7bc96f); }
+    .panel .cert.cert-pending .cert-thumb span { text-align:center; padding:0 12px; line-height:1.4; }
     .pc-head-text { flex:1 1 auto; min-width:0; }
     .pc-head-text h3 { margin:0 0 4px; font-size:1.05rem; letter-spacing:0; text-transform:none; color:#fff; font-weight:700;
       display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
@@ -1215,20 +1217,67 @@
       weapon:    { topic:'building', title:'Active Projects',ico:'⚔️', accent:'#b48be0',
                    kicker:'On my workbench', sub:'Ideas in motion and things I\'m actively shaping.',
                    html:`
-                     <p class="lead">What's on my workbench right now — ideas in motion and things I'm actively shaping. <em>[Swap in your in-progress work.]</em></p>
+                     <p class="lead">What's on my workbench right now — ideas in motion and things I'm actively shaping. Click a card for the full picture.</p>
                      <div class="gh-feed"><p class="gh-loading">Loading recent GitHub activity…</p></div>
-                     <div class="proj"><h3>In progress · <em>Project Name</em></h3>
-                       <p><em>[What you're building, what already works, and what's next.]</em></p>
-                       <div class="tags"><span>Status: building</span><span>React</span></div></div>
-                     <div class="proj"><h3>Experiment · <em>Project Name</em></h3>
-                       <p><em>[A smaller experiment or learning project you're tinkering with.]</em></p>
-                       <div class="tags"><span>Status: prototyping</span></div></div>
-                     <h3>On the horizon</h3>
-                     <ul>
-                       <li><em>[An idea you want to start next]</em></li>
-                       <li><em>[Something you'd love to learn by building]</em></li>
-                       <li><em>[A problem you keep coming back to]</em></li>
-                     </ul>` },
+
+                     <details class="pc">
+                       <summary class="pc-head">
+                         <div class="pc-thumb"><span>P</span></div>
+                         <div class="pc-head-text">
+                           <h3>Playnix <span class="pc-badge pc-badge-amber">In progress</span></h3>
+                           <p class="pc-tagline">A social music app — free discovery, an offline library, and friends built right in.</p>
+                         </div>
+                         <span class="pc-chevron">›</span>
+                       </summary>
+                       <div class="pc-body"><div class="pc-body-in">
+                         <div class="pc-meta">
+                           <div><b>Status</b><span>Actively building</span></div>
+                           <div><b>Stack</b><span>React Native · Expo · TypeScript · Firebase</span></div>
+                         </div>
+                         <p>A mobile music app that treats "free" and "social" as first-class features instead of afterthoughts. Search aggregates several free/open sources at once, everything you download plays fully offline, and a Firebase-backed social layer lets friends see what you're into and share it back.</p>
+                         <h3>What's working so far</h3>
+                         <ul>
+                           <li>Multi-source search across Jamendo, Audius, Internet Archive and iTunes — ranked by match, downloadable tracks surfaced first</li>
+                           <li>A real offline library: download free tracks, import local files, auto-managed Downloads and Favorites playlists</li>
+                           <li>A full audio player — queue, shuffle, three repeat modes, and a mini-player that persists across the app</li>
+                           <li>A live social layer on Firebase: friend requests, real-time presence, 1:1 chat, and publishable public playlists</li>
+                         </ul>
+                         <div class="tags"><span>React Native</span><span>Expo</span><span>TypeScript</span><span>Firebase</span></div>
+                         <div class="pc-gallery cert-grid">
+                           <figure class="cert cert-pending"><div class="cert-thumb"><span>Photos coming soon</span></div><figcaption><b>Screenshot</b><small>To be added</small></figcaption></figure>
+                           <figure class="cert cert-pending"><div class="cert-thumb"><span>Photos coming soon</span></div><figcaption><b>Screenshot</b><small>To be added</small></figcaption></figure>
+                         </div>
+                       </div></div>
+                     </details>
+
+                     <details class="pc">
+                       <summary class="pc-head">
+                         <div class="pc-thumb"><span>R</span></div>
+                         <div class="pc-head-text">
+                           <h3>Roblox Game <span class="pc-badge pc-badge-amber">Prototyping</span></h3>
+                           <p class="pc-tagline">A fast-paced simulator-style game built for short, replayable sessions.</p>
+                         </div>
+                         <span class="pc-chevron">›</span>
+                       </summary>
+                       <div class="pc-body"><div class="pc-body-in">
+                         <div class="pc-meta">
+                           <div><b>Status</b><span>Early development</span></div>
+                           <div><b>Stack</b><span>Lua · Roblox Studio</span></div>
+                         </div>
+                         <p>A solo-built game on the Roblox platform, designed around quick, replayable sessions and the kind of rapid, satisfying progression loops that keep Roblox's massive, highly-engaged player base coming back. All gameplay logic is scripted in Lua inside Roblox Studio.</p>
+                         <h3>Where it's at</h3>
+                         <ul>
+                           <li>Core gameplay loop and progression systems scripted and playable</li>
+                           <li>Iterating on session pacing and reward feel based on playtesting</li>
+                           <li>Next up: polish pass, then a first public build on Roblox</li>
+                         </ul>
+                         <div class="tags"><span>Lua</span><span>Roblox Studio</span><span>Game Design</span></div>
+                         <div class="pc-gallery cert-grid">
+                           <figure class="cert cert-pending"><div class="cert-thumb"><span>Photos coming soon</span></div><figcaption><b>Screenshot</b><small>To be added</small></figcaption></figure>
+                           <figure class="cert cert-pending"><div class="cert-thumb"><span>Photos coming soon</span></div><figcaption><b>Screenshot</b><small>To be added</small></figcaption></figure>
+                         </div>
+                       </div></div>
+                     </details>` },
       meat:      { topic:'contact',  title:"Let's Connect",     ico:'🥩', accent:'#e07a6b',
                    kicker:'Get in touch', sub:'Open to internships, freelance, collabs and hackathons — anything that builds.',
                    html:`
