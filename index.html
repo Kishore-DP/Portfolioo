@@ -506,9 +506,6 @@
     #start.show { display:flex; }
     #start.show h2 { animation:startRise .9s var(--ease-out) .1s both, startGlow 3.2s ease-in-out 1s infinite; }
     #start.show .sub, #start.show .rule { animation:startRise .8s var(--ease-out) .3s both; }
-    #start.show .greet { animation:startRise .8s var(--ease-out) both; }
-    #start .greet { font-family:var(--font-accent); font-style:italic; font-weight:500; font-size:clamp(1rem,2.4vw,1.2rem);
-      color:#e8ddf5; opacity:.88; margin-bottom:6px; letter-spacing:.01em; }
     #start h2 { font-family:var(--font-display); font-size:clamp(2rem,6.2vw,3.6rem); font-weight:800; letter-spacing:.15em;
       background:linear-gradient(180deg,#fff6e0 0%,var(--brand-2) 45%,var(--brand) 75%,#c9822f 100%);
       -webkit-background-clip:text; background-clip:text; color:transparent;
@@ -854,7 +851,7 @@
   </section>
 
   <div id="vignette"></div>
-  <div id="start"><div class="greet" id="startGreet"></div><h2>Click to Enter</h2><div class="rule"></div><div class="sub">Click anywhere to begin</div></div>
+  <div id="start"><h2>Click to Enter</h2><div class="rule"></div><div class="sub">Click anywhere to begin</div></div>
 
   <script type="importmap">
   { "imports": {
@@ -875,11 +872,6 @@
     const fbEl=document.getElementById('fallback'), hintEl=document.getElementById('hint');
     const panelEl=document.getElementById('panel'), toastEl=document.getElementById('toast');
     const startEl=document.getElementById('start');
-    // time-aware greeting: based purely on the visitor's own browser clock — no tracking, no geolocation
-    (()=>{ const h=new Date().getHours();
-      const g = h<5 ? 'Good night' : h<12 ? 'Good morning' : h<17 ? 'Good afternoon' : h<21 ? 'Good evening' : 'Good night';
-      const el=document.getElementById('startGreet'); if(el) el.textContent=`${g} — welcome to the market`;
-    })();
     // real "last updated" indicator — reads the deployed file's actual Last-Modified header (honest, auto-accurate;
     // GitHub Pages sends this reliably, local dev servers usually don't, so it just stays hidden there)
     fetch('./', {method:'HEAD', cache:'no-store'}).then(r=>{
