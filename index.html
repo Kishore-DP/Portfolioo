@@ -94,6 +94,19 @@
       padding:8px 16px; border-radius:99px; font-size:.85rem; transition:opacity .35s ease, transform .35s ease; pointer-events:none; white-space:nowrap; }
     #toast.show { opacity:1; transform:translate(-50%,0); }
 
+    /* "Market Explorer" achievement banner — shown once all 5 topics have been visited */
+    #achieve { position:fixed; left:50%; top:80px; transform:translate(-50%,-16px) scale(.96); z-index:26; opacity:0; pointer-events:none;
+      display:flex; align-items:center; gap:14px; padding:14px 22px 14px 16px; border-radius:16px;
+      background:linear-gradient(135deg,rgba(20,26,33,.92),rgba(30,24,14,.92)); border:1px solid rgba(255,206,74,.4);
+      box-shadow:0 20px 55px rgba(0,0,0,.5), 0 0 30px rgba(255,206,74,.18);
+      transition:opacity .5s cubic-bezier(.2,.8,.2,1), transform .5s cubic-bezier(.2,.8,.2,1); }
+    #achieve.show { opacity:1; transform:translate(-50%,0) scale(1); }
+    #achieve .ach-icon { font-size:1.9rem; filter:drop-shadow(0 0 10px rgba(255,206,74,.7)); animation:achBounce 1.4s ease-in-out infinite; }
+    @keyframes achBounce { 0%,100%{ transform:translateY(0) rotate(0deg); } 50%{ transform:translateY(-4px) rotate(-6deg); } }
+    #achieve .ach-text { display:flex; flex-direction:column; gap:2px; }
+    #achieve .ach-text b { color:#ffce4a; font-size:.95rem; letter-spacing:.02em; }
+    #achieve .ach-text span { color:#dbe6db; font-size:.82rem; }
+
     /* dim scrim behind the modal so the popup reads clearly without hiding the world */
     #scrim { position:fixed; inset:0; z-index:24; background:rgba(4,3,10,.5); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px);
       opacity:0; pointer-events:none; transition:opacity .4s ease; }
@@ -499,6 +512,10 @@
     </div>
   </div>
   <div id="toast"></div>
+  <div id="achieve" role="status" aria-live="polite">
+    <div class="ach-icon">🏆</div>
+    <div class="ach-text"><b>Market Explorer</b><span>You've visited every corner of the market!</span></div>
+  </div>
   <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔊</button>
   <div id="dpad" aria-hidden="true">
     <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
@@ -1288,9 +1305,23 @@
     }
     function renderRadarCharts(){ document.querySelectorAll('.radar-canvas').forEach(drawRadarChart); }
 
+    // ---- "Market Explorer" achievement: celebrate once every one of the 5 topics has been opened ----
+    const achieveEl=document.getElementById('achieve');
+    const visitedTopics=new Set(); let achievementShown=false;
+    function trackTopicVisit(topic){
+      visitedTopics.add(topic);
+      if(achievementShown || visitedTopics.size<5) return;
+      achievementShown=true;
+      setTimeout(()=>{   // let the panel's own opening beat land first
+        achieveEl.classList.add('show'); sfx('chime');
+        setTimeout(()=>achieveEl.classList.remove('show'), 4200);
+      }, 500);
+    }
+
     // ---------- information popup ----------
     const scrimEl=document.getElementById('scrim');
     function showPanel(sec){ panelEl.style.setProperty('--accent',sec.accent);
+      trackTopicVisit(sec.topic);
       panelEl.innerHTML=`<button id="panelCopyLink" aria-label="Copy link to this topic" title="Copy link to this topic">🔗</button>`
         +`<button id="panelClose" aria-label="Close">&times;</button>`
         +`<div class="panel-head"><div class="eyebrow"><span class="ico">${sec.ico}</span> ${sec.kicker||'Topic'}</div><h2>${sec.title}</h2>${sec.sub?`<p class="psub">${sec.sub}</p>`:''}</div>`
