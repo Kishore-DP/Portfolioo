@@ -389,6 +389,7 @@
     #start.show { display:flex; }
     #start h2 { font-size:clamp(1.7rem,5.5vw,3rem); font-weight:800; letter-spacing:.14em; color:#ffe7c2; text-shadow:0 2px 24px rgba(0,0,0,.75); transform:rotate(-4deg); animation:startpulse 1.8s ease-in-out infinite; }
     #start .sub { font-size:.82rem; letter-spacing:.24em; color:#cdbce6; text-transform:uppercase; opacity:.85; }
+    #start .greet { font-size:.95rem; color:#eaf2ea; opacity:.9; margin-bottom:2px; }
     @keyframes startpulse { 0%,100%{opacity:.6; transform:rotate(-4deg) scale(1);} 50%{opacity:1; transform:rotate(-4deg) scale(1.05);} }
     /* space vignette to deepen the edges like the reference */
     #vignette { position:fixed; inset:0; z-index:5; pointer-events:none; background:radial-gradient(ellipse at 50% 46%, rgba(0,0,0,0) 36%, rgba(4,2,10,.5) 76%, rgba(2,1,6,.92) 100%); }
@@ -650,7 +651,7 @@
   </section>
 
   <div id="vignette"></div>
-  <div id="start"><h2>CLICK TO START</h2><div class="sub">click anywhere</div></div>
+  <div id="start"><div class="greet" id="startGreet"></div><h2>CLICK TO START</h2><div class="sub">click anywhere</div></div>
 
   <script type="importmap">
   { "imports": {
@@ -671,6 +672,11 @@
     const fbEl=document.getElementById('fallback'), hintEl=document.getElementById('hint');
     const panelEl=document.getElementById('panel'), toastEl=document.getElementById('toast');
     const startEl=document.getElementById('start');
+    // time-aware greeting: based purely on the visitor's own browser clock — no tracking, no geolocation
+    (()=>{ const h=new Date().getHours();
+      const g = h<5 ? 'Good night' : h<12 ? 'Good morning' : h<17 ? 'Good afternoon' : h<21 ? 'Good evening' : 'Good night';
+      const el=document.getElementById('startGreet'); if(el) el.textContent=`${g} — welcome to the market`;
+    })();
     function webglOk(){ try{ const c=document.createElement('canvas'); return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl'))); }catch(e){return false;} }
     if(!webglOk()){ loaderEl.classList.add('hidden'); fbEl.classList.add('show'); throw new Error('no webgl'); }
 
