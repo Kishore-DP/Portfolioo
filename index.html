@@ -213,27 +213,46 @@
     .panel .panel-scroll .callout p { margin:0; max-width:none; }
     /* contact rows */
     /* 3D flip business card */
-    .biz-card-wrap { display:flex; justify-content:center; margin:8px 0 28px; perspective:1600px; }
-    .biz-card { position:relative; width:290px; height:178px; cursor:pointer; transform-style:preserve-3d;
-      transition:transform .7s var(--ease-spring); outline:none; }
-    .biz-card:hover { transform:translateY(-3px) rotateX(3deg); }
-    .biz-card.flipped:hover { transform:translateY(-3px) rotateY(180deg); }
-    .biz-card:focus-visible { box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent); border-radius:18px; }
+    .biz-card-wrap { display:flex; flex-direction:column; align-items:center; margin:10px 0 30px; perspective:1800px; }
+    .biz-card { position:relative; width:320px; height:194px; cursor:pointer; transform-style:preserve-3d;
+      transition:transform .75s var(--ease-spring); outline:none; }
+    .biz-card:hover { transform:translateY(-4px) rotateX(4deg) rotateY(-2deg); }
+    .biz-card.flipped:hover { transform:translateY(-4px) rotateY(180deg); }
+    .biz-card:focus-visible { box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent); border-radius:20px; }
     .biz-card.flipped { transform:rotateY(180deg); }
-    .biz-face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:18px;
-      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:22px;
-      border:1px solid rgba(255,255,255,.14); box-shadow:0 24px 60px rgba(0,0,0,.5); text-align:center; }
-    .biz-front { background:linear-gradient(150deg,rgba(30,24,22,.96),rgba(16,14,13,.97));
-      border-color:color-mix(in srgb,var(--accent,#e07a6b) 42%, rgba(255,255,255,.1)); }
-    .biz-front::before { content:''; position:absolute; inset:8px; border-radius:12px; border:1px solid color-mix(in srgb,var(--accent,#e07a6b) 22%, transparent); pointer-events:none; }
-    .biz-mark { font-size:1.9rem; margin-bottom:3px; filter:drop-shadow(0 0 10px color-mix(in srgb,var(--accent,#e07a6b) 50%, transparent)); }
-    .biz-name { font-family:var(--font-display); font-size:1.32rem; font-weight:700; color:#fff; letter-spacing:.02em; }
-    .biz-role { font-size:.82rem; color:#aeb2ac; letter-spacing:.01em; }
-    .biz-hint { margin-top:11px; font-size:.7rem; font-weight:700; letter-spacing:.1em; text-transform:uppercase; color:var(--accent,#e07a6b); opacity:.9; }
-    .biz-back { background:#fdfbf6; transform:rotateY(180deg); gap:9px; }
-    .biz-back img { width:108px; height:108px; border-radius:9px; }
-    .biz-back-label { font-size:.78rem; color:#54524f; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
-    @media (max-width:680px){ .biz-card{ width:245px; height:152px; } }
+    .biz-face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:20px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:24px;
+      border:1px solid rgba(255,255,255,.14); box-shadow:0 28px 70px rgba(0,0,0,.55); text-align:center; overflow:hidden; }
+    .biz-front { background:
+      linear-gradient(115deg, transparent 40%, rgba(255,255,255,.06) 48%, transparent 56%),
+      repeating-linear-gradient(135deg, rgba(255,255,255,.015) 0 2px, transparent 2px 5px),
+      linear-gradient(150deg,rgba(32,26,23,.97),rgba(15,13,12,.98));
+      background-size:220% 220%, auto, auto; background-position:120% 50%, 0 0, 0 0;
+      border-color:color-mix(in srgb,var(--accent,#e07a6b) 42%, rgba(255,255,255,.1));
+      transition:background-position .9s var(--ease-out); }
+    .biz-card:hover .biz-front { background-position:-20% 50%, 0 0, 0 0; }
+    .biz-front::before { content:''; position:absolute; inset:9px; border-radius:13px; border:1px solid color-mix(in srgb,var(--accent,#e07a6b) 24%, transparent); pointer-events:none; }
+    /* corner flourishes — small crest-like brackets instead of an emoji icon */
+    .biz-front::after { content:''; position:absolute; inset:9px; border-radius:13px; pointer-events:none;
+      background:
+        linear-gradient(color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent), transparent) top left / 2px 16px no-repeat,
+        linear-gradient(90deg, color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent), transparent) top left / 16px 2px no-repeat,
+        linear-gradient(color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent), transparent) bottom right / 2px 16px no-repeat,
+        linear-gradient(90deg, transparent, color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent)) bottom right / 16px 2px no-repeat; }
+    .biz-mark { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-display); font-size:1.05rem; font-weight:700; letter-spacing:.02em; color:var(--accent,#e07a6b);
+      border:1.5px solid color-mix(in srgb,var(--accent,#e07a6b) 60%, transparent); margin-bottom:4px;
+      background:color-mix(in srgb,var(--accent,#e07a6b) 10%, transparent);
+      box-shadow:0 0 18px color-mix(in srgb,var(--accent,#e07a6b) 30%, transparent), inset 0 1px 0 rgba(255,255,255,.08); }
+    .biz-name { font-family:var(--font-display); font-size:1.4rem; font-weight:700; color:#fff; letter-spacing:.02em; }
+    .biz-role { font-size:.83rem; color:#aeb2ac; letter-spacing:.02em; }
+    .biz-hint { margin-top:12px; font-size:.68rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--accent,#e07a6b); opacity:.9; }
+    .biz-back { background:#fdfbf6; transform:rotateY(180deg); gap:6px; }
+    .biz-back::before { content:''; position:absolute; inset:9px; border-radius:13px; border:1px solid #e4d8b8; pointer-events:none; }
+    .biz-back img { width:96px; height:96px; border-radius:8px; border:1px solid #e4e0d4; }
+    .biz-back-label { font-size:.78rem; color:#54524f; font-weight:700; letter-spacing:.06em; text-transform:uppercase; margin-top:2px; }
+    .biz-back-url { font-size:.76rem; color:#8a6a2e; font-weight:600; }
+    @media (max-width:680px){ .biz-card{ width:265px; height:165px; } }
 
     .panel .panel-scroll .contact-list { display:grid; gap:11px; margin:8px 0 20px; }
     .panel .panel-scroll .contact-row { display:flex; align-items:center; gap:16px; padding:14px 17px; border-radius:15px; text-decoration:none;
@@ -958,7 +977,7 @@
                      <div class="biz-card-wrap">
                        <div class="biz-card" tabindex="0" role="button" aria-label="Flip business card">
                          <div class="biz-face biz-front">
-                           <div class="biz-mark">🥩</div>
+                           <div class="biz-mark">KD</div>
                            <div class="biz-name">Kishore DP</div>
                            <div class="biz-role">Developer &middot; Builder &middot; Tinkerer</div>
                            <div class="biz-hint">Tap to flip ↻</div>
@@ -966,11 +985,12 @@
                          <div class="biz-face biz-back">
                            <img src="qr-code.png" alt="QR code to the live portfolio">
                            <div class="biz-back-label">Scan to visit</div>
+                           <div class="biz-back-url">kishore-dp.github.io/Portfolioo</div>
                          </div>
                        </div>
                      </div>
 
-                     <h3>📡 Ping me here</h3>
+                     <h3>Ping me here</h3>
                      <div class="contact-list">
                        <a class="contact-row" href="mailto:kishoredp27@gmail.com"><span class="ci">📧</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
                        <a class="contact-row" href="https://github.com/Kishore-DP" target="_blank" rel="noopener"><span class="ci">💻</span><span><b>GitHub</b><small>github.com/Kishore-DP</small></span></a>
