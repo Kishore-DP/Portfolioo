@@ -662,14 +662,15 @@
     // ---- time of day: retint the whole scene to the visitor's real local clock (night -> dawn -> day -> golden hour -> dusk -> night) ----
     // sun position/angle stays fixed (this is a stylized void, not a literal sky) — only color/intensity/fog shift, so shadows never break.
     const TOD_KEYS=[
-      { h:0,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35 },  // deep night
-      { h:5,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35 },  // pre-dawn
-      { h:7,  sun:0xffb87a, sunI:2.60, hemiSky:0xffd9b0, hemiGnd:0x7a5030, hemiI:0.85, amb:0x4a4570, ambI:0.50, bg:0x1a1020, fogD:0.0017, rimI:0.55 },  // dawn
-      { h:12, sun:0xfff3d8, sunI:4.10, hemiSky:0xdfeeff, hemiGnd:0x8a7048, hemiI:1.00, amb:0x5a6590, ambI:0.60, bg:0x141428, fogD:0.0012, rimI:0.75 },  // midday
-      { h:17, sun:0xffdca6, sunI:3.60, hemiSky:0xdce8ff, hemiGnd:0x7a6038, hemiI:0.90, amb:0x4a5570, ambI:0.55, bg:0x07060f, fogD:0.0013, rimI:0.70 },  // golden hour (the original look)
-      { h:20, sun:0x5a5a9a, sunI:1.00, hemiSky:0x30306a, hemiGnd:0x1c1830, hemiI:0.55, amb:0x2a3060, ambI:0.45, bg:0x05040c, fogD:0.0016, rimI:0.50 },  // dusk
-      { h:24, sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35 },  // wraps to night
+      { h:0,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // deep night
+      { h:5,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // pre-dawn
+      { h:7,  sun:0xffb87a, sunI:2.60, hemiSky:0xffd9b0, hemiGnd:0x7a5030, hemiI:0.85, amb:0x4a4570, ambI:0.50, bg:0x1a1020, fogD:0.0017, rimI:0.55, night:0.35 },  // dawn
+      { h:12, sun:0xfff3d8, sunI:4.10, hemiSky:0xdfeeff, hemiGnd:0x8a7048, hemiI:1.00, amb:0x5a6590, ambI:0.60, bg:0x141428, fogD:0.0012, rimI:0.75, night:0.0  },  // midday
+      { h:17, sun:0xffdca6, sunI:3.60, hemiSky:0xdce8ff, hemiGnd:0x7a6038, hemiI:0.90, amb:0x4a5570, ambI:0.55, bg:0x07060f, fogD:0.0013, rimI:0.70, night:0.15 },  // golden hour (the original look)
+      { h:20, sun:0x5a5a9a, sunI:1.00, hemiSky:0x30306a, hemiGnd:0x1c1830, hemiI:0.55, amb:0x2a3060, ambI:0.45, bg:0x05040c, fogD:0.0016, rimI:0.50, night:0.75 },  // dusk
+      { h:24, sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // wraps to night
     ];
+    let nightFactor=0, todLabel='Day';   // 0=full day..1=full night; shared with fireflies/shooting stars/mode chip
     function applyTimeOfDay(){
       const hr=new Date().getHours()+new Date().getMinutes()/60;
       let a=TOD_KEYS[0], b=TOD_KEYS[1];
@@ -682,8 +683,36 @@
       ambient.color.copy(lc(a.amb,b.amb)); ambient.intensity=ln(a.ambI,b.ambI);
       rim.intensity=ln(a.rimI,b.rimI);
       const bgc=lc(a.bg,b.bg); scene.background.copy(bgc); scene.fog.color.copy(bgc); scene.fog.density=ln(a.fogD,b.fogD);
+      nightFactor=ln(a.night,b.night);
+      todLabel = hr<5.5||hr>=20 ? 'Night' : hr<7.5 ? 'Dawn' : hr<16.5 ? 'Day' : hr<18.5 ? 'Golden Hour' : 'Dusk';
     }
     setInterval(applyTimeOfDay, 5*60*1000);   // keep drifting correctly through a long-lived tab
+
+    // ---- fireflies: a soft glowing particle swarm that fades in at night, fades out by day (driven by nightFactor) ----
+    const FIREFLY_COUNT=70;
+    const fireflyTex=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const gx=c.getContext('2d');
+      const g=gx.createRadialGradient(32,32,0,32,32,32);
+      g.addColorStop(0,'rgba(255,246,180,1)'); g.addColorStop(.35,'rgba(255,222,120,.75)'); g.addColorStop(1,'rgba(255,200,80,0)');
+      gx.fillStyle=g; gx.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
+    const fireflyBase=[]; const fireflyPos=new Float32Array(FIREFLY_COUNT*3);
+    for(let i=0;i<FIREFLY_COUNT;i++){
+      const ang=Math.random()*Math.PI*2, rad=8+Math.random()*(cfg.world*0.42);
+      const b={x:Math.sin(ang)*rad, y:2+Math.random()*7, z:Math.cos(ang)*rad, ph:Math.random()*Math.PI*2, sp:0.5+Math.random()*0.6};
+      fireflyBase.push(b); fireflyPos[i*3]=b.x; fireflyPos[i*3+1]=b.y; fireflyPos[i*3+2]=b.z;
+    }
+    const fireflyGeo=new THREE.BufferGeometry(); fireflyGeo.setAttribute('position', new THREE.BufferAttribute(fireflyPos,3));
+    const fireflyMat=new THREE.PointsMaterial({ size:1.7, map:fireflyTex, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending, sizeAttenuation:true });
+    const fireflies=new THREE.Points(fireflyGeo, fireflyMat); scene.add(fireflies);
+    let _fireflyClock=0;
+    function updateFireflies(dt){
+      const targetOp=nightFactor*0.85;
+      fireflyMat.opacity+=(targetOp-fireflyMat.opacity)*Math.min(1,dt*0.6);
+      if(fireflyMat.opacity<0.01 && targetOp<0.01) return;   // fully invisible by day — skip the per-particle work
+      _fireflyClock+=dt; const t=_fireflyClock, pos=fireflyGeo.attributes.position;
+      for(let i=0;i<FIREFLY_COUNT;i++){ const b=fireflyBase[i];
+        pos.setXYZ(i, b.x+Math.sin(t*0.6*b.sp+b.ph)*2.2, b.y+Math.sin(t*1.3*b.sp+b.ph*2)*0.8, b.z+Math.cos(t*0.5*b.sp+b.ph)*2.2); }
+      pos.needsUpdate=true;
+    }
 
     // ---------- SECTORS: each market -> a topic ----------
     // matched to market material names found in the FBX
@@ -1553,6 +1582,7 @@
         camera.position.copy(_estPos); camera.lookAt(_estLook);
       }
       if(started && !welcomeShown){ welcomeShown=true; showWelcome(); }   // intro settled -> auto-show the how-it-works guide once
+      updateFireflies(dt);
     }
     function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
     let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
