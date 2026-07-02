@@ -761,6 +761,7 @@
       { h:24, sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // wraps to night
     ];
     let nightFactor=0, todLabel='Day';   // 0=full day..1=full night; shared with fireflies/mode chip
+    const nightLights=[];   // lamp-post + market point lights, populated once the market model loads; scaled by nightFactor
     const TOD_ICONS={Night:'🌙', Dawn:'🌅', Day:'☀️', 'Golden Hour':'🌇', Dusk:'🌆'};
     function applyTimeOfDay(){
       const hr=new Date().getHours()+new Date().getMinutes()/60;
@@ -775,6 +776,7 @@
       rim.intensity=ln(a.rimI,b.rimI);
       const bgc=lc(a.bg,b.bg); scene.background.copy(bgc); scene.fog.color.copy(bgc); scene.fog.density=ln(a.fogD,b.fogD);
       nightFactor=ln(a.night,b.night);
+      nightLights.forEach(l=>{ l.intensity=l.userData.baseIntensity*nightFactor; });
       todLabel = hr<5.5||hr>=20 ? 'Night' : hr<7.5 ? 'Dawn' : hr<16.5 ? 'Day' : hr<18.5 ? 'Golden Hour' : 'Dusk';
       const chip=document.getElementById('todChip');
       if(chip){ chip.querySelector('.tod-ico').textContent=TOD_ICONS[todLabel]||'☀️'; chip.querySelector('.tod-label').textContent=todLabel; chip.classList.add('show'); }
@@ -1078,6 +1080,21 @@
       ZONES=[];
       for(const k in acc){ if(!SECTORS[k]||!acc[k].n) continue; const x=acc[k].x/acc[k].n, z=acc[k].z/acc[k].n;
         ZONES.push({ key:k, ...SECTORS[k], x, z }); }
+      // ---- night lighting: the FBX's own Point_Light nodes don't import as working THREE lights, so we add real
+      // ones ourselves at the same real-world positions (measured off the loaded mesh) — 4 at the lamp-post heads,
+      // 5 at each market's centre so the stalls stay readable at night. Warm, no shadows (perf), scaled by nightFactor.
+      const LAMP_POST_LIGHTS=[
+        {x:-5.19,  z:-14.96}, {x:-27.07, z:31.44}, {x:27.94, z:-17.64}, {x:26.63, z:23.49},
+      ];
+      LAMP_POST_LIGHTS.forEach(p=>{
+        const l=new THREE.PointLight(0xffb870, 0, 38, 2); l.position.set(p.x, 86.5, p.z); l.castShadow=false;
+        l.userData.baseIntensity=2.4; scene.add(l); nightLights.push(l);
+      });
+      ZONES.forEach(z=>{
+        const gy=surfaceTop(z.x,z.z)??0;
+        const l=new THREE.PointLight(0xffe0b0, 0, 58, 2); l.position.set(z.x, gy+9, z.z); l.castShadow=false;
+        l.userData.baseIntensity=3.6; scene.add(l); nightLights.push(l);
+      });
       enlargeBoards(1.45);  // make the signboards bigger / easier to read from a distance
       placeBoardTitles();   // paint each market's title directly onto its signboard (no floating UI)
 
