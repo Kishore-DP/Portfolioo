@@ -1383,6 +1383,14 @@
     let ZONES=[]; let activeTopic=null;
     const orbs=[];                       // {group, sphere, zone} — one clickable ? orb per shop
     const ORB_R=1.35, ORB_GAP=1.0;       // world radius + gap below the shop signboard's underside
+    let hoveredOrb=null, burstedOrb=null;   // orb currently glowing under the cursor / currently hidden mid-panel
+    const orbHoverLight=new THREE.PointLight(0xffd94a, 0, 7, 2); scene.add(orbHoverLight);   // warm glow cast onto nearby stalls while an orb is hovered
+    function easeOutCubic(x){ return 1-Math.pow(1-x,3); }
+    function easeOutBack(x){ const c1=1.70158, c3=c1+1; return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2); }
+    function startOrbBurst(rec){ rec.anim={type:'burst', t:0, dur:0.3}; }
+    function reformOrb(rec){ rec.group.visible=true; rec.group.scale.setScalar(rec.baseScale*0.001);
+      if(rec.sphere&&rec.sphere.material) rec.sphere.material.opacity=0; for(const m of rec.qMarks) m.opacity=0;
+      rec.anim={type:'reform', t:0, dur:0.4}; }
     let started=false, starting=false, startT=0, establishAngle=0;   // zoomed-out intro -> click -> ease into 3rd person
     let intro=false, introT=0;   // post-load cinematic: top-down view of the island eases down into the CLICK-TO-START establishing shot
     let welcomeShown=false;   // the how-it-works popup auto-shows once, when the intro camera first settles
@@ -1556,8 +1564,13 @@
         if(board){ px=board.c.x; pz=board.c.z; py=board.minY-ORB_GAP-ORB_R; }   // centred under the board, hanging below it
         else { py=(surfaceTop(z.x,z.z)??groundY)-5; }
         g.position.set(px, py, pz);
-        let sphere=null; g.traverse(o=>{ if(/sphere/i.test(o.name)) sphere=o; });
-        const rec={group:g, sphere, zone:z, phase:Math.random()*Math.PI*2};
+        let sphere=null; const qMarks=[];
+        // each orb instance shares Object3D.clone()'s materials by reference, so give every clone its own
+        // material for the "?" mark (everything opaque/non-glass) — otherwise boosting one orb's hover glow
+        // would light up every orb in the market at once
+        g.traverse(o=>{ if(/sphere/i.test(o.name)) sphere=o;
+          if(o.isMesh && o.material && !o.material.transparent){ o.material=o.material.clone(); o.material.transparent=true; qMarks.push(o.material); } });
+        const rec={group:g, sphere, qMarks, baseScale:scl, zone:z, phase:Math.random()*Math.PI*2, hoverT:0, anim:null};
         g.userData.orb=rec; g.traverse(o=>o.userData.orb=rec);
         scene.add(g); orbs.push(rec);
       }
@@ -1724,14 +1737,18 @@
       const sc=panelEl.querySelector('.panel-scroll'); if(sc) sc.scrollTop=0;
       renderGitHubFeed(); renderRadarCharts();
     }
-    function hidePanel(){ panelEl.classList.remove('show'); scrimEl.classList.remove('show'); }
+    function hidePanel(){ panelEl.classList.remove('show'); scrimEl.classList.remove('show');
+      if(burstedOrb){ reformOrb(burstedOrb); burstedOrb=null; } }
     function closePanel(){ activeTopic=null; hidePanel(); }                 // single close path (X, Esc, scrim, movement)
     scrimEl.addEventListener('click', closePanel);
     const panelOpen=()=>panelEl.classList.contains('show');
     function toast(msg){ toastEl.textContent=msg; toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>toastEl.classList.remove('show'),1800); }
     function updateProximity(){
       let near=null,bd=1e9; for(const z of ZONES){ const d=Math.hypot(player.position.x-z.x,player.position.z-z.z); if(d<14&&d<bd){bd=d;near=z;} }
-      if(near&&near.topic!==activeTopic){ activeTopic=near.topic; showPanel(near); toast(`Entering ${near.title}`); }
+      if(near&&near.topic!==activeTopic){
+        if(burstedOrb && burstedOrb.zone.topic!==near.topic){ reformOrb(burstedOrb); burstedOrb=null; }   // walking off to a new topic: put the old bursted orb back
+        activeTopic=near.topic; showPanel(near); toast(`Entering ${near.title}`);
+      }
       else if(!near&&activeTopic){ activeTopic=null; hidePanel(); }
     }
 
@@ -1790,10 +1807,16 @@
       const cx=e.touches?e.touches[0].clientX:e.clientX, cy=e.touches?e.touches[0].clientY:e.clientY;
       ptr.x=(cx/innerWidth)*2-1; ptr.y=-(cy/innerHeight)*2+1;
       pickRay.setFromCamera(ptr,camera);
-      const meshes=[]; for(const o of orbs) o.group.traverse(m=>{ if(m.isMesh) meshes.push(m); });
+      const meshes=[]; for(const o of orbs){ if(!o.group.visible) continue; o.group.traverse(m=>{ if(m.isMesh) meshes.push(m); }); }
       const hit=pickRay.intersectObjects(meshes,false);
       if(hit.length){ let n=hit[0].object, rec=null; while(n){ if(n.userData&&n.userData.orb){rec=n.userData.orb;break;} n=n.parent; }
-        if(rec){ activeTopic=rec.zone.topic; showPanel(rec.zone); toast(rec.zone.title); hideHint(); sfx('click'); } }
+        if(rec){
+          if(burstedOrb && burstedOrb!==rec) reformOrb(burstedOrb);   // switching topics mid-panel: put the old orb back first
+          startOrbBurst(rec); burstedOrb=rec; hoveredOrb=null; cv.style.cursor='';
+          activeTopic=rec.zone.topic; sfx('click'); hideHint();
+          setTimeout(()=>{ showPanel(rec.zone); toast(rec.zone.title); }, 260);   // let the burst read before the panel appears
+        }
+      }
       else { activeTopic=null; hidePanel(); }
     }
     cv.addEventListener('click', pickOrb);
@@ -1829,18 +1852,23 @@
 
     addEventListener('keydown', e=>{ if(e.code==='Escape'){ activeTopic=null; hidePanel(); } });
 
-    // hover feedback: a hand cursor only while pointing at a ? orb — makes clear the orbs are the
-    // only interactive objects in the world (clicking anything else never opens a panel).
+    // hover feedback: a hand cursor + a warm yellow glow on whichever ? orb is under the pointer —
+    // makes clear the orbs are the only interactive objects in the world.
     let _hoverRAF=0;
     cv.addEventListener('mousemove', e=>{
       if(!started || looking || !orbs.length) return;     // skip while right-drag look (pointer locked)
       if(_hoverRAF) return; _hoverRAF=requestAnimationFrame(()=>{ _hoverRAF=0;
         ptr.x=(e.clientX/innerWidth)*2-1; ptr.y=-(e.clientY/innerHeight)*2+1;
         pickRay.setFromCamera(ptr,camera);
-        const meshes=[]; for(const o of orbs) o.group.traverse(m=>{ if(m.isMesh) meshes.push(m); });
-        cv.style.cursor = pickRay.intersectObjects(meshes,false).length ? 'pointer' : '';
+        const meshes=[]; for(const o of orbs){ if(!o.group.visible) continue; o.group.traverse(m=>{ if(m.isMesh) meshes.push(m); }); }
+        const hit=pickRay.intersectObjects(meshes,false);
+        let rec=null;
+        if(hit.length){ let n=hit[0].object; while(n){ if(n.userData&&n.userData.orb){rec=n.userData.orb;break;} n=n.parent; } }
+        cv.style.cursor = rec ? 'pointer' : '';
+        hoveredOrb = rec;
       });
     });
+    cv.addEventListener('mouseleave', ()=>{ hoveredOrb=null; cv.style.cursor=''; });
 
     // ---- CLICK TO START: leave the zoomed-out establishing shot and ease into 3rd person ----
     function beginStart(){ audioInit(); if(actx&&actx.state==='suspended') actx.resume();   // the start gesture unlocks audio
@@ -2166,9 +2194,33 @@
       }
       if(mixer) mixer.update(dt);
 
-      // spin each orb's glass sphere slowly + a gentle float bob
-      for(const o of orbs){ if(o.sphere) o.sphere.rotation.y += dt*0.5;
-        if(!reducedMotion && o.group){ const sy=o._baseY??(o._baseY=o.group.position.y); o.group.position.y=sy+Math.sin(performance.now()*0.0012+o.phase)*0.35; } }
+      // spin each orb's glass sphere slowly + a gentle float bob, plus hover glow / click-burst / reform
+      let topHoverOrb=null, topHoverT=0;
+      for(const o of orbs){
+        if(o.sphere) o.sphere.rotation.y += dt*0.5;
+        if(!reducedMotion && o.group.visible){ const sy=o._baseY??(o._baseY=o.group.position.y); o.group.position.y=sy+Math.sin(performance.now()*0.0012+o.phase)*0.35; }
+
+        const hoverTarget=(o===hoveredOrb && !o.anim) ? 1 : 0;
+        o.hoverT=THREE.MathUtils.damp(o.hoverT, hoverTarget, 10, dt);
+        for(const m of o.qMarks) m.emissiveIntensity=0.9+o.hoverT*1.3;
+        if(o.hoverT>topHoverT){ topHoverT=o.hoverT; topHoverOrb=o; }
+
+        if(o.anim){
+          o.anim.t+=dt; const p=Math.min(1, o.anim.t/o.anim.dur); let scale,glassOp,qOp;
+          if(o.anim.type==='burst'){ const e=easeOutCubic(p); scale=1+e*1.7; glassOp=0.5*(1-e); qOp=1-e;
+            for(const m of o.qMarks) m.emissiveIntensity=0.9+Math.sin(p*Math.PI)*2.6;   // bright flash right as it pops
+            if(p>=1){ o.group.visible=false; o.anim=null; } }
+          else { const e=easeOutBack(p); scale=Math.max(0.001,e); glassOp=Math.min(1,p*1.7)*0.5; qOp=Math.min(1,p*1.7);
+            if(p>=1){ scale=1; glassOp=0.5; qOp=1; o.anim=null; } }
+          if(o.sphere && o.sphere.material) o.sphere.material.opacity=glassOp;
+          for(const m of o.qMarks) m.opacity=qOp;
+          o.group.scale.setScalar(o.baseScale*scale);
+        } else {
+          o.group.scale.setScalar(o.baseScale*(1+o.hoverT*0.12));
+        }
+      }
+      if(topHoverOrb){ orbHoverLight.position.copy(topHoverOrb.group.position); orbHoverLight.position.y+=1; }
+      orbHoverLight.intensity=topHoverT*4.5;
 
       // orbit camera: positioned by mouse-controlled yaw/pitch, always looking at the character
       const dir=new THREE.Vector3(Math.sin(camYaw)*Math.cos(camPitch), Math.sin(camPitch), Math.cos(camYaw)*Math.cos(camPitch));
