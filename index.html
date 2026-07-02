@@ -332,6 +332,24 @@
       #onePager .op-scroll { overflow:visible !important; padding:0 !important; display:block !important; }
       #onePager .op-page { box-shadow:none !important; max-width:100% !important; min-height:0 !important; border-radius:0 !important; }
     }
+
+    /* ===== hidden developer terminal easter egg (type "sudo" anywhere) ===== */
+    #devTerminal { position:fixed; inset:0; z-index:95; display:none; align-items:center; justify-content:center; padding:5vh 5vw;
+      background:rgba(0,0,0,.82); backdrop-filter:blur(4px); opacity:0; transition:opacity .25s ease; cursor:pointer; }
+    #devTerminal.show { display:flex; opacity:1; }
+    #devTerminal .term-box { width:min(720px,100%); max-height:78vh; background:#0b0f0c; border-radius:12px; overflow:hidden;
+      box-shadow:0 40px 110px rgba(0,0,0,.7), 0 0 0 1px rgba(123,201,111,.25); cursor:default; display:flex; flex-direction:column; }
+    #devTerminal .term-bar { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:11px 14px; background:#161c17; border-bottom:1px solid rgba(123,201,111,.15); }
+    #devTerminal .term-dot { width:11px; height:11px; border-radius:50%; }
+    #devTerminal .term-dot.r{background:#e0555f;} #devTerminal .term-dot.y{background:#e0c05a;} #devTerminal .term-dot.g{background:#7bc96f;}
+    #devTerminal .term-title { margin-left:8px; font-family:'Courier New',monospace; font-size:.78rem; color:#7d8a7d; }
+    #devTerminal .term-body { flex:1 1 auto; margin:0; padding:20px 22px 26px; overflow-y:auto; font-family:'Courier New',monospace;
+      font-size:.92rem; line-height:1.65; color:#7bc96f; white-space:pre-wrap; }
+    #devTerminal .term-body .tc { color:#e0a45a; }
+    #devTerminal .term-body .tw { color:#eef5ee; }
+    #devTerminal .term-cursor { display:inline-block; width:8px; height:1em; background:#7bc96f; vertical-align:text-bottom; animation:termBlink 1s step-end infinite; }
+    @keyframes termBlink { 50%{ opacity:0; } }
+
     /* staggered entrance for body blocks */
     @keyframes panelRise { from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
     .panel.show .panel-scroll > * { animation:panelRise .5s cubic-bezier(.2,.8,.2,1) both; }
@@ -545,6 +563,13 @@
 
       <div class="op-foot">Full interactive 3D portfolio &mdash; kishore-dp.github.io/Portfolioo</div>
     </div></div>
+  </div>
+
+  <div id="devTerminal" role="dialog" aria-modal="true" aria-label="Hidden developer terminal">
+    <div class="term-box">
+      <div class="term-bar"><span class="term-dot r"></span><span class="term-dot y"></span><span class="term-dot g"></span><span class="term-title">kishore@portfolio:~</span></div>
+      <pre class="term-body" id="termBody"></pre>
+    </div>
   </div>
 
   <!-- top-right hamburger menu -->
@@ -1528,6 +1553,51 @@
       if(e.code==='KeyQ'){ qvIsOpen()?qvClose():(opClose(),qvOpen()); }
       else if(e.code==='KeyO'){ opIsOpen()?opClose():(qvClose(),opOpen()); }
       else if(e.code==='KeyM'){ soundBtn.click(); }
+    });
+
+    // ---- hidden developer terminal: type "sudo" anywhere to open ----
+    const termEl=document.getElementById('devTerminal'), termBody=document.getElementById('termBody');
+    const TERM_LINES=[
+      {cmd:'sudo access --grant secret-terminal'},
+      {out:'[sudo] password for visitor: ********'},
+      {out:'Access granted.'}, {out:''},
+      {cmd:'whoami'}, {out:'kishore-dp'}, {out:''},
+      {cmd:'cat about.txt'},
+      {out:'High-school developer. AI/ML · full-stack · game dev · IoT.'},
+      {out:'Builds first, asks questions later.'}, {out:''},
+      {cmd:'ls credentials/'},
+      {out:'house-captain.cert   mun.cert   iitm-datascience-ai.cert'},
+      {out:'basketball.win   carrom.win   khokho.silver   relay.silver'}, {out:''},
+      {cmd:'echo $STATUS'}, {out:'"Currently levelling up. Coffee accepted."'}, {out:''},
+      {out:'You found the secret terminal. Nice work, fellow developer.'},
+      {out:'Press ESC or click anywhere to return to the market.'},
+    ];
+    let termTyping=false;
+    function openTerminal(){
+      if(termEl.classList.contains('show')) return;
+      termEl.classList.add('show'); termBody.textContent=''; termTyping=true; sfx('click');
+      let i=0;
+      const next=()=>{
+        if(!termTyping) return;
+        if(i>=TERM_LINES.length){ termBody.insertAdjacentHTML('beforeend','<span class="term-cursor"></span>'); termTyping=false; return; }
+        const line=TERM_LINES[i++]; const row=document.createElement('div');
+        if(line.cmd) row.innerHTML=`<span class="tc">$</span> <span class="tw">${escHtml(line.cmd)}</span>`;
+        else row.textContent=line.out;
+        termBody.appendChild(row); termBody.scrollTop=termBody.scrollHeight;
+        setTimeout(next, line.cmd?260:110);
+      };
+      next();
+    }
+    function closeTerminal(){ termEl.classList.remove('show'); termTyping=false; }
+    termEl.addEventListener('click', closeTerminal);
+    addEventListener('keydown', e=>{ if(e.code==='Escape' && termEl.classList.contains('show')){ closeTerminal(); e.stopImmediatePropagation(); } }, true);
+    let _termBuf='';
+    addEventListener('keydown', e=>{
+      if(menuIsOpen() || welcomeOpen() || /^(INPUT|TEXTAREA|SELECT)$/.test((e.target&&e.target.tagName)||'')) return;
+      if(e.key && e.key.length===1 && /[a-z]/i.test(e.key)){
+        _termBuf=(_termBuf+e.key.toLowerCase()).slice(-6);
+        if(_termBuf.endsWith('sudo')) openTerminal();
+      }
     });
 
     // --- welcome / how-it-works popup (auto-shown once the intro settles; closes on ✕ or first movement) ---
