@@ -624,6 +624,56 @@
     #welcome .wsub { color:#9a9d99; font-size:.94rem; margin-bottom:22px; line-height:1.5; }
     #welcome .wfoot { margin-top:20px; padding-top:17px; border-top:1px solid rgba(255,255,255,.08); font-size:.86rem; color:#9a9d99; }
 
+    /* ---- step-by-step onboarding carousel: one idea at a time, with a hero visual, instead of a static list ---- */
+    #welcome .w-carousel { overflow:hidden; border-radius:16px; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.08); }
+    #welcome .w-track { display:flex; transition:transform .5s var(--ease-out); }
+    #welcome .w-slide { flex:0 0 100%; display:flex; flex-direction:column; align-items:center; text-align:center;
+      padding:30px 26px 26px; min-height:200px; justify-content:center; gap:14px; }
+    #welcome .w-visual { display:flex; align-items:center; justify-content:center; gap:8px; min-height:56px; position:relative; }
+    #welcome .w-visual .keycap-lg { font-size:1rem; padding:12px 16px; border-radius:10px;
+      background:linear-gradient(180deg,rgba(255,255,255,.15),rgba(255,255,255,.05)); border:1px solid rgba(255,255,255,.22);
+      border-bottom-color:rgba(0,0,0,.3); box-shadow:0 3px 0 rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18);
+      font-weight:800; color:#fff; }
+    #welcome .w-visual.w-move .keycap-lg { animation:wKeyPulse 2.4s ease-in-out infinite; }
+    #welcome .w-visual.w-move .keycap-lg:nth-child(1){ animation-delay:0s; }
+    #welcome .w-visual.w-move .keycap-lg:nth-child(2){ animation-delay:.18s; }
+    #welcome .w-visual.w-move .keycap-lg:nth-child(3){ animation-delay:.36s; }
+    #welcome .w-visual.w-move .keycap-lg:nth-child(4){ animation-delay:.54s; }
+    @keyframes wKeyPulse { 0%,72%,100%{ transform:translateY(0); box-shadow:0 3px 0 rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18); border-color:rgba(255,255,255,.22); }
+      12%{ transform:translateY(2px); box-shadow:0 1px 0 rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.18); border-color:color-mix(in srgb, var(--brand) 65%, transparent); } }
+    #welcome .w-visual.w-look { padding:6px; }
+    #welcome .w-visual.w-look::before { content:''; position:absolute; width:74px; height:74px; border-radius:50%;
+      border:1.5px dashed color-mix(in srgb, var(--brand) 45%, transparent); animation:wOrbit 5s linear infinite; }
+    @keyframes wOrbit { to{ transform:rotate(360deg); } }
+    #welcome .w-visual.w-orb { min-height:74px; }
+    #welcome .w-orb-badge { width:64px; height:64px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-family:var(--font-display); font-size:1.9rem; font-weight:800; color:#ffce4a;
+      background:radial-gradient(circle at 35% 30%, rgba(255,206,74,.35), rgba(255,206,74,.06) 70%);
+      border:1.5px solid rgba(255,206,74,.5); box-shadow:0 0 24px rgba(255,206,74,.4), inset 0 1px 0 rgba(255,255,255,.15);
+      animation:wOrbPulse 1.8s ease-in-out infinite; }
+    @keyframes wOrbPulse { 0%,100%{ box-shadow:0 0 18px rgba(255,206,74,.32), inset 0 1px 0 rgba(255,255,255,.15); transform:scale(1); }
+      50%{ box-shadow:0 0 32px rgba(255,206,74,.55), inset 0 1px 0 rgba(255,255,255,.15); transform:scale(1.06); } }
+    #welcome .w-visual.w-close .keycap-lg:last-child { animation:wCloseFade 2.2s ease-in-out infinite; }
+    @keyframes wCloseFade { 0%,55%,100%{ opacity:1; transform:scale(1); } 30%{ opacity:.35; transform:scale(.88); } }
+    #welcome .w-slide-title { font-family:var(--font-display); font-size:1.18rem; font-weight:700; color:#fff; }
+    #welcome .w-slide-text { font-size:.88rem; line-height:1.55; color:#b5b8b0; max-width:38ch; }
+    #welcome .w-slide-text b { color:var(--brand); font-weight:700; }
+
+    #welcome .w-nav { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:16px; }
+    #welcome .w-dots { display:flex; gap:7px; }
+    #welcome .w-dot { width:8px; height:8px; border-radius:99px; background:rgba(255,255,255,.18); border:none; cursor:pointer; padding:0;
+      transition:width .3s var(--ease-out), background .3s ease; }
+    #welcome .w-dot.active { width:22px; background:var(--brand); }
+    #welcome .w-back, #welcome .w-next { border:1px solid rgba(255,255,255,.16); background:rgba(255,255,255,.05); color:#eaf2ea;
+      border-radius:10px; padding:9px 16px; font-size:.85rem; font-weight:700; cursor:pointer;
+      transition:background .2s ease, transform .2s var(--ease-spring), opacity .2s ease; }
+    #welcome .w-back { width:38px; padding:9px 0; font-size:1.1rem; }
+    #welcome .w-back:disabled { opacity:0; pointer-events:none; }
+    #welcome .w-next { background:linear-gradient(135deg,var(--brand-2),var(--brand)); color:#241608; border:none; box-shadow:0 6px 18px rgba(232,179,77,.25); }
+    #welcome .w-back:hover, #welcome .w-next:hover { transform:translateY(-2px); }
+    #welcome .w-next:hover { box-shadow:0 8px 22px rgba(232,179,77,.35); }
+    #welcome .help-tip { margin-top:18px; }
+
     @media (prefers-reduced-motion:reduce){ #panel,#toast,#hint,#loader,.loader-mark,#start h2,#start.show *,#menu,#menuScrim,#menuBtn span,#welcome,#welcomeScrim,
       #achieve,#achieve .ach-icon,#quickView,#onePager,#devTerminal,.term-cursor,.biz-card,.cert,.tags span,.proj,.xp-card{ transition:none!important; animation:none!important; } }
   </style>
@@ -840,13 +890,50 @@
     <div class="weyebrow">Before you wander off</div>
     <h2>Welcome to the market</h2>
     <div class="wsub">A quick guide to exploring this portfolio.</div>
-    <ul class="help-list">
-      <li><span class="keys"><span class="kbd-only"><span class="keycap">W A S D</span><span class="keycap">↑ ↓ ← →</span></span><span class="touch-only"><span class="keycap">◀ ▲ ▼ ▶</span></span></span> <span>Walk around the floating market<span class="kbd-only"> with the keys</span><span class="touch-only"> using the on-screen arrow buttons</span>.</span></li>
-      <li><span class="keys"><span class="kbd-only"><span class="keycap">Right mouse</span></span><span class="touch-only"><span class="keycap">Drag</span></span></span> <span><span class="kbd-only">Hold the right mouse button and move to look around.</span><span class="touch-only">Drag on the scene to look around.</span></span></li>
-      <li><span class="keys"><span class="keycap">❓ orb</span></span> <span><span class="kbd-only">Click</span><span class="touch-only">Tap</span> the glowing question-mark orb to open that topic's panel.</span></li>
-      <li><span class="keys"><span class="kbd-only"><span class="keycap">Esc</span><span class="keycap">✕</span></span><span class="touch-only"><span class="keycap">✕</span></span></span> <span>Close any panel with the <span class="kbd-only">✕, press Esc, or simply start moving</span><span class="touch-only">✕, or simply start moving</span>.</span></li>
-    </ul>
-    <p class="help-tip">💡 Each topic — About Me, Expertise, My Creations, Active Projects and Contact — is a different part of the portfolio. Explore them all! You can reopen this guide anytime from the ☰ menu.</p>
+    <div class="w-carousel" id="wCarousel">
+      <div class="w-track" id="wTrack">
+        <div class="w-slide">
+          <div class="w-visual w-move">
+            <span class="kbd-only"><span class="keycap-lg">W</span><span class="keycap-lg">A</span><span class="keycap-lg">S</span><span class="keycap-lg">D</span></span>
+            <span class="touch-only"><span class="keycap-lg">◀</span><span class="keycap-lg">▲</span><span class="keycap-lg">▼</span><span class="keycap-lg">▶</span></span>
+          </div>
+          <div class="w-slide-title">Move Around</div>
+          <p class="w-slide-text"><span class="kbd-only">Walk the floating market with <b>WASD</b> or the arrow keys.</span><span class="touch-only">Walk the floating market using the on-screen arrow buttons.</span></p>
+        </div>
+        <div class="w-slide">
+          <div class="w-visual w-look">
+            <span class="kbd-only"><span class="keycap-lg">Right mouse</span></span>
+            <span class="touch-only"><span class="keycap-lg">Drag</span></span>
+          </div>
+          <div class="w-slide-title">Look Around</div>
+          <p class="w-slide-text"><span class="kbd-only">Hold the <b>right mouse button</b> and move to look around.</span><span class="touch-only">Drag anywhere on the scene to look around.</span></p>
+        </div>
+        <div class="w-slide">
+          <div class="w-visual w-orb"><span class="w-orb-badge">?</span></div>
+          <div class="w-slide-title">Open a Topic</div>
+          <p class="w-slide-text"><span class="kbd-only">Click</span><span class="touch-only">Tap</span> a glowing orb to open that topic's panel.</p>
+        </div>
+        <div class="w-slide">
+          <div class="w-visual w-close">
+            <span class="kbd-only"><span class="keycap-lg">Esc</span></span>
+            <span class="keycap-lg">✕</span>
+          </div>
+          <div class="w-slide-title">Close Anytime</div>
+          <p class="w-slide-text">Close any panel with <b>✕</b><span class="kbd-only">, press <b>Esc</b>,</span> or simply start moving.</p>
+        </div>
+      </div>
+    </div>
+    <div class="w-nav">
+      <button class="w-back" id="wBack" aria-label="Previous step" disabled>‹</button>
+      <div class="w-dots" id="wDots">
+        <button class="w-dot active" data-slide="0" aria-label="Step 1"></button>
+        <button class="w-dot" data-slide="1" aria-label="Step 2"></button>
+        <button class="w-dot" data-slide="2" aria-label="Step 3"></button>
+        <button class="w-dot" data-slide="3" aria-label="Step 4"></button>
+      </div>
+      <button class="w-next" id="wNext">Next</button>
+    </div>
+    <p class="help-tip">Each topic — About Me, Expertise, My Creations, Active Projects and Contact — is a different part of the portfolio. Explore them all! You can reopen this guide anytime from the menu.</p>
     <div class="wfoot">Press ✕ or start moving to begin exploring.</div>
   </section>
 
@@ -1789,11 +1876,31 @@
     // --- welcome / how-it-works popup (auto-shown once the intro settles; closes on ✕ or first movement) ---
     const welcomeEl=document.getElementById('welcome'), welcomeScrim=document.getElementById('welcomeScrim');
     function welcomeOpen(){ return welcomeEl.classList.contains('show'); }
-    function showWelcome(){ welcomeEl.classList.add('show'); welcomeScrim.classList.add('show'); welcomeEl.setAttribute('aria-hidden','false'); }
+    function showWelcome(){ wGoTo(0); welcomeEl.classList.add('show'); welcomeScrim.classList.add('show'); welcomeEl.setAttribute('aria-hidden','false'); }
     function closeWelcome(){ welcomeEl.classList.remove('show'); welcomeScrim.classList.remove('show'); welcomeEl.setAttribute('aria-hidden','true'); }
     document.getElementById('welcomeClose').addEventListener('click', closeWelcome);
     welcomeScrim.addEventListener('click', closeWelcome);
     addEventListener('keydown', e=>{ if(e.code==='Escape' && welcomeOpen()) closeWelcome(); });
+
+    // --- welcome carousel: one idea per slide, navigable by dot/arrow buttons or ←/→ keys ---
+    const wTrack=document.getElementById('wTrack'), wSlides=[...wTrack.children];
+    const wDots=[...document.querySelectorAll('#wDots .w-dot')], wBack=document.getElementById('wBack'), wNext=document.getElementById('wNext');
+    let wIndex=0;
+    function wGoTo(i){
+      wIndex=Math.max(0, Math.min(wSlides.length-1, i));
+      wTrack.style.transform=`translateX(-${wIndex*100}%)`;
+      wDots.forEach((d,di)=>d.classList.toggle('active', di===wIndex));
+      wBack.disabled=wIndex===0;
+      wNext.textContent=wIndex===wSlides.length-1 ? "Let's go" : 'Next';
+    }
+    wDots.forEach(d=>d.addEventListener('click', ()=>wGoTo(+d.dataset.slide)));
+    wBack.addEventListener('click', ()=>wGoTo(wIndex-1));
+    wNext.addEventListener('click', ()=>{ if(wIndex===wSlides.length-1) closeWelcome(); else wGoTo(wIndex+1); });
+    addEventListener('keydown', e=>{
+      if(!welcomeOpen()) return;
+      if(e.code==='ArrowRight'){ wGoTo(wIndex+1); e.preventDefault(); }
+      else if(e.code==='ArrowLeft'){ wGoTo(wIndex-1); e.preventDefault(); }
+    });
 
     // --- sound settings: one "Music" slider controls the whole site's volume ---
     const sMusic=document.getElementById('sMusic');
