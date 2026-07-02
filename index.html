@@ -397,15 +397,6 @@
       background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.15rem; cursor:pointer; border:1px solid rgba(255,255,255,.1); }
 
     #dpad { position:fixed; right:18px; bottom:20px; z-index:30; display:none; grid-template-columns:repeat(3,54px); grid-template-rows:repeat(3,54px); gap:6px; }
-
-    /* day/night mode chip — reflects the same clock-driven lighting curve so the shift reads as intentional */
-    #todChip { position:fixed; top:16px; left:16px; z-index:30; display:flex; align-items:center; gap:7px;
-      padding:8px 14px 8px 10px; border-radius:99px; background:rgba(0,0,0,.5); backdrop-filter:blur(6px);
-      border:1px solid rgba(255,255,255,.1); color:#eaf2ea; font-size:.82rem; font-weight:600; letter-spacing:.02em;
-      opacity:0; transform:translateY(-6px); transition:opacity .5s ease .3s, transform .5s ease .3s; pointer-events:none; }
-    #todChip.show { opacity:1; transform:none; }
-    #todChip .tod-ico { font-size:1rem; line-height:1; }
-    @media (max-width:680px){ #todChip{ font-size:.74rem; padding:6px 12px 6px 9px; top:12px; left:12px; } }
     #dpad button { width:54px; height:54px; border:none; border-radius:14px; background:rgba(0,0,0,.5); backdrop-filter:blur(6px); color:#fff; font-size:1.3rem; border:1px solid rgba(255,255,255,.1); touch-action:none; }
     #dpad button:active { background:#7bc96f; color:#11161b; }
     .dp-up{grid-area:1/2;} .dp-left{grid-area:2/1;} .dp-right{grid-area:2/3;} .dp-down{grid-area:3/2;}
@@ -546,7 +537,6 @@
     <div class="ach-icon">🏆</div>
     <div class="ach-text"><b>Market Explorer</b><span>You've visited every corner of the market!</span></div>
   </div>
-  <div id="todChip" aria-hidden="true"><span class="tod-ico">☀️</span><span class="tod-label">Day</span></div>
   <button id="sound" aria-label="Toggle ambient sound" title="Toggle sound">🔊</button>
   <div id="dpad" aria-hidden="true">
     <button class="dp-up" data-dir="up">▲</button><button class="dp-left" data-dir="left">◀</button>
@@ -740,7 +730,6 @@
     camera.position.set(0,40,60);
 
     // ---- cinematic lighting: warm golden key + cool sky fill + cool back-rim, soft shadows ----
-    // (base colors below are the 5pm "golden hour" look; applyTimeOfDay() re-tints all of these to the visitor's real local time)
     const ambient=new THREE.AmbientLight(0x4a5570, 0.55); scene.add(ambient);            // soft cool ambient so shadows read but never go black
     const hemi=new THREE.HemisphereLight(0xdce8ff, 0x7a6038, 0.9); scene.add(hemi);      // cool sky light + warm ground bounce
     const sun=new THREE.DirectionalLight(0xffdca6, 3.6); sun.castShadow=true;           // warm golden-hour key (the shadow caster)
@@ -748,67 +737,6 @@
     sun.shadow.bias=-0.0004; sun.shadow.normalBias=0.6; sun.shadow.radius=4;
     scene.add(sun); scene.add(sun.target);
     const rim=new THREE.DirectionalLight(0x7793c8, 0.7); rim.position.set(-90,70,-80); scene.add(rim); // cool back-light to lift models off the dark void
-
-    // ---- time of day: retint the whole scene to the visitor's real local clock (night -> dawn -> day -> golden hour -> dusk -> night) ----
-    // sun position/angle stays fixed (this is a stylized void, not a literal sky) — only color/intensity/fog shift, so shadows never break.
-    const TOD_KEYS=[
-      { h:0,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // deep night
-      { h:5,  sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // pre-dawn
-      { h:7,  sun:0xffb87a, sunI:2.60, hemiSky:0xffd9b0, hemiGnd:0x7a5030, hemiI:0.85, amb:0x4a4570, ambI:0.50, bg:0x1a1020, fogD:0.0017, rimI:0.55, night:0.35 },  // dawn
-      { h:12, sun:0xfff3d8, sunI:4.10, hemiSky:0xdfeeff, hemiGnd:0x8a7048, hemiI:1.00, amb:0x5a6590, ambI:0.60, bg:0x141428, fogD:0.0012, rimI:0.75, night:0.0  },  // midday
-      { h:17, sun:0xffdca6, sunI:3.60, hemiSky:0xdce8ff, hemiGnd:0x7a6038, hemiI:0.90, amb:0x4a5570, ambI:0.55, bg:0x07060f, fogD:0.0013, rimI:0.70, night:0.15 },  // golden hour (the original look)
-      { h:20, sun:0x5a5a9a, sunI:1.00, hemiSky:0x30306a, hemiGnd:0x1c1830, hemiI:0.55, amb:0x2a3060, ambI:0.45, bg:0x05040c, fogD:0.0016, rimI:0.50, night:0.75 },  // dusk
-      { h:24, sun:0x30407a, sunI:0.35, hemiSky:0x141a33, hemiGnd:0x0c0a18, hemiI:0.35, amb:0x1c2440, ambI:0.40, bg:0x030309, fogD:0.0021, rimI:0.35, night:1.0  },  // wraps to night
-    ];
-    let nightFactor=0, todLabel='Day';   // 0=full day..1=full night; shared with fireflies/mode chip
-    const nightLights=[];   // lamp-post + market point lights, populated once the market model loads; scaled by nightFactor
-    const TOD_ICONS={Night:'🌙', Dawn:'🌅', Day:'☀️', 'Golden Hour':'🌇', Dusk:'🌆'};
-    function applyTimeOfDay(){
-      const hr=new Date().getHours()+new Date().getMinutes()/60;
-      let a=TOD_KEYS[0], b=TOD_KEYS[1];
-      for(let i=0;i<TOD_KEYS.length-1;i++){ if(hr>=TOD_KEYS[i].h && hr<=TOD_KEYS[i+1].h){ a=TOD_KEYS[i]; b=TOD_KEYS[i+1]; break; } }
-      const t=(hr-a.h)/((b.h-a.h)||1);
-      const lc=(c1,c2)=>new THREE.Color(c1).lerp(new THREE.Color(c2),t);
-      const ln=(n1,n2)=>THREE.MathUtils.lerp(n1,n2,t);
-      sun.color.copy(lc(a.sun,b.sun)); sun.intensity=ln(a.sunI,b.sunI);
-      hemi.color.copy(lc(a.hemiSky,b.hemiSky)); hemi.groundColor.copy(lc(a.hemiGnd,b.hemiGnd)); hemi.intensity=ln(a.hemiI,b.hemiI);
-      ambient.color.copy(lc(a.amb,b.amb)); ambient.intensity=ln(a.ambI,b.ambI);
-      rim.intensity=ln(a.rimI,b.rimI);
-      const bgc=lc(a.bg,b.bg); scene.background.copy(bgc); scene.fog.color.copy(bgc); scene.fog.density=ln(a.fogD,b.fogD);
-      nightFactor=ln(a.night,b.night);
-      nightLights.forEach(l=>{ l.intensity=l.userData.baseIntensity*nightFactor; });
-      todLabel = hr<5.5||hr>=20 ? 'Night' : hr<7.5 ? 'Dawn' : hr<16.5 ? 'Day' : hr<18.5 ? 'Golden Hour' : 'Dusk';
-      const chip=document.getElementById('todChip');
-      if(chip){ chip.querySelector('.tod-ico').textContent=TOD_ICONS[todLabel]||'☀️'; chip.querySelector('.tod-label').textContent=todLabel; chip.classList.add('show'); }
-    }
-    setInterval(applyTimeOfDay, 5*60*1000);   // keep drifting correctly through a long-lived tab
-
-    // ---- fireflies: a soft glowing particle swarm that fades in at night, fades out by day (driven by nightFactor) ----
-    const FIREFLY_COUNT=70;
-    const fireflyTex=(()=>{ const c=document.createElement('canvas'); c.width=c.height=64; const gx=c.getContext('2d');
-      const g=gx.createRadialGradient(32,32,0,32,32,32);
-      g.addColorStop(0,'rgba(255,246,180,1)'); g.addColorStop(.35,'rgba(255,222,120,.75)'); g.addColorStop(1,'rgba(255,200,80,0)');
-      gx.fillStyle=g; gx.fillRect(0,0,64,64); return new THREE.CanvasTexture(c); })();
-    const fireflyBase=[]; const fireflyPos=new Float32Array(FIREFLY_COUNT*3);
-    for(let i=0;i<FIREFLY_COUNT;i++){
-      const ang=Math.random()*Math.PI*2, rad=8+Math.random()*(cfg.world*0.42);
-      const b={x:Math.sin(ang)*rad, y:2+Math.random()*7, z:Math.cos(ang)*rad, ph:Math.random()*Math.PI*2, sp:0.5+Math.random()*0.6};
-      fireflyBase.push(b); fireflyPos[i*3]=b.x; fireflyPos[i*3+1]=b.y; fireflyPos[i*3+2]=b.z;
-    }
-    const fireflyGeo=new THREE.BufferGeometry(); fireflyGeo.setAttribute('position', new THREE.BufferAttribute(fireflyPos,3));
-    const fireflyMat=new THREE.PointsMaterial({ size:1.7, map:fireflyTex, transparent:true, opacity:0, depthWrite:false, blending:THREE.AdditiveBlending, sizeAttenuation:true });
-    const fireflies=new THREE.Points(fireflyGeo, fireflyMat); scene.add(fireflies);
-    let _fireflyClock=0;
-    function updateFireflies(dt){
-      const targetOp=nightFactor*0.85;
-      fireflyMat.opacity+=(targetOp-fireflyMat.opacity)*Math.min(1,dt*0.6);
-      if(fireflyMat.opacity<0.01 && targetOp<0.01) return;   // fully invisible by day — skip the per-particle work
-      _fireflyClock+=dt; const t=_fireflyClock, pos=fireflyGeo.attributes.position;
-      for(let i=0;i<FIREFLY_COUNT;i++){ const b=fireflyBase[i];
-        pos.setXYZ(i, b.x+Math.sin(t*0.6*b.sp+b.ph)*2.2, b.y+Math.sin(t*1.3*b.sp+b.ph*2)*0.8, b.z+Math.cos(t*0.5*b.sp+b.ph)*2.2); }
-      pos.needsUpdate=true;
-    }
-
 
     // ---------- SECTORS: each market -> a topic ----------
     // matched to market material names found in the FBX
@@ -1080,31 +1008,12 @@
       ZONES=[];
       for(const k in acc){ if(!SECTORS[k]||!acc[k].n) continue; const x=acc[k].x/acc[k].n, z=acc[k].z/acc[k].n;
         ZONES.push({ key:k, ...SECTORS[k], x, z }); }
-      // ---- night lighting: the FBX's own Point_Light nodes don't import as working THREE lights, so we add real
-      // ones ourselves at the same real-world positions (measured off the loaded mesh) — 4 at the lamp-post heads,
-      // 5 at each market's centre so the stalls stay readable at night. Warm, no shadows (perf), scaled by nightFactor.
-      const LAMP_POST_LIGHTS=[
-        {x:-5.19,  z:-14.96}, {x:-27.07, z:31.44}, {x:27.94, z:-17.64}, {x:26.63, z:23.49},
-      ];
-      // note: THREE r155+ point lights are photometric (candela) with real inverse-square decay, so intensity
-      // needs to be in the hundreds/thousands to read as visible — nothing like the sun/hemi/ambient scale (1-5).
-      LAMP_POST_LIGHTS.forEach(p=>{
-        const l=new THREE.PointLight(0xffb870, 0, 85, 1); l.position.set(p.x, 86.5, p.z); l.castShadow=false;
-        l.userData.baseIntensity=900; scene.add(l); nightLights.push(l);
-      });
-      ZONES.forEach(z=>{
-        const gy=surfaceTop(z.x,z.z)??0;
-        const l=new THREE.PointLight(0xffe0b0, 0, 110, 1); l.position.set(z.x, gy+9, z.z); l.castShadow=false;
-        l.userData.baseIntensity=1400; scene.add(l); nightLights.push(l);
-      });
       enlargeBoards(1.45);  // make the signboards bigger / easier to read from a distance
       placeBoardTitles();   // paint each market's title directly onto its signboard (no floating UI)
 
       // shadow sized to world
       const h=cfg.world*0.8, sc=sun.shadow.camera; sc.left=-h;sc.right=h;sc.top=h;sc.bottom=-h;sc.near=1;sc.far=cfg.world*5; sc.updateProjectionMatrix();
       sun.position.set(cfg.world*0.75, cfg.world*0.98, cfg.world*0.5); sun.target.position.set(0,0,0); // high 3/4 angle: lights the scene yet still throws shadows
-
-      applyTimeOfDay();   // tint the whole scene to the visitor's real local clock (night/dawn/day/dusk) — see definition below
 
       // ---- space grid floor: a vast dark plane with faint purple grid + X marks, fading into the void (reference look) ----
       const gcv=document.createElement('canvas'); gcv.width=gcv.height=128; const gx=gcv.getContext('2d');
@@ -1813,7 +1722,6 @@
         camera.position.copy(_estPos); camera.lookAt(_estLook);
       }
       if(started && !welcomeShown){ welcomeShown=true; showWelcome(); }   // intro settled -> auto-show the how-it-works guide once
-      updateFireflies(dt);
     }
     function frame(){ step(Math.min(clock.getDelta(),0.05)); renderer.render(scene,camera); }
     let lastRAF=0; function animate(ts){ requestAnimationFrame(animate); lastRAF=ts||0; frame(); }
