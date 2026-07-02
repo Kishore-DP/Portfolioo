@@ -359,9 +359,22 @@
       border-radius:12px; padding:9px 17px; font-size:.86rem; font-weight:600; cursor:pointer; transition:background .2s ease, transform .2s var(--ease-spring), border-color .2s ease; }
     #quickView .qv-actions button:hover { background:rgba(255,255,255,.1); transform:translateY(-2px); border-color:color-mix(in srgb,var(--brand) 45%, transparent); }
     #quickView #qvClose { width:38px; padding:9px 0; font-size:1.2rem; line-height:1; }
+    /* sticky section navigator — lets you jump straight to a topic instead of scrolling through all five */
+    #quickView .qv-nav { flex:0 0 auto; position:sticky; top:0; z-index:1; display:flex; gap:8px; overflow-x:auto;
+      padding:12px 22px; background:rgba(11,10,9,.94); backdrop-filter:blur(10px); border-bottom:1px solid rgba(255,255,255,.07);
+      scrollbar-width:none; }
+    #quickView .qv-nav::-webkit-scrollbar { display:none; }
+    #quickView .qv-nav button { flex:0 0 auto; display:flex; align-items:center; gap:7px; padding:7px 15px 7px 11px; border-radius:99px;
+      border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03); color:#9a9d99;
+      font-size:.8rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all .25s var(--ease-out); }
+    #quickView .qv-nav button .qvn-ico { font-size:.95rem; }
+    #quickView .qv-nav button:hover { background:rgba(255,255,255,.08); color:#eaf2ea; }
+    #quickView .qv-nav button.active { background:color-mix(in srgb,var(--nav-accent,#7bc96f) 20%, rgba(255,255,255,.04));
+      border-color:color-mix(in srgb,var(--nav-accent,#7bc96f) 55%, transparent); color:#fff;
+      box-shadow:0 0 0 1px color-mix(in srgb,var(--nav-accent,#7bc96f) 30%, transparent) inset; }
     #quickView .qv-body { flex:1 1 auto; overflow-y:auto; overscroll-behavior:contain; scroll-behavior:smooth; }
-    #quickView .qv-inner { max-width:860px; margin:0 auto; padding:48px 28px 90px; }
-    #quickView .qv-sec { margin-bottom:54px; padding-bottom:46px; border-bottom:1px solid rgba(255,255,255,.08); }
+    #quickView .qv-inner { max-width:860px; margin:0 auto; padding:40px 28px 90px; }
+    #quickView .qv-sec { margin-bottom:54px; padding-bottom:46px; border-bottom:1px solid rgba(255,255,255,.08); scroll-margin-top:14px; }
     #quickView .qv-sec:last-child { border-bottom:none; margin-bottom:0; }
     #quickView .qv-sec-head { display:flex; align-items:flex-start; gap:17px; margin-bottom:24px; }
     #quickView .qv-sec-ico { font-size:1.5rem; width:54px; height:54px; flex:0 0 auto; display:flex; align-items:center; justify-content:center;
@@ -670,6 +683,7 @@
       <div class="qv-brand">Kishore DP <span>— Quick View</span></div>
       <div class="qv-actions"><button id="qvPrint" title="Print or save as PDF">🖨️<span class="qv-print-label"> Print</span></button><button id="qvClose" aria-label="Close quick view">&times;</button></div>
     </div>
+    <nav class="qv-nav" id="qvNav" aria-label="Jump to a section"></nav>
     <div class="qv-body"><div class="qv-inner" id="qvInner"></div></div>
   </div>
 
@@ -1675,11 +1689,11 @@
     addEventListener('keydown', e=>{ if(e.code==='Escape' && menuIsOpen()) closeMenu(); });
 
     // ---- Quick View: every panel's content laid out on one scrollable page, for visitors in a hurry ----
-    const qvEl=document.getElementById('quickView'), qvInner=document.getElementById('qvInner');
+    const qvEl=document.getElementById('quickView'), qvInner=document.getElementById('qvInner'), qvNav=document.getElementById('qvNav');
     let qvBuilt=false, qvAutoOpenedForPrint=false;
     function buildQuickView(){ if(qvBuilt) return; qvBuilt=true;
       qvInner.innerHTML=Object.values(SECTORS).map(sec=>`
-        <section class="qv-sec" style="--accent:${sec.accent}">
+        <section class="qv-sec" id="qv-${sec.topic}" style="--accent:${sec.accent}">
           <div class="qv-sec-head">
             <span class="qv-sec-ico">${sec.ico}</span>
             <div style="flex:1 1 auto;"><div class="qv-sec-kicker">${sec.kicker||''}</div><h2>${sec.title}</h2>${sec.sub?`<p class="qv-sec-sub">${sec.sub}</p>`:''}</div>
@@ -1687,7 +1701,22 @@
           </div>
           <div class="panel-scroll">${sec.html}</div>
         </section>`).join('');
-      renderGitHubFeed(); renderRadarCharts(); }
+      renderGitHubFeed(); renderRadarCharts();
+      // sticky section navigator — jump straight to any topic instead of scrolling through all five
+      qvNav.innerHTML=Object.values(SECTORS).map(sec=>
+        `<button data-target="qv-${sec.topic}" style="--nav-accent:${sec.accent}" aria-label="Jump to ${sec.title}"><span class="qvn-ico">${sec.ico}</span>${sec.title}</button>`).join('');
+      const navBtns=[...qvNav.querySelectorAll('button')];
+      navBtns.forEach(b=>b.addEventListener('click', ()=>{
+        document.getElementById(b.dataset.target).scrollIntoView({behavior: reducedMotion?'auto':'smooth', block:'start'});
+      }));
+      const qvBody=qvEl.querySelector('.qv-body');
+      const setActive=id=>navBtns.forEach(b=>b.classList.toggle('active', b.dataset.target===id));
+      const io=new IntersectionObserver(entries=>{
+        const visible=entries.filter(e=>e.isIntersecting).sort((a,b)=>b.intersectionRatio-a.intersectionRatio)[0];
+        if(visible) setActive(visible.target.id);
+      }, { root:qvBody, threshold:[0.15,0.3,0.5,0.7] });
+      qvInner.querySelectorAll('.qv-sec').forEach(s=>io.observe(s));
+      if(navBtns[0]) navBtns[0].classList.add('active'); }
     qvInner.addEventListener('click', e=>{ const b=e.target.closest('.qv-copy-link'); if(b) copyTopicLink(b.dataset.topic, b.dataset.title); });
     function qvOpen(){ buildQuickView(); qvEl.classList.add('show'); closeMenu(); if(panelOpen()) closePanel(); sfx('whoosh'); }
     function qvClose(){ qvEl.classList.remove('show'); }
