@@ -186,6 +186,25 @@
     .panel .panel-scroll .callout strong { color:var(--accent,#7bc96f); }
     .panel .panel-scroll .callout p { margin:0; max-width:none; }
     /* contact rows */
+    /* 3D flip business card */
+    .biz-card-wrap { display:flex; justify-content:center; margin:6px 0 26px; perspective:1400px; }
+    .biz-card { position:relative; width:280px; height:172px; cursor:pointer; transform-style:preserve-3d;
+      transition:transform .6s cubic-bezier(.2,.8,.2,1); outline:none; }
+    .biz-card:focus-visible { box-shadow:0 0 0 3px color-mix(in srgb,var(--accent,#e07a6b) 55%, transparent); border-radius:16px; }
+    .biz-card.flipped { transform:rotateY(180deg); }
+    .biz-face { position:absolute; inset:0; backface-visibility:hidden; -webkit-backface-visibility:hidden; border-radius:16px;
+      display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:20px;
+      border:1px solid rgba(255,255,255,.14); box-shadow:0 20px 50px rgba(0,0,0,.45); text-align:center; }
+    .biz-front { background:linear-gradient(150deg,rgba(30,24,22,.95),rgba(18,15,14,.95)); border-color:color-mix(in srgb,var(--accent,#e07a6b) 40%, rgba(255,255,255,.1)); }
+    .biz-mark { font-size:1.8rem; margin-bottom:2px; }
+    .biz-name { font-size:1.25rem; font-weight:800; color:#fff; letter-spacing:.01em; }
+    .biz-role { font-size:.82rem; color:#c2cdc2; }
+    .biz-hint { margin-top:10px; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--accent,#e07a6b); opacity:.85; }
+    .biz-back { background:#fdfbf6; transform:rotateY(180deg); gap:8px; }
+    .biz-back img { width:104px; height:104px; border-radius:8px; }
+    .biz-back-label { font-size:.78rem; color:#54524f; font-weight:600; letter-spacing:.04em; text-transform:uppercase; }
+    @media (max-width:680px){ .biz-card{ width:240px; height:150px; } }
+
     .panel .panel-scroll .contact-list { display:grid; gap:10px; margin:8px 0 20px; }
     .panel .panel-scroll .contact-row { display:flex; align-items:center; gap:15px; padding:13px 16px; border-radius:14px; text-decoration:none;
       color:#eaf2ea; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.09); transition:transform .18s ease, background .2s ease, border-color .2s ease; }
@@ -935,6 +954,22 @@
                    html:`
                      <p class="lead">I'm always open to talking about projects, opportunities, or those "this might actually work…" ideas that usually turn into something real.</p>
                      <p>Open to <strong>internships, freelance gigs, collaborations, hackathons, or anything where building cool things is involved</strong>. If it involves learning + creating, I'm in.</p>
+
+                     <div class="biz-card-wrap">
+                       <div class="biz-card" tabindex="0" role="button" aria-label="Flip business card">
+                         <div class="biz-face biz-front">
+                           <div class="biz-mark">🥩</div>
+                           <div class="biz-name">Kishore DP</div>
+                           <div class="biz-role">Developer &middot; Builder &middot; Tinkerer</div>
+                           <div class="biz-hint">Tap to flip ↻</div>
+                         </div>
+                         <div class="biz-face biz-back">
+                           <img src="qr-code.png" alt="QR code to the live portfolio">
+                           <div class="biz-back-label">Scan to visit</div>
+                         </div>
+                       </div>
+                     </div>
+
                      <h3>📡 Ping me here</h3>
                      <div class="contact-list">
                        <a class="contact-row" href="mailto:kishoredp27@gmail.com"><span class="ci">📧</span><span><b>Email</b><small>kishoredp27@gmail.com</small></span></a>
@@ -1424,6 +1459,10 @@
     function closeCert(){ certLB.classList.remove('show'); }
     certLB.addEventListener('click', e=>{ if(e.target===certImg) return; closeCert(); });   // clicking the image keeps it; backdrop/✕ closes
     document.addEventListener('click', e=>{ const c=e.target.closest('.cert[data-full]'); if(c) openCert(c.dataset.full, c.dataset.cap||''); });   // works from the panel AND Quick View
+
+    // ---- 3D flip business card (Let's Connect) ----
+    document.addEventListener('click', e=>{ const card=e.target.closest('.biz-card'); if(card) card.classList.toggle('flipped'); });
+    document.addEventListener('keydown', e=>{ if((e.code==='Enter'||e.code==='Space') && document.activeElement && document.activeElement.classList.contains('biz-card')){ document.activeElement.classList.toggle('flipped'); e.preventDefault(); } });
     addEventListener('keydown', e=>{ if(e.code==='Escape' && certOpen()){ closeCert(); e.stopImmediatePropagation(); } }, true);  // Esc closes the cert first, not the panel
 
     addEventListener('keydown', e=>{ if(e.code==='Escape'){ activeTopic=null; hidePanel(); } });
